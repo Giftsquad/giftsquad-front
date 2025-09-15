@@ -49,8 +49,8 @@ export const theme = {
 
   // Bordures
   borderRadius: {
-    sm: 8,
-    md: 12,
+    sm: 4,
+    md: 6,
   },
 
   // Composants
@@ -58,7 +58,7 @@ export const theme = {
     button: {
       primary: {
         backgroundColor: '#6fd34e',
-        borderRadius: 12,
+        borderRadius: 6,
         paddingVertical: 15,
         paddingHorizontal: 20,
         alignItems: 'center',
@@ -77,7 +77,7 @@ export const theme = {
       container: {
         borderWidth: 1,
         borderColor: '#e0e0e0',
-        borderRadius: 8,
+        borderRadius: 4,
         padding: 15,
         backgroundColor: '#ffffff',
         fontSize: 16,
@@ -92,6 +92,24 @@ export const theme = {
       backgroundColor: '#6fd34e',
       activeTintColor: '#ffffff',
       inactiveTintColor: '#999999',
+    },
+
+    card: {
+      container: {
+        backgroundColor: '#ffffff',
+        borderRadius: 6,
+        padding: 20,
+        marginHorizontal: 20,
+        marginVertical: 10,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      },
     },
 
     // Styles prédéfinis pour les écrans
