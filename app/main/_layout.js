@@ -12,9 +12,9 @@ export default function EventLayout() {
         },
       }}
     >
-      
+      {/* Onglet Tabs qui permet de diriger vers la page /main/creatEvent */}
       <Tabs.Screen
-        name="./main/createEvent"
+        name="createEvent"
         options={{
           title: "Créer un évènement",
           tabBarIcon: ({ color }) => (
@@ -22,8 +22,10 @@ export default function EventLayout() {
           ),
         }}
       />
+
+      {/* Onglet Tabs qui permet de diriger vers la page /main/event */}
       <Tabs.Screen
-        name="./main/event"
+        name="event"
         options={{
           title: "Mes évènements",
           tabBarIcon: ({ color }) => (
