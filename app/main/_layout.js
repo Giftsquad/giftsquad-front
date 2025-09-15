@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
-import { FontAwesome, Octicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 
-export default function AuthLayout() {
+export default function EventLayout() {
   return (
     <Tabs
       screenOptions={{
@@ -12,21 +12,22 @@ export default function AuthLayout() {
         },
       }}
     >
+      
       <Tabs.Screen
-        name="signup"
+        name="./main/createEvent"
         options={{
-          title: "S'inscrire",
+          title: "Créer un évènement",
           tabBarIcon: ({ color }) => (
-            <Octicons name="sign-in" size={24} color={color} />
+            <Ionicons name="create" size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="login"
+        name="./main/event"
         options={{
-          title: "Se connecter",
+          title: "Mes évènements",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
+            <FontAwesome name="calendar" size={24} color={color} />
           ),
         }}
       />
