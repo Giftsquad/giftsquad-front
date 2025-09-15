@@ -1,9 +1,15 @@
-import { View, Text } from "react-native";
+import { Text, View } from 'react-native';
+import { theme } from '../../styles/theme';
 
 export default function EventScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>MES ÉVÈNEMENTS</Text>
+    <View
+      style={[
+        theme.components.screen.centerContent,
+        { backgroundColor: theme.colors.background.primary },
+      ]}
+    >
+      <Text style={theme.components.screen.title}>MES ÉVÈNEMENTS</Text>
     </View>
   );
 }

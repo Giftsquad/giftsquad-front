@@ -1,41 +1,42 @@
-import { Tabs } from "expo-router";
-import { FontAwesome, Octicons } from "@expo/vector-icons";
+import { FontAwesome, Octicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+import { theme } from '../../styles/theme';
 
 export default function AuthLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#ffffff",
-        tabBarInactiveTintColor: "#999",
+        tabBarActiveTintColor: theme.components.tabBar.activeTintColor,
+        tabBarInactiveTintColor: theme.components.tabBar.inactiveTintColor,
         tabBarStyle: {
-          backgroundColor: "#6fd34e",
+          backgroundColor: theme.components.tabBar.backgroundColor,
         },
       }}
     >
       <Tabs.Screen
-        name="./main/event"
+        name='./main/event'
         options={{
-          title: "Mes évènements",
+          title: 'Mes évènements',
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="calendar" size={24} color={color} />
+            <FontAwesome name='calendar' size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="login"
+        name='login'
         options={{
-          title: "Se connecter",
+          title: 'Se connecter',
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
+            <FontAwesome name='user' size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="signup"
+        name='signup'
         options={{
           title: "S'inscrire",
           tabBarIcon: ({ color }) => (
-            <Octicons name="sign-in" size={24} color={color} />
+            <Octicons name='sign-in' size={24} color={color} />
           ),
         }}
       />
