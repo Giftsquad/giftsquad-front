@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "guiftsquad",
-    "slug": "guiftsquad",
-    "scheme": "guiftsquad",
+    "name": "giftsquad",
+    "slug": "giftsquad",
+    "scheme": "giftsquad",
 
     "version": "1.0.0",
     "orientation": "portrait",

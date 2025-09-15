@@ -13,20 +13,20 @@ export default function AuthLayout() {
       }}
     >
       <Tabs.Screen
-        name="signup"
+        name="signup" // correspond au fichier app/auth/signup.js
         options={{
           title: "S'inscrire",
           tabBarIcon: ({ color }) => (
-            <Octicons name="sign-in" size={24} color={color} />
+            <FontAwesome name="user" size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="login"
+        name="login" // correspond au fichier app/auth/login.js
         options={{
           title: "Se connecter",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
+            <Octicons name="sign-in" size={24} color={color} />
           ),
         }}
       />
