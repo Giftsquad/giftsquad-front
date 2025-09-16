@@ -20,7 +20,7 @@ export default function SignupScreen() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    username: '',
+    nickname: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -46,7 +46,7 @@ export default function SignupScreen() {
     if (
       !formData.firstName ||
       !formData.lastName ||
-      !formData.username ||
+      !formData.nickname ||
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword
@@ -175,8 +175,8 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Choisissez un pseudo unique'
-              value={formData.username}
-              onChangeText={value => handleInputChange('username', value)}
+              value={formData.nickname}
+              onChangeText={value => handleInputChange('nickname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.nickname && (

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 export default function EventLayout() {
   return (
@@ -25,11 +25,20 @@ export default function EventLayout() {
 
       {/* Onglet Tabs qui permet de diriger vers la page /main/event */}
       <Tabs.Screen
-        name='events'
+        name='event'
         options={{
           title: 'Mes évènements',
           tabBarIcon: ({ color }) => (
             <FontAwesome name='calendar' size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name='profil'
+        options={{
+          title: 'Mon Profil',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name='user-alt' size={24} color={color} />
           ),
         }}
       />
