@@ -1,20 +1,35 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
+import { useContext, useState } from 'react';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
+import { signup } from '../../services/authService';
+import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
-import axios from "axios";
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
-    firstname: '',
-    lastname: '',
-    nickname: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  // Récupération du contexte d'authentification
+  const { login } = useContext(AuthContext);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -25,38 +40,53 @@ export default function SignupScreen() {
 
   const handleSubmit = async () => {
     console.log('Données du formulaire:', formData);
+    setErrors({}); // Reset des erreurs
 
-    // Validation basique
+    // Validation basique frontend
     if (
-      !formData.firstname ||
-      !formData.lastname ||
-      !formData.nickname ||
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.username ||
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword
     ) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setErrors({ general: 'Veuillez remplir tous les champs' });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      setErrors({ confirmPassword: 'Les mots de passe ne correspondent pas' });
       return;
     }
 
     try {
-      const response = await axios.post(
-        'http://VOTRE-IP-LOCALE:3000/user/signup',
-        formData
-      );
-      Alert.alert('Succès', 'Compte créé avec succès !');
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erreur', 'Impossible de créer le compte');
-    }
+      setLoading(true);
 
-   
+      const userData = await signup({
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        nickname: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Connecter l'utilisateur automatiquement après l'inscription
+      console.log('🔐 Données utilisateur reçues:', userData);
+
+      if (userData._id && userData.token) {
+        console.log('✅ Connexion automatique après inscription');
+        await login(userData);
+        router.replace('/main/events');
+      } else {
+        console.log('❌ Données utilisateur manquantes');
+      }
+    } catch (error) {
+      const errors = handleApiError(error);
+      setErrors(errors);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,10 +127,13 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Votre prénom'
-              value={formData.firstname}
-              onChangeText={value => handleInputChange('firstname', value)}
+              value={formData.firstName}
+              onChangeText={value => handleInputChange('firstName', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.firstname && (
+              <Text style={styles.errorText}>{errors.firstname}</Text>
+            )}
           </View>
 
           {/* Nom */}
@@ -118,10 +151,13 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Votre nom'
-              value={formData.lastname}
-              onChangeText={value => handleInputChange('lastname', value)}
+              value={formData.lastName}
+              onChangeText={value => handleInputChange('lastName', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.lastname && (
+              <Text style={styles.errorText}>{errors.lastname}</Text>
+            )}
           </View>
 
           {/* Pseudo */}
@@ -139,10 +175,13 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Choisissez un pseudo unique'
-              value={formData.nickname}
-              onChangeText={value => handleInputChange('nickname', value)}
+              value={formData.username}
+              onChangeText={value => handleInputChange('username', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.nickname && (
+              <Text style={styles.errorText}>{errors.nickname}</Text>
+            )}
             <Text
               style={{
                 fontSize: theme.typography.fontSize.sm,
@@ -175,6 +214,9 @@ export default function SignupScreen() {
               autoCapitalize='none'
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email}</Text>
+            )}
           </View>
 
           {/* Mot de passe */}
@@ -197,6 +239,9 @@ export default function SignupScreen() {
               secureTextEntry
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            )}
           </View>
 
           {/* Confirmer le mot de passe */}
@@ -221,26 +266,39 @@ export default function SignupScreen() {
               secureTextEntry
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.confirmPassword && (
+              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+            )}
           </View>
+
+          {/* Affichage des erreurs générales */}
+          {errors.general && (
+            <Text style={styles.errorText}>{errors.general}</Text>
+          )}
 
           {/* Bouton de création */}
           <TouchableOpacity
             style={[theme.components.button.primary, { marginBottom: 20 }]}
             onPress={handleSubmit}
+            disabled={loading}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons
-                name='person-add'
-                size={20}
-                color={theme.colors.text.white}
-              />
+              {loading ? (
+                <ActivityIndicator color={theme.colors.text.white} />
+              ) : (
+                <Ionicons
+                  name='person-add'
+                  size={20}
+                  color={theme.colors.text.white}
+                />
+              )}
               <Text
                 style={[
                   theme.components.button.text.primary,
                   { marginLeft: 10 },
                 ]}
               >
-                Créer mon compte
+                {loading ? 'Création...' : 'Créer mon compte'}
               </Text>
             </View>
           </TouchableOpacity>
@@ -249,3 +307,12 @@ export default function SignupScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  errorText: {
+    color: theme.colors.text.error,
+    fontSize: 14,
+    marginTop: 5,
+    marginBottom: 10,
+  },
+});

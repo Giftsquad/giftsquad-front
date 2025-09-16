@@ -1,51 +1,49 @@
 import Header from '../../components/Header';
 import { theme } from '../../styles/theme';
-
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useContext, useState } from 'react';
 import {
-  View,
-  Text,
+  ActivityIndicator,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import axios from 'axios';
-import { router } from 'expo-router';
-import { useState, useContext } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import AuthContext from '../../contexts/AuthContext';
+import { login as loginUser } from '../../services/authService';
+import { handleApiError } from '../../services/errorService';
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('giftsquad758@gmail.com');
-  const [password, setPassword] = useState('gitftsquad758@');
-  const [loading, setLoading] = useState(false); // permet d'afficher un loader pendant que les données chargent
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Récupération du contexte d’authentification déclaré dans le fichier app/contexts/AuthContext.js
   const { login } = useContext(AuthContext);
 
   const handleSubmit = async () => {
+    setErrors({}); // Reset des erreurs
+
     try {
       setLoading(true);
+      const userData = await loginUser(email, password);
 
-      // "http://10.0.2.2" ne fonctionne que pour l'émulateur Android
-      // Sur iOS ou sur un vrai device, il faudra utiliser l’IP locale de ton Mac
-      const response = await axios.post('http://VOTRE-IP-LOCALE:3000/user/login', {
-        email,
-        password,
-      });
-
-      // console.log(response.data);
-
-      // On récupère bien l’ID et le token de l'utilisateur qu'on stocke dans deux props
-      const userId = response.data.id;
-      const userToken = response.data.token;
+      // On récupère bien l'ID et le token de l'utilisateur
+      const userId = userData._id;
+      const userToken = userData.token;
 
       // on appelle la fonction login déclarée dans le fichier app/_layout.js
       if (userId && userToken) {
-        login(userId, userToken);
+        await login(userData);
+        router.replace('/main/events');
       }
     } catch (error) {
-      console.log('Identifiants incorrects');
+      console.log('Erreur de connexion:', error.response?.data);
+      const errors = handleApiError(error);
+      setErrors(errors);
     } finally {
       setLoading(false);
     }
@@ -60,20 +58,32 @@ const LoginScreen = () => {
     >
       <Header arrowShow={false} title='SE CONNECTER' />
       <View style={theme.components.screen.centerContent}>
-        <TextInput
-          style={styles.input}
-          placeholder='Email'
-          value={email}
-          onChangeText={setEmail}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder='Email'
+            value={email}
+            onChangeText={setEmail}
+          />
+          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder='Mot de passe'
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={true} // crypte le password avec des points au lieu de caractères
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder='Mot de passe'
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={true} // crypte le password avec des points au lieu de caractères
+          />
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
+        </View>
+
+        {errors.general && (
+          <Text style={styles.errorText}>{errors.general}</Text>
+        )}
 
         {/* déclenche l'envoi au back du mail + password puis récupère la réponse */}
         <TouchableOpacity onPress={handleSubmit}>
@@ -94,13 +104,21 @@ const LoginScreen = () => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  input: {
+  inputContainer: {
     width: '60%',
+    marginVertical: 15,
+  },
+  input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 10,
-    marginVertical: 15,
+  },
+  errorText: {
+    color: theme.colors.text.error,
+    fontSize: 14,
+    marginTop: 5,
+    marginBottom: 10,
   },
   backButton: {
     alignItems: 'center',

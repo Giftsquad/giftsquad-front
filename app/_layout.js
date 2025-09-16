@@ -6,50 +6,65 @@ import { useEffect, useState } from 'react';
 import AuthContext from '../contexts/AuthContext';
 import { theme } from '../styles/theme';
 
-// State id + token pour gérer l'utilisateur et savoir si on a fini d'initialiser
+// State user pour gérer l'utilisateur complet et savoir si on a fini d'initialiser
 const RootLayout = () => {
-  const [userId, setUserId] = useState(null);
-  const [userToken, setUserToken] = useState(null);
+  const [user, setUser] = useState(null);
   const [isInit, setIsInit] = useState(false);
 
-  // LOGIN/LOGOUT AMMENE A CHANGE CAR ON VA SE BASER UN TOKEN VALIDE
-
-  // LOGIN/LOGOUT AMMENE A CHANGE CAR ON VA SE BASER UN TOKEN VALIDE
-
-  // Fonction login qui met à jour les states locaux et sauvegarde les infos dans AsyncStorage (persistance entre les sessions)
-  const login = async (id, token) => {
-    setUserId(id);
-    setUserToken(token);
-    await AsyncStorage.setItem('id', id);
-    await AsyncStorage.setItem('token', token);
+  // Fonction login qui met à jour le state local et sauvegarde seulement le token
+  const login = async userData => {
+    setUser(userData);
+    await AsyncStorage.setItem('token', userData.token);
   };
 
-  // Fonction logout qui réinitialise les states et supprime les infos stockées
+  // Fonction logout qui réinitialise le state et supprime le token stocké
   const logout = async () => {
-    setUserId(null);
-    setUserToken(null);
-    await AsyncStorage.removeItem('id');
+    setUser(null);
     await AsyncStorage.removeItem('token');
   };
 
   useEffect(() => {
-    // Fonction lancée au démarrage pour récupérer les données de session
+    // Fonction lancée au démarrage pour initialiser l'app
     const fetchAsyncItem = async () => {
-      const id = await AsyncStorage.getItem('id');
       const token = await AsyncStorage.getItem('token');
 
-      // Si on trouve un id et un token, on reconnecte l’utilisateur
-      if (id && token) {
-        setUserId(id);
-        setUserToken(token);
+      if (token) {
+        try {
+          // Récupérer l'objet utilisateur complet depuis le backend via /user/login
+          console.log(
+            '✅ Token trouvé, récupération des données utilisateur...'
+          );
+          const response = await fetch('http://10.0.2.2:3000/user/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({}), // Body vide, on utilise juste le token
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            console.log('✅ Utilisateur récupéré:', userData);
+            setUser(userData);
+          } else {
+            console.log('❌ Token invalide, suppression');
+            await AsyncStorage.removeItem('token');
+            setUser(null);
+          }
+        } catch (error) {
+          console.log(
+            '❌ Erreur lors de la récupération des données utilisateur'
+          );
+          await AsyncStorage.removeItem('token');
+          setUser(null);
+        }
       } else {
-        setUserId(null);
-        setUserToken(null);
-        setUserId(null);
-        setUserToken(null);
+        console.log('Aucun token trouvé');
+        setUser(null);
       }
 
-      // Si l'initialisation est bien effectuée, on passe ce state à true pour le prochain useEffect
+      // Initialisation terminée
       setIsInit(true);
     };
 
@@ -70,9 +85,9 @@ const RootLayout = () => {
     );
   }
 
-  // Si les données ont bien été récupérées, on fournit le contexte d’authentification (userId, token, login, logout) à toute l’application via <Slot />
+  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (user, login, logout, isInit) à toute l'application via <Slot />
   return (
-    <AuthContext.Provider value={{ userId, userToken, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isInit }}>
       <Slot />
     </AuthContext.Provider>
   );
