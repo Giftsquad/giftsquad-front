@@ -15,32 +15,25 @@ export default function AuthLayout() {
       }}
     >
       <Tabs.Screen
-        name='./main/event'
-        options={{
-          title: '',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name='calendar' size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name='login'
-        options={{
-          title: '',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name='person' size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name='signup'
         options={{
-          title: "Se connecter",
+          title: "S\'inscrire",
           tabBarIcon: ({ color }) => (
             <Ionicons name='person-add' size={24} color={color} />
           ),
         }}
       />
+      
+      <Tabs.Screen
+        name='login'
+        options={{
+          title: 'Se connecter',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name='person' size={24} color={color} />
+          ),
+        }}
+      />
+      
     </Tabs>
   );
 }

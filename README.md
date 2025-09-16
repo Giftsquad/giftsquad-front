@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Configuration Prettier
 
 Configuration Prettier pour le projet React Native/Expo.
@@ -27,7 +26,6 @@ npx prettier --write .
 # Vérifier le formatage
 npx prettier --check .
 ```
-=======
 # Guiftsquad (15/09/25)
 
 Application mobile développée en **React Native** avec **Expo**.  
@@ -120,4 +118,3 @@ En iOS ou sur device réel, remplace par l’IP locale de ta machine (ex: http:/
 
    
 
->>>>>>> flovdl
