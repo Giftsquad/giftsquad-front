@@ -29,7 +29,7 @@ const LoginScreen = () => {
 
       // "http://10.0.2.2" ne fonctionne que pour l'émulateur Android
       // Sur iOS ou sur un vrai device, il faudra utiliser l’IP locale de ton Mac
-      const response = await axios.post('http://10.0.2.2:3000/login', {
+      const response = await axios.post('http://192.168.86.97:3000/login', {
         email,
         password,
       });

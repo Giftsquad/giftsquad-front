@@ -1,5 +1,6 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { theme } from '../../styles/theme';
+import { router } from 'expo-router';
 
 export default function EventScreen() {
   return (
