@@ -4,9 +4,12 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
-const API_BASE_URL = 'http://10.0.2.2:3000';
+// Récupération de l'URL de l'API depuis la configuration Expo
+// http://10.0.2.2:3000 (émulateur Android)
+const API_BASE_URL = Constants.expoConfig?.extra?.API_URL;
 
 // Créer une instance axios
 const api = axios.create({
@@ -37,7 +40,6 @@ api.interceptors.response.use(
     // Vérifier si le backend a fourni un nouveau token
     const newToken = response.headers['x-new-token'];
     if (newToken) {
-      console.log('🔄 Nouveau token reçu du backend, mise à jour...');
       AsyncStorage.setItem('token', newToken);
     }
 
@@ -46,10 +48,6 @@ api.interceptors.response.use(
   async error => {
     // Si erreur 401 (Unauthorized), supprimer le token et rediriger vers login
     if (error.response?.status === 401) {
-      console.log(
-        'Token invalide détecté, suppression des données et redirection vers login'
-      );
-
       // Supprimer le token d'authentification
       await AsyncStorage.removeItem('token');
 

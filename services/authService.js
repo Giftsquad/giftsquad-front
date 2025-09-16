@@ -26,3 +26,13 @@ export const signup = async userData => {
     throw error;
   }
 };
+
+//Valide un token existant
+export const validateToken = async () => {
+  try {
+    const response = await api.post('/user/validate');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -24,7 +24,9 @@ export default function EventScreen() {
       ]}
     >
       <Text style={theme.components.screen.title}>MES ÉVÈNEMENTS</Text>
-      <Text style={theme.components.screen.title}>{user.email}</Text>
+      {user?.email && (
+        <Text style={theme.components.screen.title}>{user.email}</Text>
+      )}
 
       <TouchableOpacity
         style={[theme.components.button.primary, { marginTop: 10 }]}

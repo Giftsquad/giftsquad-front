@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { useEffect, useState } from 'react';
 import AuthContext from '../contexts/AuthContext';
+import { validateToken } from '../services/authService';
 import { theme } from '../styles/theme';
 
 // State user pour gérer l'utilisateur complet et savoir si on a fini d'initialiser
@@ -30,28 +31,13 @@ const RootLayout = () => {
 
       if (token) {
         try {
-          // Récupérer l'objet utilisateur complet depuis le backend via /user/login
+          // Récupérer l'objet utilisateur complet depuis le backend via validateToken
           console.log(
             '✅ Token trouvé, récupération des données utilisateur...'
           );
-          const response = await fetch('http://10.0.2.2:3000/user/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({}), // Body vide, on utilise juste le token
-          });
-
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('✅ Utilisateur récupéré:', userData);
-            setUser(userData);
-          } else {
-            console.log('❌ Token invalide, suppression');
-            await AsyncStorage.removeItem('token');
-            setUser(null);
-          }
+          const userData = await validateToken();
+          console.log('✅ Utilisateur récupéré:', userData);
+          setUser(userData);
         } catch (error) {
           console.log(
             '❌ Erreur lors de la récupération des données utilisateur'
