@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useEffect, useState } from 'react';
 import AuthContext from '../contexts/AuthContext';
@@ -63,7 +65,10 @@ const RootLayout = () => {
       <View
         style={[
           theme.components.screen.centerContent,
-          { backgroundColor: theme.colors.background.primary },
+          {
+            backgroundColor: theme.colors.background.primary,
+            paddingTop: Constants.statusBarHeight,
+          },
         ]}
       >
         <ActivityIndicator size='large' color={theme.colors.primary} />
@@ -73,9 +78,11 @@ const RootLayout = () => {
 
   // Si les données ont bien été récupérées, on fournit le contexte d'authentification (user, login, logout, isInit) à toute l'application via <Slot />
   return (
-    <AuthContext.Provider value={{ user, login, logout, isInit }}>
-      <Slot />
-    </AuthContext.Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthContext.Provider value={{ user, login, logout, isInit }}>
+        <Slot />
+      </AuthContext.Provider>
+    </GestureHandlerRootView>
   );
 };
 

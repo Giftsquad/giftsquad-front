@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
@@ -96,16 +97,15 @@ export default function SignupScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header
-        arrowShow={true}
-        title='Créer un compte'
-        onBackPress={() => console.log('Retour')}
-      />
+      <Header arrowShow={true} title='Créer un compte' />
 
       {/* Form */}
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{
+          paddingBottom: 20,
+          paddingTop: Constants.statusBarHeight,
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps='handled'
         enableOnAndroid={true}

@@ -1,18 +1,18 @@
+import { FontAwesome5, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import axios from 'axios';
+import { useContext, useEffect, useState } from 'react';
 import {
-  Text,
-  View,
-  TextInput,
-  StyleSheet,
   ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import { FontAwesome5, MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
-import { useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 import { theme } from '../../styles/theme';
 
 const Profil = () => {
