@@ -16,7 +16,7 @@ import axios from 'axios';
 import { theme } from '../../styles/theme';
 
 const Profil = () => {
-  const { logout, userToken, userId } = useContext(AuthContext);
+  const { logout, userToken, userId, user } = useContext(AuthContext);
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [nickname, setNickname] = useState('');
@@ -58,6 +58,7 @@ const Profil = () => {
     }
   };
   useEffect(() => {
+    Alert.alert('user déjà présent', JSON.stringify(user));
     const fetchData = async () => {
       try {
         const response = await axios.get(

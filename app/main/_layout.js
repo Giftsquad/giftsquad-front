@@ -1,5 +1,5 @@
+import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { FontAwesome, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 export default function EventLayout() {
   return (
@@ -10,6 +10,7 @@ export default function EventLayout() {
         tabBarStyle: {
           backgroundColor: '#6fd34e',
         },
+        headerShown: false, // Désactiver les headers automatiques
       }}
     >
       {/* Onglet Tabs qui permet de diriger vers la page /main/creatEvent */}
