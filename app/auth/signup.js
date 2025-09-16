@@ -4,12 +4,13 @@ import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
 import { theme } from '../../styles/theme';
+import axios from "axios";
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
+    firstname: '',
+    lastname: '',
+    nickname: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -22,14 +23,14 @@ export default function SignupScreen() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Données du formulaire:', formData);
 
     // Validation basique
     if (
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.username ||
+      !formData.firstname ||
+      !formData.lastname ||
+      !formData.nickname ||
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword
@@ -43,8 +44,19 @@ export default function SignupScreen() {
       return;
     }
 
-    console.log('Inscription réussie!');
-    Alert.alert('Succès', 'Compte créé avec succès!');
+    try {
+      const response = await axios.post(
+        'http://10.0.2.2:3000/user/signup',
+        formData
+      );
+      Alert.alert('Succès', 'Compte créé avec succès !');
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erreur', 'Impossible de créer le compte');
+    }
+
+   
   };
 
   return (
@@ -85,8 +97,8 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Votre prénom'
-              value={formData.firstName}
-              onChangeText={value => handleInputChange('firstName', value)}
+              value={formData.firstname}
+              onChangeText={value => handleInputChange('firstname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
           </View>
@@ -106,8 +118,8 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Votre nom'
-              value={formData.lastName}
-              onChangeText={value => handleInputChange('lastName', value)}
+              value={formData.lastname}
+              onChangeText={value => handleInputChange('lastname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
           </View>
@@ -127,8 +139,8 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Choisissez un pseudo unique'
-              value={formData.username}
-              onChangeText={value => handleInputChange('username', value)}
+              value={formData.nickName}
+              onChangeText={value => handleInputChange('nickname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
             <Text
