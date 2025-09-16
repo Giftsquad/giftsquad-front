@@ -35,22 +35,30 @@ const RootLayout = () => {
   useEffect(() => {
     // Fonction lancée au démarrage pour récupérer les données de session
     const fetchAsyncItem = async () => {
+      console.log("🔄 Initialisation de l'authentification...");
+
       const id = await AsyncStorage.getItem('id');
       const token = await AsyncStorage.getItem('token');
 
-      // Si on trouve un id et un token, on reconnecte l’utilisateur
+      console.log('📱 Données récupérées:', {
+        id: id ? 'présent' : 'absent',
+        token: token ? 'présent' : 'absent',
+      });
+
+      // Si on trouve un id et un token, on reconnecte l'utilisateur automatiquement
       if (id && token) {
+        console.log('✅ Token trouvé, reconnexion automatique');
         setUserId(id);
         setUserToken(token);
       } else {
-        setUserId(null);
-        setUserToken(null);
+        console.log('❌ Aucun token trouvé, redirection vers login');
         setUserId(null);
         setUserToken(null);
       }
 
       // Si l'initialisation est bien effectuée, on passe ce state à true pour le prochain useEffect
       setIsInit(true);
+      console.log('✅ Initialisation terminée');
     };
 
     fetchAsyncItem();
@@ -70,7 +78,7 @@ const RootLayout = () => {
     );
   }
 
-  // Si les données ont bien été récupérées, on fournit le contexte d’authentification (userId, token, login, logout) à toute l’application via <Slot />
+  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (userId, token, login, logout) à toute l'application via <Slot />
   return (
     <AuthContext.Provider value={{ userId, userToken, login, logout }}>
       <Slot />

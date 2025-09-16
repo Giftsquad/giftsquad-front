@@ -2,7 +2,6 @@ import Header from '../../components/Header';
 import { theme } from '../../styles/theme';
 
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
 import { router } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
@@ -14,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import AuthContext from '../../contexts/AuthContext';
+import { login as loginUser } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
 
 const LoginScreen = () => {
@@ -31,14 +31,11 @@ const LoginScreen = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post('http://10.0.2.2:3000/user/login', {
-        email,
-        password,
-      });
+      const userData = await loginUser(email, password);
 
       // On récupère bien l'ID et le token de l'utilisateur
-      const userId = response.data._id;
-      const userToken = response.data.token;
+      const userId = userData._id;
+      const userToken = userData.token;
 
       // on appelle la fonction login déclarée dans le fichier app/_layout.js
       if (userId && userToken) {

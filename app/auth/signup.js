@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -12,6 +11,8 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
+import { signup } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
 
@@ -26,6 +27,9 @@ export default function SignupScreen() {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Récupération du contexte d'authentification
+  const { login } = useContext(AuthContext);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -59,7 +63,7 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
-      const response = await axios.post('http://10.0.2.2:3000/user/signup', {
+      const userData = await signup({
         firstname: formData.firstName,
         lastname: formData.lastName,
         nickname: formData.username,
@@ -67,7 +71,14 @@ export default function SignupScreen() {
         password: formData.password,
       });
 
-      router.replace('/main/events');
+      // Connecter l'utilisateur automatiquement après l'inscription
+      const userId = userData._id;
+      const userToken = userData.token;
+
+      if (userId && userToken) {
+        login(userId, userToken);
+        router.replace('/main/events');
+      }
     } catch (error) {
       const errors = handleApiError(error);
       setErrors(errors);
