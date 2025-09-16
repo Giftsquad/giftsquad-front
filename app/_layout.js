@@ -6,57 +6,45 @@ import { useEffect, useState } from 'react';
 import AuthContext from '../contexts/AuthContext';
 import { theme } from '../styles/theme';
 
-// State id + token pour gérer l'utilisateur et savoir si on a fini d'initialiser
+// State user pour gérer l'utilisateur complet et savoir si on a fini d'initialiser
 const RootLayout = () => {
-  const [userId, setUserId] = useState(null);
-  const [userToken, setUserToken] = useState(null);
+  const [user, setUser] = useState(null);
   const [isInit, setIsInit] = useState(false);
 
-  // LOGIN/LOGOUT AMMENE A CHANGE CAR ON VA SE BASER UN TOKEN VALIDE
-
-  // LOGIN/LOGOUT AMMENE A CHANGE CAR ON VA SE BASER UN TOKEN VALIDE
-
-  // Fonction login qui met à jour les states locaux et sauvegarde les infos dans AsyncStorage (persistance entre les sessions)
-  const login = async (id, token) => {
-    setUserId(id);
-    setUserToken(token);
-    await AsyncStorage.setItem('id', id);
-    await AsyncStorage.setItem('token', token);
+  // Fonction login qui met à jour le state local et sauvegarde seulement le token
+  const login = async userData => {
+    setUser(userData);
+    await AsyncStorage.setItem('token', userData.token);
   };
 
-  // Fonction logout qui réinitialise les states et supprime les infos stockées
+  // Fonction logout qui réinitialise le state et supprime le token stocké
   const logout = async () => {
-    setUserId(null);
-    setUserToken(null);
-    await AsyncStorage.removeItem('id');
+    setUser(null);
     await AsyncStorage.removeItem('token');
   };
 
   useEffect(() => {
-    // Fonction lancée au démarrage pour récupérer les données de session
+    // Fonction lancée au démarrage pour initialiser l'app
     const fetchAsyncItem = async () => {
-      console.log("🔄 Initialisation de l'authentification...");
+      console.log("🔄 Initialisation de l'application...");
 
-      const id = await AsyncStorage.getItem('id');
       const token = await AsyncStorage.getItem('token');
 
-      console.log('📱 Données récupérées:', {
-        id: id ? 'présent' : 'absent',
-        token: token ? 'présent' : 'absent',
-      });
+      console.log('📱 Token récupéré:', token ? 'présent' : 'absent');
 
-      // Si on trouve un id et un token, on reconnecte l'utilisateur automatiquement
-      if (id && token) {
-        console.log('✅ Token trouvé, reconnexion automatique');
-        setUserId(id);
-        setUserToken(token);
+      // Si on trouve un token, on considère que l'utilisateur est connecté
+      // La validation du token se fera automatiquement lors du prochain appel API
+      if (token) {
+        console.log('✅ Token trouvé, utilisateur considéré comme connecté');
+        // On met un objet temporaire avec le token pour indiquer la connexion
+        // Les vraies données utilisateur seront récupérées lors du prochain appel API
+        setUser({ token });
       } else {
-        console.log('❌ Aucun token trouvé, redirection vers login');
-        setUserId(null);
-        setUserToken(null);
+        console.log('❌ Aucun token trouvé');
+        setUser(null);
       }
 
-      // Si l'initialisation est bien effectuée, on passe ce state à true pour le prochain useEffect
+      // Initialisation terminée
       setIsInit(true);
       console.log('✅ Initialisation terminée');
     };
@@ -78,9 +66,9 @@ const RootLayout = () => {
     );
   }
 
-  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (userId, token, login, logout) à toute l'application via <Slot />
+  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (user, login, logout) à toute l'application via <Slot />
   return (
-    <AuthContext.Provider value={{ userId, userToken, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       <Slot />
     </AuthContext.Provider>
   );

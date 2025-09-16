@@ -72,12 +72,14 @@ export default function SignupScreen() {
       });
 
       // Connecter l'utilisateur automatiquement après l'inscription
-      const userId = userData._id;
-      const userToken = userData.token;
+      console.log('🔐 Données utilisateur reçues:', userData);
 
-      if (userId && userToken) {
-        login(userId, userToken);
+      if (userData._id && userData.token) {
+        console.log('✅ Connexion automatique après inscription');
+        await login(userData);
         router.replace('/main/events');
+      } else {
+        console.log('❌ Données utilisateur manquantes');
       }
     } catch (error) {
       const errors = handleApiError(error);

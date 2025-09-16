@@ -51,9 +51,8 @@ api.interceptors.response.use(
         'Token invalide détecté, suppression des données et redirection vers login'
       );
 
-      // Supprimer les données d'authentification
+      // Supprimer le token d'authentification
       await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('id');
 
       // Rediriger vers la page de login
       router.replace('/auth/login');

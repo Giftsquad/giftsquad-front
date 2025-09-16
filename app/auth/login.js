@@ -39,7 +39,8 @@ const LoginScreen = () => {
 
       // on appelle la fonction login déclarée dans le fichier app/_layout.js
       if (userId && userToken) {
-        login(userId, userToken);
+        console.log('✅ Connexion réussie, sauvegarde des données');
+        await login(userData);
         router.replace('/main/events');
       }
     } catch (error) {

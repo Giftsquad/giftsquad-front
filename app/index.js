@@ -3,10 +3,12 @@ import { useContext } from 'react';
 import AuthContext from '../contexts/AuthContext';
 
 export default function Index() {
-  const { userId, userToken } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+
+  console.log('🔄 Index - État de connexion:', { user });
 
   // Si l'utilisateur est connecté, rediriger vers les événements
-  if (userId && userToken) {
+  if (user) {
     return <Redirect href='/main/events' />;
   }
 
