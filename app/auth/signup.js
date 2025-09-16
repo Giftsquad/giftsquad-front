@@ -1,8 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
+import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
 
 export default function SignupScreen() {
@@ -14,6 +24,8 @@ export default function SignupScreen() {
     password: '',
     confirmPassword: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -22,10 +34,11 @@ export default function SignupScreen() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Données du formulaire:', formData);
+    setErrors({}); // Reset des erreurs
 
-    // Validation basique
+    // Validation basique frontend
     if (
       !formData.firstName ||
       !formData.lastName ||
@@ -34,17 +47,33 @@ export default function SignupScreen() {
       !formData.password ||
       !formData.confirmPassword
     ) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      setErrors({ general: 'Veuillez remplir tous les champs' });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      setErrors({ confirmPassword: 'Les mots de passe ne correspondent pas' });
       return;
     }
 
-    console.log('Inscription réussie!');
-    Alert.alert('Succès', 'Compte créé avec succès!');
+    try {
+      setLoading(true);
+
+      const response = await axios.post('http://10.0.2.2:3000/user/signup', {
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        nickname: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      router.replace('/main/events');
+    } catch (error) {
+      const errors = handleApiError(error);
+      setErrors(errors);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,6 +118,9 @@ export default function SignupScreen() {
               onChangeText={value => handleInputChange('firstName', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.firstname && (
+              <Text style={styles.errorText}>{errors.firstname}</Text>
+            )}
           </View>
 
           {/* Nom */}
@@ -110,6 +142,9 @@ export default function SignupScreen() {
               onChangeText={value => handleInputChange('lastName', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.lastname && (
+              <Text style={styles.errorText}>{errors.lastname}</Text>
+            )}
           </View>
 
           {/* Pseudo */}
@@ -131,6 +166,9 @@ export default function SignupScreen() {
               onChangeText={value => handleInputChange('username', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.nickname && (
+              <Text style={styles.errorText}>{errors.nickname}</Text>
+            )}
             <Text
               style={{
                 fontSize: theme.typography.fontSize.sm,
@@ -163,6 +201,9 @@ export default function SignupScreen() {
               autoCapitalize='none'
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email}</Text>
+            )}
           </View>
 
           {/* Mot de passe */}
@@ -185,6 +226,9 @@ export default function SignupScreen() {
               secureTextEntry
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            )}
           </View>
 
           {/* Confirmer le mot de passe */}
@@ -209,26 +253,39 @@ export default function SignupScreen() {
               secureTextEntry
               placeholderTextColor={theme.colors.text.secondary}
             />
+            {errors.confirmPassword && (
+              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+            )}
           </View>
+
+          {/* Affichage des erreurs générales */}
+          {errors.general && (
+            <Text style={styles.errorText}>{errors.general}</Text>
+          )}
 
           {/* Bouton de création */}
           <TouchableOpacity
             style={[theme.components.button.primary, { marginBottom: 20 }]}
             onPress={handleSubmit}
+            disabled={loading}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons
-                name='person-add'
-                size={20}
-                color={theme.colors.text.white}
-              />
+              {loading ? (
+                <ActivityIndicator color={theme.colors.text.white} />
+              ) : (
+                <Ionicons
+                  name='person-add'
+                  size={20}
+                  color={theme.colors.text.white}
+                />
+              )}
               <Text
                 style={[
                   theme.components.button.text.primary,
                   { marginLeft: 10 },
                 ]}
               >
-                Créer mon compte
+                {loading ? 'Création...' : 'Créer mon compte'}
               </Text>
             </View>
           </TouchableOpacity>
@@ -237,3 +294,12 @@ export default function SignupScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  errorText: {
+    color: theme.colors.text.error,
+    fontSize: 14,
+    marginTop: 5,
+    marginBottom: 10,
+  },
+});
