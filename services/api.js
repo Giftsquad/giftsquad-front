@@ -17,14 +17,6 @@ const api = axios.create({
 // Interceptor pour ajouter automatiquement le token
 api.interceptors.request.use(
   async config => {
-    // Ne pas ajouter le token pour login et signup
-    if (
-      config.url?.includes('/user/login') ||
-      config.url?.includes('/user/signup')
-    ) {
-      return config;
-    }
-
     // Récupérer le token depuis AsyncStorage
     const token = await AsyncStorage.getItem('token');
 
@@ -42,6 +34,13 @@ api.interceptors.request.use(
 // Interceptor pour gérer les réponses et rediriger si token invalide
 api.interceptors.response.use(
   response => {
+    // Vérifier si le backend a fourni un nouveau token
+    const newToken = response.headers['x-new-token'];
+    if (newToken) {
+      console.log('🔄 Nouveau token reçu du backend, mise à jour...');
+      AsyncStorage.setItem('token', newToken);
+    }
+
     return response;
   },
   async error => {

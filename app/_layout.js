@@ -26,27 +26,46 @@ const RootLayout = () => {
   useEffect(() => {
     // Fonction lancée au démarrage pour initialiser l'app
     const fetchAsyncItem = async () => {
-      console.log("🔄 Initialisation de l'application...");
-
       const token = await AsyncStorage.getItem('token');
 
-      console.log('📱 Token récupéré:', token ? 'présent' : 'absent');
-
-      // Si on trouve un token, on considère que l'utilisateur est connecté
-      // La validation du token se fera automatiquement lors du prochain appel API
       if (token) {
-        console.log('✅ Token trouvé, utilisateur considéré comme connecté');
-        // On met un objet temporaire avec le token pour indiquer la connexion
-        // Les vraies données utilisateur seront récupérées lors du prochain appel API
-        setUser({ token });
+        try {
+          // Récupérer l'objet utilisateur complet depuis le backend via /user/login
+          console.log(
+            '✅ Token trouvé, récupération des données utilisateur...'
+          );
+          const response = await fetch('http://10.0.2.2:3000/user/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({}), // Body vide, on utilise juste le token
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            console.log('✅ Utilisateur récupéré:', userData);
+            setUser(userData);
+          } else {
+            console.log('❌ Token invalide, suppression');
+            await AsyncStorage.removeItem('token');
+            setUser(null);
+          }
+        } catch (error) {
+          console.log(
+            '❌ Erreur lors de la récupération des données utilisateur'
+          );
+          await AsyncStorage.removeItem('token');
+          setUser(null);
+        }
       } else {
-        console.log('❌ Aucun token trouvé');
+        console.log('Aucun token trouvé');
         setUser(null);
       }
 
       // Initialisation terminée
       setIsInit(true);
-      console.log('✅ Initialisation terminée');
     };
 
     fetchAsyncItem();
@@ -66,9 +85,9 @@ const RootLayout = () => {
     );
   }
 
-  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (user, login, logout) à toute l'application via <Slot />
+  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (user, login, logout, isInit) à toute l'application via <Slot />
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isInit }}>
       <Slot />
     </AuthContext.Provider>
   );

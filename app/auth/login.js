@@ -1,6 +1,5 @@
 import Header from '../../components/Header';
 import { theme } from '../../styles/theme';
-
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useContext, useState } from 'react';
@@ -30,7 +29,6 @@ const LoginScreen = () => {
 
     try {
       setLoading(true);
-
       const userData = await loginUser(email, password);
 
       // On récupère bien l'ID et le token de l'utilisateur
@@ -39,7 +37,6 @@ const LoginScreen = () => {
 
       // on appelle la fonction login déclarée dans le fichier app/_layout.js
       if (userId && userToken) {
-        console.log('✅ Connexion réussie, sauvegarde des données');
         await login(userData);
         router.replace('/main/events');
       }
