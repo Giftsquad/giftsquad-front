@@ -16,4 +16,27 @@ export default function LoginScreen() {
       </View>
     </View>
   );
-}
+};
+
+export default LoginScreen;
+
+const styles = StyleSheet.create({
+  input: {
+    width: "60%",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 15
+  },
+  backButton: {
+    alignItems: "center",
+    gap: 5,
+    marginVertical: 15,
+    flexDirection: "row",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    borderColor: "#ccc",
+  }
+});

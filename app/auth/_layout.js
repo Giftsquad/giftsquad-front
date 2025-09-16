@@ -35,7 +35,7 @@ export default function AuthLayout() {
       <Tabs.Screen
         name='signup'
         options={{
-          title: '',
+          title: "Se connecter",
           tabBarIcon: ({ color }) => (
             <Ionicons name='person-add' size={24} color={color} />
           ),
