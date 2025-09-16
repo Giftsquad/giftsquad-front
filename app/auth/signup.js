@@ -46,7 +46,7 @@ export default function SignupScreen() {
 
     try {
       const response = await axios.post(
-        'http://10.0.2.2:3000/user/signup',
+        'http://VOTRE-IP-LOCALE:3000/user/signup',
         formData
       );
       Alert.alert('Succès', 'Compte créé avec succès !');
@@ -139,7 +139,7 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Choisissez un pseudo unique'
-              value={formData.nickName}
+              value={formData.nickname}
               onChangeText={value => handleInputChange('nickname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
