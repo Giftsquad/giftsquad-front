@@ -34,7 +34,7 @@ export default function AuthLayout() {
       <Tabs.Screen
         name='signup'
         options={{
-          title: "S'inscrire",
+          title: "Se connecter",
           tabBarIcon: ({ color }) => (
             <Octicons name='sign-in' size={24} color={color} />
           ),
