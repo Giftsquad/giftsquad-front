@@ -49,6 +49,15 @@ const DrawerContent = ({ navigation }) => {
         navigation.closeDrawer();
       },
     },
+    {
+      title: 'Test User',
+      icon: 'flask-outline',
+      onPress: () => {
+        console.log('Navigation vers: testUser');
+        router.push('/main/testUser');
+        navigation.closeDrawer();
+      },
+    },
   ];
 
   return (

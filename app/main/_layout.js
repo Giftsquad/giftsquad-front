@@ -6,6 +6,7 @@ import CreateEventScreen from './createEvent';
 import CreateTypeEventScreen from './createTypeEvent';
 import EventsScreen from './events';
 import ProfilScreen from './profil';
+import TestUserScreen from './testUser';
 
 const Drawer = createDrawerNavigator();
 
@@ -49,6 +50,14 @@ export default function EventLayout() {
         component={ProfilScreen}
         options={{
           title: 'Mon Profil',
+        }}
+      />
+
+      <Drawer.Screen
+        name='testUser'
+        component={TestUserScreen}
+        options={{
+          title: 'Test User',
         }}
       />
     </Drawer.Navigator>

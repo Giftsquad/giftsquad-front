@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
-import { theme } from '../../styles/theme';
 import Header from '../../components/Header';
+import { theme } from '../../styles/theme';
 
 export default function CreateEventScreen() {
   return (
@@ -13,8 +13,6 @@ export default function CreateEventScreen() {
       <Header title='CRÉER UN SECRET SANTA' />
       <Text>CRÉER UN SECRET SANTA</Text>
       <Text>INFORMATIONS</Text>
-      
-      
     </View>
   );
 }
