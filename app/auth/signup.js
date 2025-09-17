@@ -19,8 +19,8 @@ import { theme } from '../../styles/theme';
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    firstname: '',
+    lastname: '',
     nickname: '',
     email: '',
     password: '',
@@ -45,8 +45,8 @@ export default function SignupScreen() {
 
     // Validation basique frontend
     if (
-      !formData.firstName ||
-      !formData.lastName ||
+      !formData.firstname ||
+      !formData.lastname ||
       !formData.nickname ||
       !formData.email ||
       !formData.password ||
@@ -65,9 +65,9 @@ export default function SignupScreen() {
       setLoading(true);
 
       const userData = await signup({
-        firstname: formData.firstName,
-        lastname: formData.lastName,
-        nickname: formData.username,
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        nickname: formData.nickname,
         email: formData.email,
         password: formData.password,
       });
@@ -127,8 +127,8 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Votre prénom'
-              value={formData.firstName}
-              onChangeText={value => handleInputChange('firstName', value)}
+              value={formData.firstname}
+              onChangeText={value => handleInputChange('firstname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.firstname && (
@@ -151,8 +151,8 @@ export default function SignupScreen() {
             <TextInput
               style={theme.components.input.container}
               placeholder='Votre nom'
-              value={formData.lastName}
-              onChangeText={value => handleInputChange('lastName', value)}
+              value={formData.lastname}
+              onChangeText={value => handleInputChange('lastname', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.lastname && (
