@@ -8,16 +8,13 @@ import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
-
 } from 'react-native';
 import Header from '../../components/Header'; // notre header réutilisable
 import AuthContext from '../../contexts/AuthContext'; // contexte qui contient l’utilisateur connecté
 import { theme } from '../../styles/theme'; // styles globaux
 import { getEvents } from '../../services/eventService'; // fonction pour récupérer les évènements
 
-{
-  /* Import des icônes */
-}
+{/* Import des icônes */}
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -128,7 +125,6 @@ export default function EventsScreen() {
                 </View>
               </View>
             )}
-
             // Bouton "Ajouter un évènement" qui s’affiche à la fin de la liste
             ListFooterComponent={() => (
               <TouchableOpacity
@@ -156,7 +152,7 @@ export default function EventsScreen() {
                 </View>
               </TouchableOpacity>
             )}
-            contentContainerStyle={{ paddingBottom: 40 }} 
+            contentContainerStyle={{ paddingBottom: 40 }}
           />
         ) : (
           // si on n’a pas d’évènements : message par défaut

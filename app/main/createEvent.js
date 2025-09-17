@@ -40,6 +40,19 @@ export default function CreateEventScreen() {
     }));
   };
 
+  const formatDateForAPI = dateString => {
+    // Convertir le format jj/mm/aaaa vers ISO pour le backend
+    if (dateString.includes('/')) {
+      const [day, month, year] = dateString.split('/');
+      const date = new Date(year, month - 1, day);
+      // Retourner au format ISO (YYYY-MM-DD) que .isDate() peut valider
+      return date.toISOString().split('T')[0];
+    }
+
+    // Si c'est déjà une date ISO, la retourner telle quelle
+    return dateString;
+  };
+
   // fonction qui s’exécute quand on clique sur "Créer l’évènement"
   const handleSubmit = async () => {
     // console.log('Données du formulaire:', formData);
@@ -57,7 +70,7 @@ export default function CreateEventScreen() {
       const eventData = await createEvent({
         type: formData.type,
         name: formData.name,
-        date: formData.date,
+        date: formatDateForAPI(formData.date),
         budget: formData.budget,
       });
 
@@ -133,7 +146,10 @@ export default function CreateEventScreen() {
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.label}>Date de l'évènement</Text>
             <TextInput
-              style={theme.components.input.container}
+              style={[
+                theme.components.input.container,
+                errors.date && { borderColor: theme.colors.text.error },
+              ]}
               placeholder='jj/mm/aaaa'
               value={formData.date}
               onChangeText={value => handleInputChange('date', value)}
