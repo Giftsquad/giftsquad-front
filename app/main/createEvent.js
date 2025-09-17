@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker'; // menu de type d'event déroulant
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -12,11 +12,9 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
-import AuthContext from '../../contexts/AuthContext';
-import { createEvent } from '../../services/eventService';
 import { handleApiError } from '../../services/errorService';
+import { createEvent } from '../../services/eventService';
 import { theme } from '../../styles/theme';
-import { Picker } from '@react-native-picker/picker'; // menu de type d'event déroulant
 
 export default function CreateEventScreen() {
   const [formData, setFormData] = useState({
@@ -38,6 +36,19 @@ export default function CreateEventScreen() {
     }));
   };
 
+  const formatDateForAPI = dateString => {
+    // Convertir le format jj/mm/aaaa vers ISO pour le backend
+    if (dateString.includes('/')) {
+      const [day, month, year] = dateString.split('/');
+      const date = new Date(year, month - 1, day);
+      // Retourner au format ISO (YYYY-MM-DD) que .isDate() peut valider
+      return date.toISOString().split('T')[0];
+    }
+
+    // Si c'est déjà une date ISO, la retourner telle quelle
+    return dateString;
+  };
+
   const handleSubmit = async () => {
     console.log('Données du formulaire:', formData);
     setErrors({}); // Reset des erreurs
@@ -51,10 +62,11 @@ export default function CreateEventScreen() {
     try {
       setLoading(true);
 
+      // Formater la date au format jj/mm/aaaa pour l'envoi
       const eventData = await createEvent({
         type: formData.type,
         name: formData.name,
-        date: formData.date,
+        date: formatDateForAPI(formData.date),
         budget: formData.budget,
       });
     } catch (error) {
@@ -78,8 +90,6 @@ export default function CreateEventScreen() {
       ]}
     >
       <Header title='CRÉER UN SECRET SANTA' />
-      <Text>CRÉER UN SECRET SANTA</Text>
-      <Text>INFORMATIONS</Text>
 
       {/* Form */}
       <KeyboardAwareScrollView
@@ -164,7 +174,10 @@ export default function CreateEventScreen() {
               Date de l'évènement
             </Text>
             <TextInput
-              style={theme.components.input.container}
+              style={[
+                theme.components.input.container,
+                errors.date && { borderColor: theme.colors.text.error },
+              ]}
               placeholder='jj/mm/aaaa'
               value={formData.date}
               onChangeText={value => handleInputChange('date', value)}
