@@ -1,11 +1,9 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // 👈 import
-import { theme } from "../../styles/theme";
-import Header from "../../components/Header";
+import { router } from 'expo-router';
+import { Text, TouchableOpacity, View } from 'react-native';
+import Header from '../../components/Header';
+import { theme } from '../../styles/theme';
 
 export default function CreateTypeEventScreen() {
-  const navigation = useNavigation(); // 👈 hook pour accéder au Drawer/Stack
-
   return (
     <View
       style={[
@@ -13,7 +11,7 @@ export default function CreateTypeEventScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header title="CRÉER UN ÉVÈNEMENT" />
+      <Header title='CRÉER UN ÉVÈNEMENT' />
 
       <Text>CRÉER UN ÉVÈNEMENT</Text>
       <Text>QUEL TYPE D'ÉVÈNEMENT SOUHAITEZ-VOUS CRÉER ?</Text>
@@ -21,7 +19,7 @@ export default function CreateTypeEventScreen() {
       <View style={{ marginTop: 20 }}>
         <TouchableOpacity
           style={theme.components.button.primary}
-          onPress={() => navigation.navigate("CreateEvent")} // useNavigation (Stack) ne fonctione qu'avec le <Drawer.Screen> dans _layout.js
+          onPress={() => router.push('/main/createEvent')} // Navigation vers la page createEvent
         >
           <Text style={theme.components.button.text.primary}>SECRET SANTA</Text>
         </TouchableOpacity>
