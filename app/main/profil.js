@@ -67,7 +67,7 @@ const Profil = () => {
         </View>
         <Text>{`${firstname.toUpperCase()} ${lastname.toUpperCase()}`}</Text>
         <View style={styles.section}>
-          <View style={styles.details}>
+          <View style={styles.card}>
             <Text>INFORMATIONS PERSONNELLES</Text>
             <View style={styles.containerInput}>
               <Text>Prénom</Text>
@@ -136,11 +136,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  section: { gap: 20 },
+  section: { gap: 15 },
   containerInput: {
     gap: 8,
   },
-  details: {
+  card: {
+    ...theme.components.card.container,
     gap: 10,
   },
   input: {
