@@ -40,7 +40,7 @@ export const getUserById = async userId => {
 //Met à jour les informations utilisateur
 export const updateUser = async (userId, userData) => {
   try {
-    const response = await api.put(`/user/${userId}`, userData);
+    const response = await api.put('/user/update', userData);
     return response.data;
   } catch (error) {
     throw error;
