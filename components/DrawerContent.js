@@ -35,8 +35,8 @@ const DrawerContent = ({ navigation }) => {
       title: 'Invitations',
       icon: 'mail-outline',
       onPress: () => {
-        console.log('Navigation vers: invitations (désactivé)');
-        // router.push('/main/invitations');
+        console.log('Navigation vers: invitations');
+        navigation.navigate('MainTabs', { screen: 'invitations' });
         navigation.closeDrawer();
       },
     },
