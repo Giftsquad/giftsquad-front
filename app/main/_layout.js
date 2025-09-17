@@ -1,78 +1,56 @@
-import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { NavigationIndependentTree } from '@react-navigation/native';
-import { Tabs } from 'expo-router';
 import DrawerContent from '../../components/DrawerContent';
+
+// Import des écrans
+import CreateEventScreen from './createEvent';
+import CreateTypeEventScreen from './createTypeEvent';
+import EventsScreen from './events';
+import ProfilScreen from './profil';
 
 const Drawer = createDrawerNavigator();
 
 export default function EventLayout() {
   return (
-    <NavigationIndependentTree>
-      <Drawer.Navigator
-        drawerContent={props => <DrawerContent {...props} />}
-        screenOptions={{
-          headerShown: false,
-          drawerStyle: {
-            width: 280,
-          },
-        }}
-      >
-        <Drawer.Screen name='MainTabs' component={MainTabs} />
-
-        {/* Pour faire fonctionner la navigation Stack (useNavigation) avec Drawer */}
-        <Drawer.Screen
-          name='CreateEvent'
-          component={require('./createEvent').default}
-        />
-      </Drawer.Navigator>
-    </NavigationIndependentTree>
-  );
-}
-
-function MainTabs() {
-  return (
-    <Tabs
+    <Drawer.Navigator
+      drawerContent={props => <DrawerContent {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: '#ffffff',
-        tabBarInactiveTintColor: '#999',
-        tabBarStyle: {
-          backgroundColor: '#6fd34e',
+        headerShown: false,
+        drawerStyle: {
+          width: 280,
         },
-        headerShown: false, // Désactiver les headers automatiques
       }}
     >
-      {/* Onglet Tabs qui permet de diriger vers la page /main/event */}
-      <Tabs.Screen
+      <Drawer.Screen
         name='events'
+        component={EventsScreen}
         options={{
-          title: 'Mes évènements',
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name='calendar' size={24} color={color} />
-          ),
+          title: 'Mes événements',
         }}
       />
 
-      {/* Onglet Tabs qui permet de diriger vers la page /main/creatTypeEvent */}
-      <Tabs.Screen
+      <Drawer.Screen
         name='createTypeEvent'
+        component={CreateTypeEventScreen}
         options={{
-          title: "Créer un type d'évènement",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name='create' size={24} color={color} />
-          ),
+          title: "Créer un type d'événement",
         }}
       />
 
-      <Tabs.Screen
+      <Drawer.Screen
+        name='createEvent'
+        component={CreateEventScreen}
+        options={{
+          title: 'Créer un événement',
+        }}
+      />
+
+      <Drawer.Screen
         name='profil'
+        component={ProfilScreen}
         options={{
           title: 'Mon Profil',
-          tabBarIcon: ({ color }) => (
-            <FontAwesome5 name='user-alt' size={24} color={color} />
-          ),
         }}
       />
-    </Tabs>
+    </Drawer.Navigator>
   );
 }
