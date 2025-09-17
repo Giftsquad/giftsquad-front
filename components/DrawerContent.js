@@ -25,11 +25,12 @@ const DrawerContent = ({ navigation }) => {
       title: 'Créer un Événement',
       icon: 'add-circle-outline',
       onPress: () => {
-        console.log('Navigation vers: createEvent');
-        navigation.navigate('MainTabs', { screen: 'createEvent' });
+        console.log('Navigation vers: createTypeEvent');
+        navigation.navigate('MainTabs', { screen: 'createTypeEvent' });
         navigation.closeDrawer();
       },
     },
+   
     {
       title: 'Invitations',
       icon: 'mail-outline',

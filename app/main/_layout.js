@@ -19,6 +19,12 @@ export default function EventLayout() {
         }}
       >
         <Drawer.Screen name='MainTabs' component={MainTabs} />
+
+        {/* Pour faire fonctionner la navigation Stack (useNavigation) avec Drawer */}
+        <Drawer.Screen
+          name='CreateEvent'
+          component={require('./createEvent').default}
+        />
       </Drawer.Navigator>
     </NavigationIndependentTree>
   );
@@ -47,11 +53,11 @@ function MainTabs() {
         }}
       />
 
-      {/* Onglet Tabs qui permet de diriger vers la page /main/creatEvent */}
+      {/* Onglet Tabs qui permet de diriger vers la page /main/creatTypeEvent */}
       <Tabs.Screen
-        name='createEvent'
+        name='createTypeEvent'
         options={{
-          title: 'Créer un évènement',
+          title: "Créer un type d'évènement",
           tabBarIcon: ({ color }) => (
             <Ionicons name='create' size={24} color={color} />
           ),
