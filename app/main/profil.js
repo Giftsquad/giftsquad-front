@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   View,
+  ScrollView,
 } from 'react-native';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
@@ -61,11 +62,12 @@ const Profil = () => {
   return (
     <View style={styles.main}>
       <Header title='MON PROFIL' />
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.logoProfil}>
           <FontAwesome5 name='user-alt' size={46} color='white' />
         </View>
         <Text>{`${firstname.toUpperCase()} ${lastname.toUpperCase()}`}</Text>
+        <Text>{`@${nickname}`}</Text>
         <View style={styles.section}>
           <View style={styles.card}>
             <Text>INFORMATIONS PERSONNELLES</Text>
@@ -113,7 +115,7 @@ const Profil = () => {
             <Text style={styles.text}>Se déconnecter</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
