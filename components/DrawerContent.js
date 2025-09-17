@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -18,7 +17,7 @@ const DrawerContent = ({ navigation }) => {
       icon: 'calendar-outline',
       onPress: () => {
         console.log('Navigation vers: events');
-        router.push('/main/events');
+        navigation.navigate('MainTabs', { screen: 'events' });
         navigation.closeDrawer();
       },
     },
@@ -26,8 +25,8 @@ const DrawerContent = ({ navigation }) => {
       title: 'Créer un Événement',
       icon: 'add-circle-outline',
       onPress: () => {
-        console.log('Navigation vers: createTypeEvent');
-        router.push('/main/createTypeEvent');
+        console.log('Navigation vers: createEvent');
+        navigation.navigate('MainTabs', { screen: 'createEvent' });
         navigation.closeDrawer();
       },
     },
@@ -35,8 +34,8 @@ const DrawerContent = ({ navigation }) => {
       title: 'Invitations',
       icon: 'mail-outline',
       onPress: () => {
-        console.log('Navigation vers: invitations (désactivé)');
-        // router.push('/main/invitations');
+        console.log('Navigation vers: invitations');
+        navigation.navigate('MainTabs', { screen: 'invitations' });
         navigation.closeDrawer();
       },
     },
@@ -45,7 +44,7 @@ const DrawerContent = ({ navigation }) => {
       icon: 'person-outline',
       onPress: () => {
         console.log('Navigation vers: profil');
-        router.push('/main/profil');
+        navigation.navigate('MainTabs', { screen: 'profil' });
         navigation.closeDrawer();
       },
     },
