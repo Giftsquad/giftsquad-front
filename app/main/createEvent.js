@@ -1,36 +1,38 @@
-import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import { useContext, useState } from 'react';
+import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
+import { useState } from 'react';
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  StyleSheet,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
-import AuthContext from '../../contexts/AuthContext';
-import { createEvent } from '../../services/eventService';
-import { handleApiError } from '../../services/errorService';
-import { theme } from '../../styles/theme';
-import { Picker } from '@react-native-picker/picker'; // menu de type d'event déroulant
+import { handleApiError } from '../../services/errorService'; // fonction qui transforme les erreurs API
+import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices, etc.)
+import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d’évènement
+import { Ionicons } from '@expo/vector-icons';
+import { createEvent } from '../../services/eventService'; // fonction qui envoie les données au back
+import { router } from 'expo-router';
 
 export default function CreateEventScreen() {
+  // état pour stocker les infos du formulaire
   const [formData, setFormData] = useState({
-    type: 'Secret Santa',
+    type: 'Secret Santa', // valeur par défaut pour l'instant qu'on a qu'un seul type
     name: '',
     date: '',
     budget: '',
   });
+
+  // état qui dit si on est en train de créer l’évènement
   const [loading, setLoading] = useState(false);
+
+  // état pour stocker les erreurs (ex : champ vide, erreur API, etc.)
   const [errors, setErrors] = useState({});
 
-  // Récupération du contexte d'authentification
-  // const { event } = useContext(EventContext);
-
+  // fonction qui met à jour les champs du formulaire
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -38,36 +40,39 @@ export default function CreateEventScreen() {
     }));
   };
 
+  // fonction qui s’exécute quand on clique sur "Créer l’évènement"
   const handleSubmit = async () => {
-    console.log('Données du formulaire:', formData);
-    setErrors({}); // Reset des erreurs
+    // console.log('Données du formulaire:', formData);
+    setErrors({}); // on remet les erreurs à zéro
 
-    // Validation basique frontend
+    // Vérifie que tous les champs sont remplis
     if (!formData.name || !formData.date || !formData.budget) {
       setErrors({ general: 'Veuillez remplir tous les champs' });
       return;
     }
-
     try {
-      setLoading(true);
+      setLoading(true); // on affiche le loader
 
+      // on envoie les données à l’API
       const eventData = await createEvent({
         type: formData.type,
         name: formData.name,
         date: formData.date,
         budget: formData.budget,
       });
+
+      // si l’évènement est bien créé, on pourra rediriger vers la liste des évènements
+      if (eventData?._id) {
+        // console.log("Évènement créé :", eventData);
+        router.replace('/main/events');
+      }
     } catch (error) {
+      // si l’API renvoie une erreur, on l’affiche
       const errors = handleApiError(error);
       setErrors(errors);
     } finally {
-      setLoading(false);
+      setLoading(false); // on cache le loader
     }
-
-    //     if (eventData?._id) {
-    //   console.log("✅ Évènement créé :", eventData);
-    //   router.replace("/main/events");
-    // }
   };
 
   return (
@@ -77,11 +82,10 @@ export default function CreateEventScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header title='CRÉER UN SECRET SANTA' />
-      <Text>CRÉER UN SECRET SANTA</Text>
-      <Text>INFORMATIONS</Text>
+      {/* Header avec le titre */}
+      <Header title='CRÉER UN ÉVÈNEMENT' />
 
-      {/* Form */}
+      {/* ScrollView qui gère bien le clavier */}
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -96,51 +100,25 @@ export default function CreateEventScreen() {
         <View style={theme.components.card.container}>
           {/* Type de l'évènement */}
           <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                marginBottom: 8,
-              }}
-            >
-              Type de l'évènement
-            </Text>
-            {/* <TextInput
-              style={theme.components.input.container}
-              value={formData.type}
-              onChangeText={value => handleInputChange('type', value)}
-              placeholderTextColor={theme.colors.text.secondary}
-            /> */}
+            <Text style={styles.label}>Type de l'évènement</Text>
+
+            {/* Menu déroulant de suggestion de types d'évènement */}
             <Picker
               selectedValue={formData.type}
               onValueChange={value => handleInputChange('type', value)}
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 8,
-                borderColor: '#ccc',
-                borderWidth: 1,
-              }}
+              style={styles.picker}
             >
               <Picker.Item label='Secret Santa' value='Secret Santa' />
               <Picker.Item label='Christmas List' value='Christmas List' />
               <Picker.Item label='Birthday' value='Birthday' />
             </Picker>
+
             {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
           </View>
 
           {/* Nom de l'évènement */}
           <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                marginBottom: 8,
-              }}
-            >
-              Nom de l'évènement
-            </Text>
+            <Text style={styles.label}>Nom de l'évènement</Text>
             <TextInput
               style={theme.components.input.container}
               placeholder='Ex : Secret Santa Bureau'
@@ -151,18 +129,9 @@ export default function CreateEventScreen() {
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
           </View>
 
-          {/* Date de l'évènement */}
+          {/* Date */}
           <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                marginBottom: 8,
-              }}
-            >
-              Date de l'évènement
-            </Text>
+            <Text style={styles.label}>Date de l'évènement</Text>
             <TextInput
               style={theme.components.input.container}
               placeholder='jj/mm/aaaa'
@@ -175,16 +144,7 @@ export default function CreateEventScreen() {
 
           {/* Budget */}
           <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                marginBottom: 8,
-              }}
-            >
-              Budget conseillé
-            </Text>
+            <Text style={styles.label}>Budget conseillé</Text>
             <TextInput
               style={theme.components.input.container}
               placeholder='Ex : 20€'
@@ -197,12 +157,12 @@ export default function CreateEventScreen() {
             )}
           </View>
 
-          {/* Affichage des erreurs générales */}
+          {/* Erreur générale */}
           {errors.general && (
             <Text style={styles.errorText}>{errors.general}</Text>
           )}
 
-          {/* Bouton de création de l'évènement*/}
+          {/* Bouton de création */}
           <TouchableOpacity
             style={[theme.components.button.primary, { marginBottom: 20 }]}
             onPress={handleSubmit}
@@ -240,5 +200,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
     marginBottom: 10,
+  },
+  label: {
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginBottom: 8,
+  },
+  picker: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
 });
