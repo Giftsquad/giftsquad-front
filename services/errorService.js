@@ -1,32 +1,33 @@
 /**
  * Service de gestion centralisée des erreurs
  */
+export const handleApiError = (error) => {
+  // Cas 1 : le backend a renvoyé une réponse avec un status d'erreur
+  if (error.response) {
+    console.error("Erreur API:", error.response.data);
 
-export const handleApiError = error => {
-  console.error('Erreur API:', error.response?.data || error.message); // erreur dans bandeau natif en bas de l'ecran (disparait en prod)
-
-  // Retourner directement les données d'erreur du backend
-  if (error.response?.data) {
     const { message, errors } = error.response.data;
 
     if (errors) {
       // Erreurs d'express-validator - mapper par champ
       const validationErrors = {};
-      errors.forEach(err => {
+      errors.forEach((err) => {
         validationErrors[err.path] = err.msg;
       });
       return validationErrors;
     } else {
       // Erreur générale du backend
-      return { general: message };
+      return { general: message || "Erreur inconnue côté serveur" };
     }
   }
 
-  // Erreur réseau
-  if (!error.response) {
-    return { general: 'Erreur de connexion, vérifiez votre réseau' };
+  // Cas 2 : requête envoyée mais aucune réponse (timeout, serveur inaccessible…)
+  if (error.request) {
+    console.error("Erreur API: Aucun serveur n'a répondu", error.message);
+    return { general: "Impossible de contacter le serveur. Vérifiez votre connexion." };
   }
 
-  // Erreur par défaut
-  return { general: error.message || 'Une erreur est survenue' };
+  // Cas 3 : erreur autre (bug JS, mauvaise config…)
+  console.error("Erreur interne:", error.message || error);
+  return { general: error.message || "Une erreur est survenue" };
 };
