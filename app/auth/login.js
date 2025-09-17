@@ -41,7 +41,7 @@ const LoginScreen = () => {
         router.replace('/main/events');
       }
     } catch (error) {
-      console.log('Erreur de connexion:', error.response?.data);
+      // console.log('Erreur de connexion:', error.response?.data);
       const errors = handleApiError(error);
       setErrors(errors);
     } finally {

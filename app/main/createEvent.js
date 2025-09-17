@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { theme } from '../../styles/theme';
 import Header from '../../components/Header';
 
@@ -10,8 +10,11 @@ export default function CreateEventScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header title='CRÉER UN ÉVÈNEMENT' />
-      <Text>CRÉER UN ÉVÈNEMENT</Text>
+      <Header title='CRÉER UN SECRET SANTA' />
+      <Text>CRÉER UN SECRET SANTA</Text>
+      <Text>INFORMATIONS</Text>
+      
+      
     </View>
   );
 }
