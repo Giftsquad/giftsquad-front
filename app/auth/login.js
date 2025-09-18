@@ -64,6 +64,7 @@ const LoginScreen = () => {
             placeholder='Email'
             value={email}
             onChangeText={setEmail}
+            autoCapitalize='none'
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         </View>
@@ -75,6 +76,7 @@ const LoginScreen = () => {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={true} // crypte le password avec des points au lieu de caractères
+            autoCapitalize='none'
           />
           {errors.password && (
             <Text style={styles.errorText}>{errors.password}</Text>

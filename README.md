@@ -78,7 +78,8 @@ contexts/
 - [Expo](https://expo.dev/)  
 - [expo-router](https://expo.github.io/router/docs/)  
 - [AsyncStorage](https://react-native-async-storage.github.io/async-storage/)  
-- [Axios](https://axios-http.com/)  
+- [Axios](https://axios-http.com/)
+- [React Native Date Picker](https://github.com/henninghall/react-native-date-picker#datepicker)
 
 ---
 
@@ -92,11 +93,11 @@ contexts/
 
 2. **Installer les dépendances**
     ```bash
-    npm install
+    yarn add expo
 
 3. **Lancer l’application**
     ```bash
-    npx expo start
+    yarn start
 
 3. **Backend requis**
 L’app attend une API REST avec une route POST /login qui renvoie un objet { id, token }.
@@ -104,6 +105,15 @@ En simulateur Android, utiliser http://10.0.2.2:3000/login.
 En iOS ou sur device réel, remplace par l’IP locale de ta machine (ex: http://192.168.1.xx:3000/login).
 
 ---
+
+## Packages à installer
+
+- Picker pour utiliser le menu déroulant de suggestion de type d’évènement : yarn add @react-native-picker/picker 
+- Picker pour utiliser le calendrier des dates : npx expo install react-native-date-picker
+
+
+ 
+
 
 ## Développeurs/contributeurs du projet
 - Iseline Voisin

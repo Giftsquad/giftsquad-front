@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
@@ -16,8 +17,12 @@ import { Picker } from '@react-native-picker/picker'; // menu déroulant pour ch
 import { Ionicons } from '@expo/vector-icons';
 import { createEvent } from '../../services/eventService'; // fonction qui envoie les données au back
 import { router } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker'; // composant calendrier compatible Expo
 
 export default function CreateEventScreen() {
+  // état qui gère l’ouverture/fermeture du calendrier
+  const [open, setOpen] = useState(false);
+
   // état pour stocker les infos du formulaire
   const [formData, setFormData] = useState({
     type: 'Secret Santa', // valeur par défaut pour l'instant qu'on a qu'un seul type
@@ -53,9 +58,8 @@ export default function CreateEventScreen() {
     return dateString;
   };
 
-  // fonction qui s’exécute quand on clique sur "Créer l’évènement"
+  // Fonction qui s’exécute quand on clique sur "Créer l’évènement"
   const handleSubmit = async () => {
-    // console.log('Données du formulaire:', formData);
     setErrors({}); // on remet les erreurs à zéro
 
     // Vérifie que tous les champs sont remplis
@@ -66,7 +70,7 @@ export default function CreateEventScreen() {
     try {
       setLoading(true); // on affiche le loader
 
-      // on envoie les données à l’API
+      // On envoie les données à l’API
       const eventData = await createEvent({
         type: formData.type,
         name: formData.name,
@@ -74,17 +78,26 @@ export default function CreateEventScreen() {
         budget: formData.budget,
       });
 
-      // si l’évènement est bien créé, on pourra rediriger vers la liste des évènements
+      // Si l’évènement est bien créé, on pourra rediriger vers la liste des évènements
       if (eventData?._id) {
+        // Réinitialiser les champs et les erreurs
+        setFormData({
+          type: 'Secret Santa',
+          name: '',
+          date: '',
+          budget: '',
+        });
+        setErrors({});
+
         // console.log("Évènement créé :", eventData);
-        router.replace('/main/events');
+        router.back();
       }
     } catch (error) {
-      // si l’API renvoie une erreur, on l’affiche
+      // Si l’API renvoie une erreur, on l’affiche
       const errors = handleApiError(error);
       setErrors(errors);
     } finally {
-      setLoading(false); // on cache le loader
+      setLoading(false); // On cache le loader
     }
   };
 
@@ -95,7 +108,6 @@ export default function CreateEventScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      {/* Header avec le titre */}
       <Header title='CRÉER UN ÉVÈNEMENT' />
 
       {/* ScrollView qui gère bien le clavier */}
@@ -142,20 +154,48 @@ export default function CreateEventScreen() {
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
           </View>
 
-          {/* Date */}
+          {/* Date de l'évènement */}
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.label}>Date de l'évènement</Text>
-            <TextInput
+
+            {/* Zone cliquable qui ouvre le DatePicker */}
+            <TouchableOpacity
               style={[
                 theme.components.input.container,
+                { justifyContent: 'center' },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
-              placeholder='jj/mm/aaaa'
-              value={formData.date}
-              onChangeText={value => handleInputChange('date', value)}
-              placeholderTextColor={theme.colors.text.secondary}
-            />
+              onPress={() => setOpen(true)}
+            >
+              <Text
+                style={{
+                  color: formData.date
+                    ? theme.colors.text.primary
+                    : theme.colors.text.secondary,
+                }}
+              >
+                {formData.date || 'Choisir une date'}
+              </Text>
+            </TouchableOpacity>
+
             {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
+
+            {/* DatePicker modal Expo-compatible */}
+            {open && (
+              <DateTimePicker
+                value={formData.date ? new Date(formData.date) : new Date()}
+                mode='date'
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={new Date()} // interdit les dates passées
+                onChange={(event, selectedDate) => {
+                  setOpen(false);
+                  if (selectedDate) {
+                    const formatted = selectedDate.toLocaleDateString('fr-FR'); // jj/mm/aaaa
+                    handleInputChange('date', formatted);
+                  }
+                }}
+              />
+            )}
           </View>
 
           {/* Budget */}

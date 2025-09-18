@@ -73,14 +73,14 @@ export default function SignupScreen() {
       });
 
       // Connecter l'utilisateur automatiquement après l'inscription
-      console.log('🔐 Données utilisateur reçues:', userData);
+      console.log('Données utilisateur reçues:', userData);
 
       if (userData._id && userData.token) {
-        console.log('✅ Connexion automatique après inscription');
+        console.log('Connexion automatique après inscription');
         await login(userData);
         router.replace('/main/events');
       } else {
-        console.log('❌ Données utilisateur manquantes');
+        console.log('Données utilisateur manquantes');
       }
     } catch (error) {
       const errors = handleApiError(error);
@@ -178,6 +178,7 @@ export default function SignupScreen() {
               value={formData.nickname}
               onChangeText={value => handleInputChange('nickname', value)}
               placeholderTextColor={theme.colors.text.secondary}
+              autoCapitalize='none'
             />
             {errors.nickname && (
               <Text style={styles.errorText}>{errors.nickname}</Text>
@@ -237,6 +238,7 @@ export default function SignupScreen() {
               value={formData.password}
               onChangeText={value => handleInputChange('password', value)}
               secureTextEntry
+              autoCapitalize='none'
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.password && (
@@ -264,6 +266,7 @@ export default function SignupScreen() {
                 handleInputChange('confirmPassword', value)
               }
               secureTextEntry
+              autoCapitalize='none'
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.confirmPassword && (
