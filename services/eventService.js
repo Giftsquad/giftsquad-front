@@ -14,7 +14,7 @@ export const getEvents = async () => {
   }
 };
 
-//Récupère un événement spécifique
+//Récupère un événement spécifique par son ID
 export const getEvent = async eventId => {
   try {
     const response = await api.get(`/event/${eventId}`);

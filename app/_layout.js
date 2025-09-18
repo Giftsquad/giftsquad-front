@@ -76,7 +76,7 @@ const RootLayout = () => {
     );
   }
 
-  // Si les données ont bien été récupérées, on fournit le contexte d'authentification (user, login, logout, isInit) à toute l'application via <Slot />
+  // Si les données ont bien été récupérées, on fournit le contexte d'authentification à toute l'application via <Slot />
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthContext.Provider value={{ user, login, logout, isInit }}>

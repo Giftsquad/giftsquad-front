@@ -1,26 +1,28 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d'évènement
+import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  StyleSheet,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
 import { handleApiError } from '../../services/errorService'; // fonction qui transforme les erreurs API
-import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices, etc.)
-import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d’évènement
-import { Ionicons } from '@expo/vector-icons';
 import { createEvent } from '../../services/eventService'; // fonction qui envoie les données au back
-import { router } from 'expo-router';
+import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices, etc.)
 
 export default function CreateEventScreen() {
+  const navigation = useNavigation();
+
   // état pour stocker les infos du formulaire
   const [formData, setFormData] = useState({
-    type: 'Secret Santa', // valeur par défaut pour l'instant qu'on a qu'un seul type
+    type: '',
     name: '',
     date: '',
     budget: '',
@@ -58,26 +60,43 @@ export default function CreateEventScreen() {
     // console.log('Données du formulaire:', formData);
     setErrors({}); // on remet les erreurs à zéro
 
-    // Vérifie que tous les champs sont remplis
-    if (!formData.name || !formData.date || !formData.budget) {
-      setErrors({ general: 'Veuillez remplir tous les champs' });
+    // Vérifie que tous les champs obligatoires sont remplis
+    if (!formData.type || !formData.name || !formData.date) {
+      const missingFields = [];
+      if (!formData.type) missingFields.push("Type d'événement");
+      if (!formData.name) missingFields.push("Nom de l'événement");
+      if (!formData.date) missingFields.push("Date de l'événement");
+
+      setErrors({
+        general: `Veuillez remplir les champs obligatoires : ${missingFields.join(
+          ', '
+        )}`,
+      });
+      return;
+    }
+
+    // Le budget est obligatoire seulement pour Secret Santa
+    if (formData.type === 'Secret Santa' && !formData.budget) {
+      setErrors({
+        general: 'Le budget est obligatoire pour les événements Secret Santa',
+      });
       return;
     }
     try {
       setLoading(true); // on affiche le loader
 
-      // on envoie les données à l’API
+      // on envoie les données à l'API
       const eventData = await createEvent({
         type: formData.type,
         name: formData.name,
         date: formatDateForAPI(formData.date),
-        budget: formData.budget,
+        budget: formData.budget ? parseFloat(formData.budget) : null, // convertir en nombre ou null si pas de budget
       });
 
-      // si l’évènement est bien créé, on pourra rediriger vers la liste des évènements
+      // si l'évènement est bien créé, on redirige vers la liste des événements avec le nouvel événement
       if (eventData?._id) {
         // console.log("Évènement créé :", eventData);
-        router.replace('/main/events');
+        navigation.navigate('events', { newEvent: JSON.stringify(eventData) });
       }
     } catch (error) {
       // si l’API renvoie une erreur, on l’affiche
@@ -96,7 +115,7 @@ export default function CreateEventScreen() {
       ]}
     >
       {/* Header avec le titre */}
-      <Header title='CRÉER UN ÉVÈNEMENT' />
+      <Header title='CRÉER UN ÉVÈNEMENT' arrowShow={true} />
 
       {/* ScrollView qui gère bien le clavier */}
       <KeyboardAwareScrollView
@@ -121,6 +140,7 @@ export default function CreateEventScreen() {
               onValueChange={value => handleInputChange('type', value)}
               style={styles.picker}
             >
+              <Picker.Item label='Sélectionnez un type...' value='' />
               <Picker.Item label='Secret Santa' value='Secret Santa' />
               <Picker.Item label='Christmas List' value='Christmas List' />
               <Picker.Item label='Birthday' value='Birthday' />
@@ -160,7 +180,12 @@ export default function CreateEventScreen() {
 
           {/* Budget */}
           <View style={{ marginBottom: 20 }}>
-            <Text style={styles.label}>Budget conseillé</Text>
+            <Text style={styles.label}>
+              Budget conseillé{' '}
+              {formData.type === 'Secret Santa'
+                ? '(obligatoire)'
+                : '(optionnel)'}
+            </Text>
             <TextInput
               style={theme.components.input.container}
               placeholder='Ex : 20€'

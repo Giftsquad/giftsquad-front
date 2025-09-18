@@ -69,7 +69,7 @@ const Profil = () => {
 
   return (
     <View style={styles.main}>
-      <Header title='MON PROFIL' />
+      <Header title='MON PROFIL' arrowShow={true} />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.logoProfil}>
           <FontAwesome5 name='user-alt' size={46} color='white' />

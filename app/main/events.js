@@ -1,27 +1,30 @@
-import { useNavigation } from '@react-navigation/native'; // pour gérer la navigation (ouvrir le menu latéral)
-import { router } from 'expo-router';
-import { useContext, useEffect, useState } from 'react'; // hooks React (state, context, effet)
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
-import Header from '../../components/Header'; // notre header réutilisable
-import AuthContext from '../../contexts/AuthContext'; // contexte qui contient l’utilisateur connecté
-import { theme } from '../../styles/theme'; // styles globaux
-import { getEvents } from '../../services/eventService'; // fonction pour récupérer les évènements
-
-{/* Import des icônes */}
+import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
+import { useContext, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import HamburgerMenu from '../../components/HamburgerMenu';
+import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
+import { getEvents } from '../../services/eventService';
+import { theme } from '../../styles/theme';
+
+{
+  /* Import des icônes */
+}
 
 export default function EventsScreen() {
-  // on récupère l’utilisateur connecté
+  // on récupère l'utilisateur connecté
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
 
@@ -31,25 +34,27 @@ export default function EventsScreen() {
   // state qui indique si ça charge (true = on attend les données)
   const [loading, setLoading] = useState(true);
 
-  // useEffect s’exécute quand la page s’affiche ou quand "user" change
+  // state pour le menu hamburger
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  // useEffect classique qui se déclenche au montage du composant
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        setLoading(true); // on affiche le loader
-        // on appelle l’API pour récupérer les évènements de l’utilisateur
-        const data = await getEvents(user.id);
-        setEvents(data); // on stocke les évènements dans le state
+        setLoading(true);
+        const data = await getEvents();
+        setEvents(data);
       } catch (error) {
         console.error('Erreur lors du chargement des évènements:', error);
       } finally {
-        setLoading(false); // on cache le loader
+        setLoading(false);
       }
     };
 
     if (user) {
       fetchEvents();
     }
-  }, [user]);
+  }, []);
 
   return (
     <View
@@ -58,12 +63,18 @@ export default function EventsScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      {/* Header avec le titre et le menu burger */}
+      {/* Header avec le titre et menu hamburger */}
       <Header
         title='MES ÉVÈNEMENTS'
-        showHamburger={true}
-        onHamburgerPress={() => navigation.openDrawer()}
         arrowShow={false}
+        showHamburger={true}
+        onHamburgerPress={() => setMenuVisible(true)}
+      />
+
+      {/* Menu hamburger personnalisé */}
+      <HamburgerMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
       />
 
       {/* Zone principale */}
@@ -78,38 +89,54 @@ export default function EventsScreen() {
             data={events}
             keyExtractor={item => item._id.toString()} // chaque item doit avoir une clé unique
             renderItem={({ item }) => (
-              <View
-                style={{
-                  padding: 15,
-                  marginBottom: 10,
-                  backgroundColor: theme.colors.background.secondary,
-                  borderRadius: 10,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 20,
-                  justifyContent: 'space-between',
-                }}
+              <TouchableOpacity
+                style={styles.eventCard}
+                onPress={() => navigation.navigate('event', { id: item._id })}
               >
-                {/* Colonne gauche avec l’icône selon le type d’évènement */}
+                {/* Colonne gauche avec l'icône selon le type d'évènement */}
                 <View>
                   {item.event_type === 'Secret Santa' && (
-                    <FontAwesome6 name='gift' size={30} color='black' />
+                    <FontAwesome6 name='gift' size={30} color='#FF6B35' />
                   )}
-                  {item.event_type === 'Anniversary' && (
-                    <FontAwesome6 name='cake-candles' size={30} color='black' />
+                  {item.event_type === 'Birthday' && (
+                    <FontAwesome6
+                      name='cake-candles'
+                      size={30}
+                      color='#4CAF50'
+                    />
                   )}
-                  {item.event_type === 'Christmas' && (
-                    <FontAwesome name='tree' size={30} color='black' />
+                  {item.event_type === 'Christmas List' && (
+                    <FontAwesome name='tree' size={30} color='#2196F3' />
                   )}
                 </View>
 
                 {/* Colonne milieu avec le nom, le type d'évènement et la date */}
-                <View>
+                <View style={styles.eventInfo}>
                   <Text style={styles.eventName}>{item.event_name}</Text>
-                  <Text>{item.event_type}</Text>
+                  <View
+                    style={[
+                      styles.eventTypeTag,
+                      {
+                        backgroundColor:
+                          item.event_type === 'Secret Santa'
+                            ? '#FF6B35'
+                            : item.event_type === 'Birthday'
+                            ? '#4CAF50'
+                            : item.event_type === 'Christmas List'
+                            ? '#2196F3'
+                            : '#ccc',
+                      },
+                    ]}
+                  >
+                    <Text style={styles.eventTypeText}>{item.event_type}</Text>
+                  </View>
                   <View style={styles.eventDate}>
-                    <FontAwesome name='calendar' size={20} color='black' />
-                    <Text>
+                    <FontAwesome
+                      name='calendar'
+                      size={16}
+                      color={theme.colors.text.secondary}
+                    />
+                    <Text style={styles.eventDateText}>
                       le {new Date(item.event_date).toLocaleDateString('fr-FR')}
                     </Text>
                   </View>
@@ -123,7 +150,7 @@ export default function EventsScreen() {
                     color='black'
                   />
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
             // Bouton "Ajouter un évènement" qui s’affiche à la fin de la liste
             ListFooterComponent={() => (
@@ -166,15 +193,45 @@ export default function EventsScreen() {
 }
 
 const styles = StyleSheet.create({
-  eventDate: {
+  eventCard: {
+    padding: 15,
+    marginBottom: 10,
+    backgroundColor: theme.colors.background.secondary,
+    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginVertical: 10,
+    gap: 20,
+    justifyContent: 'space-between',
+  },
+  eventInfo: {
+    flex: 1,
   },
   eventName: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 8,
+    color: theme.colors.text.primary,
+  },
+  eventTypeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  eventTypeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  eventDate: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  eventDateText: {
+    fontSize: 14,
+    color: theme.colors.text.secondary,
   },
 });
