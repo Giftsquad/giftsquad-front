@@ -99,7 +99,6 @@ export const theme = {
         backgroundColor: '#ffffff',
         borderRadius: 6,
         padding: 20,
-        marginHorizontal: 20,
         marginVertical: 10,
         shadowColor: '#000',
         shadowOffset: {

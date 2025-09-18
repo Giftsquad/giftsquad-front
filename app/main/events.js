@@ -1,10 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -94,7 +92,7 @@ export default function EventsScreen() {
             keyExtractor={item => item._id.toString()} // chaque item doit avoir une clé unique
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.eventCard}
+                style={[theme.components.card.container, styles.eventCard]}
                 onPress={() => navigation.navigate('event', { id: item._id })}
               >
                 {/* Colonne gauche avec l'icône selon le type d'évènement */}
@@ -170,10 +168,6 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   eventCard: {
-    padding: 15,
-    marginBottom: 10,
-    backgroundColor: theme.colors.background.secondary,
-    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
