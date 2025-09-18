@@ -89,12 +89,14 @@ const Profil = () => {
                 style={styles.input}
                 value={nickname}
                 onChangeText={setNickname}
+                autoCapitalize='none'
               />
               <Text>Email</Text>
               <TextInput
                 style={styles.input}
                 value={email}
                 onChangeText={setEmail}
+                autoCapitalize='none'
               />
             </View>
           </View>

@@ -25,7 +25,7 @@ const DrawerContent = ({ navigation }) => {
       title: 'Créer un Événement',
       icon: 'add-circle-outline',
       onPress: () => {
-        router.push('/main/createTypeEvent');
+        router.push('/main/createEvent');
         navigation.closeDrawer();
       },
     },

@@ -76,11 +76,20 @@ export default function CreateEventScreen() {
 
       // si l’évènement est bien créé, on pourra rediriger vers la liste des évènements
       if (eventData?._id) {
+        // Réinitialiser les champs et les erreurs
+        setFormData({
+          type: 'Secret Santa',
+          name: '',
+          date: '',
+          budget: '',
+        });
+        setErrors({});
+
         // console.log("Évènement créé :", eventData);
-        router.replace('/main/events');
+        router.back();
       }
     } catch (error) {
-      // si l’API renvoie une erreur, on l’affiche
+      // si l’API renvoie une erreur, on l’affich7
       const errors = handleApiError(error);
       setErrors(errors);
     } finally {
