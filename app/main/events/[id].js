@@ -210,8 +210,9 @@ export default function EventDetailsScreen() {
           {event.event_participants?.map((participant, index) => (
             <View key={index} style={styles.participantRow}>
               <Text style={styles.participantName}>
-                {participant.participant?.user?.firstname}
-                {participant.participant?.user?._id === user?._id && ' (vous)'}
+                {participant.user?.firstname} {participant.user?.lastname}
+                {participant.user?._id === user?._id && ' (vous)'}
+                {participant.role === 'organizer' && ' - Organisateur'}
               </Text>
 
               {/* Affichage selon le type d'événement */}
@@ -224,12 +225,33 @@ export default function EventDetailsScreen() {
                         {participant.participationAmount}€
                       </Text>
                     </View>
-                  ) : participant.participant?.user?._id === user?._id ? (
+                  ) : participant.user?._id === user?._id ? (
                     <TouchableOpacity style={styles.participateButton}>
                       <Text style={styles.participateButtonText}>
                         Participer
                       </Text>
                     </TouchableOpacity>
+                  ) : (
+                    <FontAwesome5
+                      name='clock'
+                      size={16}
+                      color={theme.colors.text.secondary}
+                    />
+                  )
+                ) : event.event_type === 'Secret Santa' ? (
+                  // Pour Secret Santa : statut d'invitation
+                  participant.status === 'accepted' ? (
+                    <FontAwesome5
+                      name='check-circle'
+                      size={16}
+                      color={theme.colors.primary}
+                    />
+                  ) : participant.status === 'declined' ? (
+                    <FontAwesome5
+                      name='times-circle'
+                      size={16}
+                      color={theme.colors.accent}
+                    />
                   ) : (
                     <FontAwesome5
                       name='clock'

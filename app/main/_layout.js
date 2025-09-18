@@ -2,10 +2,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 // Import des écrans
 import CreateEventScreen from './createEvent';
-import CreateTypeEventScreen from './createTypeEvent';
 import EventsScreen from './events';
 import EventDetailsScreen from './events/[id]';
 import ProfilScreen from './profil';
+import InvitationsScreen from './invitations';
 
 const Stack = createStackNavigator();
 
@@ -23,13 +23,7 @@ export default function EventLayout() {
           title: 'Mes événements',
         }}
       />
-      <Stack.Screen
-        name='createTypeEvent'
-        component={CreateTypeEventScreen}
-        options={{
-          title: "Créer un type d'événement",
-        }}
-      />
+
       <Stack.Screen
         name='createEvent'
         component={CreateEventScreen}
@@ -49,6 +43,13 @@ export default function EventLayout() {
         component={EventDetailsScreen}
         options={{
           title: 'Événement',
+        }}
+      />
+      <Stack.Screen
+        name='invitations'
+        component={InvitationsScreen}
+        options={{
+          title: 'Invitations',
         }}
       />
     </Stack.Navigator>

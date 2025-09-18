@@ -16,13 +16,12 @@ import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices
 import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d’évènement
 import { Ionicons } from '@expo/vector-icons';
 import { createEvent } from '../../services/eventService'; // fonction qui envoie les données au back
-import { router } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker'; // composant calendrier compatible Expo
-
+import { useNavigation } from '@react-navigation/native';
 export default function CreateEventScreen() {
   // état qui gère l’ouverture/fermeture du calendrier
   const [open, setOpen] = useState(false);
-
+  const navigation = useNavigation();
   // état pour stocker les infos du formulaire
   const [formData, setFormData] = useState({
     type: 'Secret Santa', // valeur par défaut pour l'instant qu'on a qu'un seul type
@@ -89,8 +88,7 @@ export default function CreateEventScreen() {
         });
         setErrors({});
 
-        // console.log("Évènement créé :", eventData);
-        router.back();
+        navigation.navigate('events');
       }
     } catch (error) {
       // Si l’API renvoie une erreur, on l’affiche
