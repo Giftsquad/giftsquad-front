@@ -1,54 +1,56 @@
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import DrawerContent from '../../components/DrawerContent';
+import { createStackNavigator } from '@react-navigation/stack';
 
 // Import des écrans
 import CreateEventScreen from './createEvent';
+import CreateTypeEventScreen from './createTypeEvent';
 import EventsScreen from './events';
+import EventDetailsScreen from './events/[id]';
 import ProfilScreen from './profil';
-import InvitationsScreen from './invitations';
 
-const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
 
 export default function EventLayout() {
   return (
-    <Drawer.Navigator
-      drawerContent={props => <DrawerContent {...props} />}
+    <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        drawerStyle: {
-          width: 280,
-        },
       }}
     >
-      <Drawer.Screen
+      <Stack.Screen
         name='events'
         component={EventsScreen}
         options={{
           title: 'Mes événements',
         }}
       />
-
-      <Drawer.Screen
+      <Stack.Screen
+        name='createTypeEvent'
+        component={CreateTypeEventScreen}
+        options={{
+          title: "Créer un type d'événement",
+        }}
+      />
+      <Stack.Screen
         name='createEvent'
         component={CreateEventScreen}
         options={{
           title: 'Créer un événement',
         }}
       />
-      <Drawer.Screen
-        name='invitations'
-        component={InvitationsScreen}
-        options={{
-          title: 'invitations',
-        }}
-      />
-      <Drawer.Screen
+      <Stack.Screen
         name='profil'
         component={ProfilScreen}
         options={{
           title: 'Mon Profil',
         }}
       />
-    </Drawer.Navigator>
+      <Stack.Screen
+        name='event'
+        component={EventDetailsScreen}
+        options={{
+          title: 'Événement',
+        }}
+      />
+    </Stack.Navigator>
   );
 }
