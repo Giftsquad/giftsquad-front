@@ -3,6 +3,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import {
@@ -60,7 +61,10 @@ export default function EventsScreen() {
     <View
       style={[
         theme.components.screen.container,
-        { backgroundColor: theme.colors.background.primary },
+        {
+          backgroundColor: theme.colors.background.primary,
+          paddingBottom: Constants.statusBarHeight + 20,
+        },
       ]}
     >
       {/* Header avec le titre et menu hamburger */}
@@ -152,34 +156,6 @@ export default function EventsScreen() {
                 </View>
               </TouchableOpacity>
             )}
-            // Bouton "Ajouter un évènement" qui s’affiche à la fin de la liste
-            ListFooterComponent={() => (
-              <TouchableOpacity
-                style={[
-                  theme.components.button.primary,
-                  { marginVertical: 20 },
-                ]}
-                disabled={loading}
-                onPress={() => router.push('/main/createEvent')}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  {loading ? (
-                    <ActivityIndicator color={theme.colors.text.white} />
-                  ) : (
-                    <Ionicons name='add' size={24} color='white' />
-                  )}
-                  <Text
-                    style={[
-                      theme.components.button.text.primary,
-                      { marginLeft: 10 },
-                    ]}
-                  >
-                    {loading ? 'Création...' : 'Ajouter un évènement'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={{ paddingBottom: 40 }}
           />
         ) : (
           // si on n’a pas d’évènements : message par défaut
