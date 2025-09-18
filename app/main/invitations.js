@@ -155,17 +155,14 @@ const Invitations = () => {
                   >
                     {item.event_name.toUpperCase()}
                   </Text>
-                  {item.event_participants.map(participant => {
-                    console.log(participant);
-                    if (participant.role === 'organizer') {
-                      return (
-                        <Text key={participant.user._id}>
-                          {participant.user.firstname}{' '}
-                          {participant.user.lastname}
-                        </Text>
-                      );
-                    }
-                  })}
+                  {/*  la fonction .map() ne retourne pas toujours un élément (quand participant.role !== 'organizer'), ce qui peut causer des problèmes de key */}
+                  {item.event_participants
+                    .filter(participant => participant.role === 'organizer')
+                    .map((participant, index) => (
+                      <Text key={participant.user._id || `organizer-${index}`}>
+                        {participant.user.firstname} {participant.user.lastname}
+                      </Text>
+                    ))}
                   <View style={styles.eventDate}>
                     <FontAwesome name='calendar' size={20} color='black' />
                     <Text>
