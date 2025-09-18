@@ -4,24 +4,23 @@ import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
-  StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
-  ScrollView,
 } from 'react-native';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
 import { theme } from '../../styles/theme';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-const Profil = () => {
+export default function ProfilScreen() {
   const { logout, user } = useContext(AuthContext);
   const [firstname, setFirstname] = useState(user ? user.firstname : '');
   const [lastname, setLastname] = useState(user ? user.lastname : '');
   const [nickname, setNickname] = useState(user ? user.nickname : '');
   const [email, setEmail] = useState(user ? user.email : '');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   //Utilisateur récupéré: {"_id": "68ca7655cf64393658222f01", "email": "iseline@gmail.com", "events": [], "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline", "token": "AEZxtpQaE4NQ5Z40R2eDh6or7za2llGFCuM-wLEPF269_9b4YoDXzxnbzOyZn6xh"}
 
@@ -34,7 +33,7 @@ const Profil = () => {
       return;
     }
     try {
-      setIsUpdating(true);
+      setLoading(true);
       const response = await axios.put(
         `${API_URL}/user/update`,
         {
@@ -55,122 +54,179 @@ const Profil = () => {
       console.log('Erreur mise à jour:', error.message);
       Alert.alert('Erreur', 'Impossible de mettre à jour le profil');
     } finally {
-      setIsUpdating(false);
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.main}>
-      <Header title='MON PROFIL' />
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.logoProfil}>
-          <FontAwesome5 name='user-alt' size={46} color='white' />
-        </View>
-        <Text>{`${firstname.toUpperCase()} ${lastname.toUpperCase()}`}</Text>
-        <Text>{`@${nickname}`}</Text>
-        <View style={styles.section}>
-          <View style={styles.card}>
-            <Text>INFORMATIONS PERSONNELLES</Text>
-            <View style={styles.containerInput}>
-              <Text>Prénom</Text>
-              <TextInput
-                style={styles.input}
-                value={firstname}
-                onChangeText={setFirstname}
-              />
-              <Text>Nom</Text>
-              <TextInput
-                style={styles.input}
-                value={lastname}
-                onChangeText={setLastname}
-              />
-              <Text>Pseudo</Text>
-              <TextInput
-                style={styles.input}
-                value={nickname}
-                onChangeText={setNickname}
-                autoCapitalize='none'
-              />
-              <Text>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize='none'
-              />
-            </View>
+    <View
+      style={[
+        theme.components.screen.container,
+        { backgroundColor: theme.colors.background.primary },
+      ]}
+    >
+      <Header title='Mon profil' />
+
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingBottom: 20,
+          paddingTop: 15,
+        }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps='handled'
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+      >
+        {/* Avatar */}
+        <View style={{ alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.primary,
+              borderRadius: 50,
+              width: 100,
+              height: 100,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <FontAwesome5 name='user-alt' size={46} color='white' />
           </View>
-          <Pressable style={styles.updateButton} onPress={handleUpdate}>
-            {isUpdating ? (
-              <ActivityIndicator size='small' color='white' />
+
+          {/* Nom & Prénom */}
+          <Text>{`${firstname.toUpperCase()} ${lastname.toUpperCase()}`}</Text>
+
+          {/* Pseudo */}
+          <Text>{`@${nickname}`}</Text>
+        </View>
+
+        {/* Form */}
+        <View style={theme.components.card.container}>
+          <Text style={{ marginBottom: 20 }}>INFORMATIONS PERSONNELLES</Text>
+
+          {/* Prénom */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Prénom
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              value={firstname}
+              onChangeText={setFirstname}
+            />
+          </View>
+
+          {/* Nom */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Nom
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              value={lastname}
+              onChangeText={setLastname}
+            />
+          </View>
+
+          {/* Pseudo */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Pseudo
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              value={nickname}
+              onChangeText={setNickname}
+              autoCapitalize='none'
+            />
+          </View>
+
+          {/* Email */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Email
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize='none'
+            />
+          </View>
+        </View>
+
+        {/* Bouton Enregistrer les modifications */}
+        <TouchableOpacity
+          style={[
+            theme.components.button.primary,
+            { marginVertical: 20, width: '90%', alignSelf: 'center' },
+          ]}
+          onPress={handleUpdate}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {loading ? (
+              <ActivityIndicator color={theme.colors.text.white} />
             ) : (
               <FontAwesome6 name='save' size={24} color='white' />
             )}
-            <Text style={styles.text}>
-              {isUpdating
+            <Text
+              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+            >
+              {loading
                 ? 'Enregistrement en cours ...'
                 : 'Enregistrer les modifications'}
             </Text>
-          </Pressable>
-          <Pressable style={styles.logoutButton} onPress={logout}>
-            <MaterialIcons name='logout' size={24} color='white' />
-            <Text style={styles.text}>Se déconnecter</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            theme.components.button.accent,
+            {
+              width: '90%',
+              alignSelf: 'center',
+              flexDirection: 'row',
+              alignItems: 'center',
+            },
+          ]}
+          onPress={logout}
+        >
+          <MaterialIcons name='logout' size={24} color='white' />
+          <Text
+            style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+          >
+            Se déconnecter
+          </Text>
+        </TouchableOpacity>
+      </KeyboardAwareScrollView>
     </View>
   );
-};
-
-export default Profil;
-
-const styles = StyleSheet.create({
-  main: { backgroundColor: theme.colors.background.primary, height: '100%' },
-  container: {
-    margin: 10,
-    gap: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoProfil: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 50,
-    width: 100,
-    height: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  section: { gap: 15 },
-  containerInput: {
-    gap: 8,
-  },
-  card: {
-    ...theme.components.card.container,
-    gap: 10,
-  },
-  input: {
-    ...theme.components.input.container,
-  },
-  updateButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 5,
-    flexDirection: 'row',
-    padding: 10,
-    gap: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoutButton: {
-    backgroundColor: theme.colors.accent,
-    borderRadius: 5,
-    flexDirection: 'row',
-    padding: 10,
-    gap: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    color: theme.colors.text.white,
-    fontSize: theme.typography.fontSize.m,
-  },
-});
+}

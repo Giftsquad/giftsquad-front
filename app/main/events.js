@@ -7,16 +7,13 @@ import {
   View,
   ActivityIndicator,
   FlatList,
-  StyleSheet,
 } from 'react-native';
 import Header from '../../components/Header'; // notre header réutilisable
 import AuthContext from '../../contexts/AuthContext'; // contexte qui contient l’utilisateur connecté
 import { theme } from '../../styles/theme'; // styles globaux
 import { getEvents } from '../../services/eventService'; // fonction pour récupérer les évènements
 
-{
-  /* Import des icônes */
-}
+{/* Import des icônes */}
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -64,7 +61,7 @@ export default function EventsScreen() {
     >
       {/* Header avec le titre et le menu burger */}
       <Header
-        title='MES ÉVÈNEMENTS'
+        title='Mes évènements'
         showHamburger={true}
         onHamburgerPress={() => navigation.openDrawer()}
         arrowShow={false}
@@ -114,9 +111,24 @@ export default function EventsScreen() {
 
                   {/* Colonne milieu avec le nom, le type d'évènement et la date */}
                   <View>
-                    <Text style={styles.eventName}>{item.event_name}</Text>
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 16,
+                        marginBottom: 10,
+                      }}
+                    >
+                      {item.event_name}
+                    </Text>
                     <Text>{item.event_type}</Text>
-                    <View style={styles.eventDate}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 10,
+                        marginVertical: 10,
+                      }}
+                    >
                       <FontAwesome name='calendar' size={20} color='black' />
                       <Text>
                         le{' '}
@@ -146,7 +158,7 @@ export default function EventsScreen() {
 
             {/* Bouton "Ajouter un évènement", toujours visible */}
             <TouchableOpacity
-              style={[theme.components.button.primary, { margin: 40 }]}
+              style={[theme.components.button.primary, { marginVertical: 30, width: "90%", alignSelf: "center" }]}
               disabled={loading}
               onPress={() => router.push('/main/createEvent')}
             >
@@ -172,17 +184,3 @@ export default function EventsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  eventDate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginVertical: 10,
-  },
-  eventName: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 10,
-  },
-});
