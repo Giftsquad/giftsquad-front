@@ -1,18 +1,19 @@
 import { FontAwesome5, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
-import axios from 'axios';
 import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ScrollView,
 } from 'react-native';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
+import { updateProfile } from '../../services/authService';
+import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
 
 const Profil = () => {
@@ -33,27 +34,34 @@ const Profil = () => {
       );
       return;
     }
+
     try {
       setIsUpdating(true);
-      const response = await axios.put(
-        `${API_URL}/user/update`,
-        {
-          firstname: firstname.trim(),
-          lastname: lastname.trim(),
-          nickname: nickname.trim(),
-          email: email.trim(),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
-      console.log('Profil mis à jour:', response.data);
+
+      const userData = {
+        firstname: firstname.trim(),
+        lastname: lastname.trim(),
+        nickname: nickname.trim(),
+        email: email.trim(),
+      };
+
+      const updatedUser = await updateProfile(userData);
+      console.log('Profil mis à jour:', updatedUser);
       Alert.alert('Succès', 'Profil mis à jour avec succès !');
     } catch (error) {
-      console.log('Erreur mise à jour:', error.message);
-      Alert.alert('Erreur', 'Impossible de mettre à jour le profil');
+      console.log('Erreur mise à jour:', error);
+      const errors = handleApiError(error);
+
+      // Afficher les erreurs spécifiques ou un message général
+      if (errors.general) {
+        Alert.alert('Erreur', errors.general);
+      } else if (errors.email) {
+        Alert.alert('Erreur', errors.email);
+      } else if (errors.nickname) {
+        Alert.alert('Erreur', errors.nickname);
+      } else {
+        Alert.alert('Erreur', 'Impossible de mettre à jour le profil');
+      }
     } finally {
       setIsUpdating(false);
     }
