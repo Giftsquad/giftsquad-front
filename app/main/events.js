@@ -14,7 +14,9 @@ import AuthContext from '../../contexts/AuthContext'; // contexte qui contient l
 import { theme } from '../../styles/theme'; // styles globaux
 import { getEvents } from '../../services/eventService'; // fonction pour récupérer les évènements
 
-{/* Import des icônes */}
+{
+  /* Import des icônes */
+}
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';

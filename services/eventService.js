@@ -24,6 +24,16 @@ export const getEvent = async eventId => {
   }
 };
 
+//Récupère toutes les invitations d'un utilisateur
+export const getInvitations = async () => {
+  try {
+    const response = await api.get('/invitations');
+    return response.data;
+  } catch (error) {
+    error.message;
+  }
+};
+
 //Crée un nouvel événement
 export const createEvent = async eventData => {
   try {

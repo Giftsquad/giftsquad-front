@@ -36,3 +36,13 @@ export const validateToken = async () => {
     throw error;
   }
 };
+
+//Met à jour le profil utilisateur
+export const updateProfile = async userData => {
+  try {
+    const response = await api.put('user/update', userData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
