@@ -147,17 +147,17 @@ const Invitations = () => {
                   >
                     {item.event_name.toUpperCase()}
                   </Text>
-                  {/* {item.event_participants.map(participant => {
+                  {item.event_participants.map(participant => {
                     console.log(participant);
                     if (participant.role === 'organizer') {
                       return (
                         <Text>
-                          `${participant.user.firstname}$
-                          {participant.user.lastname}`
+                          {participant.participant.user.firstname}{' '}
+                          {participant.participant.user.lastname}
                         </Text>
                       );
                     }
-                  })} */}
+                  })}
                   <View style={styles.eventDate}>
                     <FontAwesome name='calendar' size={20} color='black' />
                     <Text>
