@@ -1,16 +1,16 @@
+import { Entypo, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
+  ActivityIndicator,
   FlatList,
   Pressable,
-  ActivityIndicator,
   StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import Header from '../../components/Header';
-import { useState, useEffect } from 'react';
 import { getInvitations } from '../../services/eventService';
 import { theme } from '../../styles/theme';
-import { FontAwesome, FontAwesome6, Entypo } from '@expo/vector-icons';
 
 const Invitations = () => {
   const [invitations, setInvitations] = useState([
@@ -24,8 +24,11 @@ const Invitations = () => {
       event_organizer: '68ca7655cf64393658222f01',
       event_participants: [
         {
-          participant: { user: { firstname: 'Marcel', lastname: 'Duroy' } },
+          user: { firstname: 'Marcel', lastname: 'Duroy' },
+          email: 'marcel.duroy@example.com',
           role: 'organizer',
+          status: 'accepted',
+          joinedAt: '2025-09-18T09:59:11.618Z',
         },
       ],
       event_type: 'Secret Santa',
@@ -42,8 +45,11 @@ const Invitations = () => {
       event_organizer: '68ca7655cf64393658222f01',
       event_participants: [
         {
-          participant: { user: { firstname: 'Raoul', lastname: 'Blanchard' } },
+          user: { firstname: 'Raoul', lastname: 'Blanchard' },
+          email: 'raoul.blanchard@example.com',
           role: 'organizer',
+          status: 'accepted',
+          joinedAt: '2025-09-18T09:59:57.128Z',
         },
       ],
       event_type: 'Secret Santa',
@@ -54,16 +60,18 @@ const Invitations = () => {
       __v: 0,
       _id: '68cbd81d38b38db2099875b',
       createdAt: '2025-09-18T09:59:57.128Z',
-      event_budget: 20,
+      event_budget: 0,
       event_date: '2025-11-15T00:00:00.000Z',
       event_name: 'Anniversaire Joséphine',
       event_organizer: '68ca7655cf64393658222f01',
       event_participants: [
         {
-          participant: {
-            user: { firstname: 'Mireille', lastname: 'Blanchard' },
-          },
+          user: { firstname: 'Mireille', lastname: 'Blanchard' },
+          email: 'mireille.blanchard@example.com',
           role: 'organizer',
+          status: 'accepted',
+          joinedAt: '2025-09-18T09:59:57.128Z',
+          participationAmount: 15,
         },
       ],
       event_type: 'Birthday',
@@ -131,7 +139,7 @@ const Invitations = () => {
                       color={theme.colors.primary}
                     />
                   )}
-                  {item.event_type === 'Christmas' && (
+                  {item.event_type === 'Christmas List' && (
                     <FontAwesome
                       name='tree'
                       size={30}
@@ -151,9 +159,9 @@ const Invitations = () => {
                     console.log(participant);
                     if (participant.role === 'organizer') {
                       return (
-                        <Text>
-                          {participant.participant.user.firstname}{' '}
-                          {participant.participant.user.lastname}
+                        <Text key={participant.user._id}>
+                          {participant.user.firstname}{' '}
+                          {participant.user.lastname}
                         </Text>
                       );
                     }
