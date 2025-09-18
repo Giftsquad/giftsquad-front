@@ -5,6 +5,7 @@ import DrawerContent from '../../components/DrawerContent';
 import CreateEventScreen from './createEvent';
 import EventsScreen from './events';
 import ProfilScreen from './profil';
+import InvitationsScreen from './invitations';
 
 const Drawer = createDrawerNavigator();
 
@@ -34,7 +35,13 @@ export default function EventLayout() {
           title: 'Créer un événement',
         }}
       />
-
+      <Drawer.Screen
+        name='invitations'
+        component={InvitationsScreen}
+        options={{
+          title: 'invitations',
+        }}
+      />
       <Drawer.Screen
         name='profil'
         component={ProfilScreen}
