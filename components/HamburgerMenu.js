@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   menuHeader: {
     backgroundColor: theme.colors.primary,
-    paddingTop: 50,
+    paddingTop: 10,
     paddingBottom: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
