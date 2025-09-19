@@ -108,7 +108,7 @@ export const theme = {
         borderRadius: 6,
         padding: 20,
         marginHorizontal: 20,
-        // marginVertical: 10,
+        marginVertical: 10,
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
@@ -160,7 +160,7 @@ export const theme = {
 
   // errorText
   errorText: {
-    color: "#e74c3c",
+    color: '#e74c3c',
     fontSize: 14,
     marginTop: 5,
     marginBottom: 10,

@@ -126,25 +126,17 @@ const Invitations = () => {
                   style={{ justifyContent: 'center', alignItems: 'center' }}
                 >
                   {item.event_type === 'Secret Santa' && (
-                    <FontAwesome6
-                      name='gift'
-                      size={30}
-                      color={theme.colors.primary}
-                    />
+                    <FontAwesome6 name='gift' size={30} color='#FF6B35' />
                   )}
                   {item.event_type === 'Birthday' && (
                     <FontAwesome6
                       name='cake-candles'
                       size={30}
-                      color={theme.colors.primary}
+                      color='#2196F3'
                     />
                   )}
                   {item.event_type === 'Christmas List' && (
-                    <FontAwesome
-                      name='tree'
-                      size={30}
-                      color={theme.colors.primary}
-                    />
+                    <FontAwesome name='tree' size={30} color='#4CAF50' />
                   )}
                 </View>
                 <View>
@@ -155,6 +147,22 @@ const Invitations = () => {
                   >
                     {item.event_name.toUpperCase()}
                   </Text>
+                  <View style={styles.eventTypeContainer}>
+                    <View
+                      style={[
+                        styles.eventTypeBadge,
+                        item.event_type === 'Secret Santa' &&
+                          styles.secretSantaBadge,
+                        item.event_type === 'Birthday' && styles.birthdayBadge,
+                        item.event_type === 'Christmas List' &&
+                          styles.christmasListBadge,
+                      ]}
+                    >
+                      <Text style={styles.eventTypeText}>
+                        {item.event_type}
+                      </Text>
+                    </View>
+                  </View>
                   {/*  la fonction .map() ne retourne pas toujours un élément (quand participant.role !== 'organizer'), ce qui peut causer des problèmes de key */}
                   {item.event_participants
                     .filter(participant => participant.role === 'organizer')
@@ -209,6 +217,29 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  eventTypeContainer: {
+    marginBottom: 8,
+  },
+  eventTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  secretSantaBadge: {
+    backgroundColor: '#FF6B35',
+  },
+  birthdayBadge: {
+    backgroundColor: '#2196F3',
+  },
+  christmasListBadge: {
+    backgroundColor: '#4CAF50',
+  },
+  eventTypeText: {
+    fontSize: 12,
+    color: 'white',
+    fontWeight: 'bold',
   },
   declineButton: {
     flexDirection: 'row',

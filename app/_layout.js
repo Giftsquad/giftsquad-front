@@ -40,16 +40,10 @@ const RootLayout = () => {
       if (token) {
         try {
           // Récupérer l'objet utilisateur complet depuis le backend via validateToken
-          // console.log(
-          //   '✅ Token trouvé, récupération des données utilisateur...'
-          // );
           const userData = await validateToken();
-          // console.log('✅ Utilisateur récupéré:', userData);
           setUser(userData);
         } catch (error) {
-          console.log(
-            '❌ Erreur lors de la récupération des données utilisateur'
-          );
+          console.log('Erreur lors de la récupération des données utilisateur');
           await AsyncStorage.removeItem('token');
           setUser(null);
         }

@@ -1,26 +1,27 @@
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // pour gérer la navigation (ouvrir le menu latéral)
-import { router } from 'expo-router';
-import { useContext, useState, useCallback } from 'react'; // hooks React (state, context, effet)
+import { useNavigation } from '@react-navigation/native';
+import Constants from 'expo-constants';
+import { useContext, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  FlatList,
 } from 'react-native';
-import Header from '../../components/Header'; // notre header réutilisable
-import AuthContext from '../../contexts/AuthContext'; // contexte qui contient l’utilisateur connecté
-import { theme } from '../../styles/theme'; // styles globaux
-import { getEvents } from '../../services/eventService'; // fonction pour récupérer les évènements
+import HamburgerMenu from '../../components/HamburgerMenu';
+import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
+import { getEvents } from '../../services/eventService';
+import { theme } from '../../styles/theme';
 
-{/* Import des icônes */}
+// Import des icônes
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function EventsScreen() {
-  // on récupère l’utilisateur connecté
+  // on récupère l'utilisateur connecté
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
 
@@ -30,40 +31,42 @@ export default function EventsScreen() {
   // state qui indique si ça charge (true = on attend les données)
   const [loading, setLoading] = useState(true);
 
-  // fonction pour aller chercher les évènements depuis l’API
-  const fetchEvents = async () => {
-    try {
-      setLoading(true); // on affiche le loader
-      const data = await getEvents(user.id); // on appelle l’API pour récupérer les évènements de l’utilisateur
-      setEvents(data); // on stocke les évènements dans le state
-    } catch (error) {
-      console.error('Erreur lors du chargement des évènements:', error);
-    } finally {
-      setLoading(false); // on cache le loader
-    }
-  };
+  // state pour gérer l'ouverture/fermeture du menu hamburger
+  const [menuVisible, setMenuVisible] = useState(false);
 
-  // se déclenche à chaque retour sur l’écran
-  useFocusEffect(
-    useCallback(() => {
-      if (user) {
-        fetchEvents();
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const data = await getEvents();
+        setEvents(data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des évènements:', error);
+      } finally {
+        setLoading(false);
       }
-    }, [user])
-  );
+    };
+
+    if (user) {
+      fetchEvents();
+    }
+  }, []);
 
   return (
     <View
       style={[
         theme.components.screen.container,
-        { backgroundColor: theme.colors.background.primary },
+        {
+          backgroundColor: theme.colors.background.primary,
+          paddingBottom: Constants.statusBarHeight + 20,
+        },
       ]}
     >
       {/* Header avec le titre et le menu burger */}
       <Header
         title='Mes évènements'
         showHamburger={true}
-        onHamburgerPress={() => navigation.openDrawer()}
+        onHamburgerPress={() => setMenuVisible(true)}
         arrowShow={false}
       />
 
@@ -78,59 +81,56 @@ export default function EventsScreen() {
             <FlatList
               style={{ flex: 1, padding: 20 }}
               data={events}
-              keyExtractor={item => item._id.toString()} // chaque item doit avoir une clé unique
+              keyExtractor={item => item._id.toString()}
               renderItem={({ item }) => (
-                <View
-                  style={{
-                    padding: 10,
-                    marginBottom: 10,
-                    backgroundColor: theme.colors.background.secondary,
-                    borderRadius: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 20,
-                    justifyContent: 'space-around',
-                  }}
+                <TouchableOpacity
+                  style={[theme.components.card.container, styles.eventCard]}
+                  onPress={() => navigation.navigate('event', { id: item._id })}
                 >
-                  {/* Colonne gauche avec l’icône selon le type d’évènement */}
+                  {/* Colonne gauche avec l'icône selon le type d'évènement */}
                   <View>
                     {item.event_type === 'Secret Santa' && (
-                      <FontAwesome6 name='gift' size={30} color='black' />
+                      <FontAwesome6 name='gift' size={30} color='#FF6B35' />
                     )}
-                    {item.event_type === 'Anniversary' && (
+                    {item.event_type === 'Birthday' && (
                       <FontAwesome6
                         name='cake-candles'
                         size={30}
-                        color='black'
+                        color='#2196F3'
                       />
                     )}
-                    {item.event_type === 'Christmas' && (
-                      <FontAwesome name='tree' size={30} color='black' />
+                    {item.event_type === 'Christmas List' && (
+                      <FontAwesome name='tree' size={30} color='#4CAF50' />
                     )}
                   </View>
 
                   {/* Colonne milieu avec le nom, le type d'évènement et la date */}
-                  <View>
-                    <Text
-                      style={{
-                        fontWeight: 'bold',
-                        fontSize: 16,
-                        marginBottom: 10,
-                      }}
-                    >
-                      {item.event_name}
-                    </Text>
-                    <Text>{item.event_type}</Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 10,
-                        marginVertical: 10,
-                      }}
-                    >
-                      <FontAwesome name='calendar' size={20} color='black' />
-                      <Text>
+                  <View style={styles.eventInfo}>
+                    <Text style={styles.eventName}>{item.event_name}</Text>
+                    <View style={styles.eventTypeContainer}>
+                      <View
+                        style={[
+                          styles.eventTypeBadge,
+                          item.event_type === 'Secret Santa' &&
+                            styles.secretSantaBadge,
+                          item.event_type === 'Birthday' &&
+                            styles.birthdayBadge,
+                          item.event_type === 'Christmas List' &&
+                            styles.christmasListBadge,
+                        ]}
+                      >
+                        <Text style={styles.eventTypeText}>
+                          {item.event_type}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.dateContainer}>
+                      <FontAwesome
+                        name='calendar'
+                        size={20}
+                        color={theme.colors.text.secondary}
+                      />
+                      <Text style={styles.dateText}>
                         le{' '}
                         {new Date(item.event_date).toLocaleDateString('fr-FR')}
                       </Text>
@@ -142,10 +142,10 @@ export default function EventsScreen() {
                     <MaterialIcons
                       name='arrow-forward-ios'
                       size={24}
-                      color='black'
+                      color={theme.colors.text.secondary}
                     />
                   </View>
-                </View>
+                </TouchableOpacity>
               )}
               // si la liste est vide → message d’information
               ListEmptyComponent={() => (
@@ -153,34 +153,66 @@ export default function EventsScreen() {
                   Aucun évènement pour l'instant. Tu peux créer un évènement.
                 </Text>
               )}
-              contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
             />
-
-            {/* Bouton "Ajouter un évènement", toujours visible */}
-            <TouchableOpacity
-              style={[theme.components.button.primary, { marginVertical: 30, width: "90%", alignSelf: "center" }]}
-              disabled={loading}
-              onPress={() => router.push('/main/createEvent')}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {loading ? (
-                  <ActivityIndicator color={theme.colors.text.white} />
-                ) : (
-                  <Ionicons name='add' size={24} color='white' />
-                )}
-                <Text
-                  style={[
-                    theme.components.button.text.primary,
-                    { marginLeft: 10 },
-                  ]}
-                >
-                  {loading ? 'Création...' : 'Ajouter un évènement'}
-                </Text>
-              </View>
-            </TouchableOpacity>
           </>
         )}
       </View>
+
+      {/* Menu hamburger */}
+      <HamburgerMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  eventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+    justifyContent: 'space-between',
+  },
+  eventInfo: {
+    flex: 1,
+  },
+  eventName: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginBottom: 5,
+  },
+  eventTypeContainer: {
+    marginBottom: 8,
+  },
+  eventTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  secretSantaBadge: {
+    backgroundColor: '#FF6B35',
+  },
+  birthdayBadge: {
+    backgroundColor: '#2196F3',
+  },
+  christmasListBadge: {
+    backgroundColor: '#4CAF50',
+  },
+  eventTypeText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.white,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dateText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+  },
+});
