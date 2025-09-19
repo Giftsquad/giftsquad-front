@@ -120,12 +120,12 @@ const Invitations = () => {
     >
       <Header title='INVITATIONS' />
       <Text style={{ fontSize: 24, padding: 20 }}>
-        {`Vous avez ${invitations.length} invitations`.toUpperCase()}
+        {`Vous avez ${invitations?.length || 0} invitations`.toUpperCase()}
         {/* //affichage du nombre d'invitations du user */}
       </Text>
       <FlatList
         style={{ padding: 20, width: '100%', height: '80%' }}
-        data={invitations}
+        data={invitations || []}
         keyExtractor={item => String(item._id)}
         renderItem={({ item }) => {
           return (
