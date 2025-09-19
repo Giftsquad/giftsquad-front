@@ -1,7 +1,5 @@
 import { Entypo, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
-
 import { useEffect, useState, useContext } from 'react';
-
 import {
   ActivityIndicator,
   FlatList,
@@ -18,7 +16,6 @@ import { theme } from '../../styles/theme';
 import AuthContext from '../../contexts/AuthContext';
 
 const Invitations = () => {
-  const { user } = useContext(AuthContext);
   const [invitations, setInvitations] = useState([
     {
       __v: 0,
