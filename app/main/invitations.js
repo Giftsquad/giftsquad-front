@@ -1,5 +1,5 @@
 import { Entypo, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import Header from '../../components/Header';
 import { getInvitations } from '../../services/eventService';
+import { actionInvitations } from '../../services/eventService';
 import { theme } from '../../styles/theme';
+import AuthContext from '../../contexts/AuthContext';
 
 const Invitations = () => {
   const [invitations, setInvitations] = useState([
@@ -80,8 +82,7 @@ const Invitations = () => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(true);
-  //Comment récupérer les invitations ? => créer une route invitation en back qui récupère tous les event où l'utilisateur est participant
-
+  const { user, setUser } = useContext(AuthContext);
   // console.log(invitations);
 
   useEffect(() => {
@@ -99,6 +100,48 @@ const Invitations = () => {
     };
     fetchData();
   }, [invitations]);
+
+  const handleDeclineButton = async id => {
+    try {
+      const response = await actionInvitations(id, 'decline');
+      console.log('Invitation déclinée :', response);
+      const copy = [...invitations];
+      //1 : faire une copie
+      const index = copy.findIndex(invitation => invitation._id === id);
+      // 2 : trouver l'index de mon événement
+      copy.splice(index, 1);
+      // 3 : modifier LA COPIE
+      // 4 : envoyer la copie (modifiée donc) dans le state
+      setUser(copy.splice(index, 1)); // 3 : modifier LA COPIE
+      return setInvitations(copy);
+      //retrait de l'invitation décliné dans la liste des invitations
+    } catch (error) {
+      console.log('Impossible de décliner l’invitation :', error.message);
+    }
+  };
+
+  const handleAcceptButton = async id => {
+    //lorsque j'accepte l'invitation je veux que l'événement apparaisse sur ma page mes events et disparaisse de ma page invitation
+    try {
+      const response = await actionInvitations(id, 'accept');
+      console.log('Invitation acceptée :', response);
+      const copy = [...invitations];
+      //1 : faire une copie
+      const index = copy.findIndex(invitation => invitation._id === id);
+      // 2 : trouver l'index de mon événement
+      copy.splice(index, 1);
+      // 3 : modifier LA COPIE
+      // 4 : envoyer la copie (modifiée donc) dans le state
+      setInvitations(copy);
+
+      const copyEvents = [...user.events];
+      copyEvents.push(copy);
+      setUser();
+      //retrait de l'invitation décliné dans la liste des invitations
+    } catch (error) {
+      console.log("Impossible d'accepter l’invitation :", error.message);
+    }
+  };
 
   return isLoading ? (
     <ActivityIndicator size='large' color={theme.colors.primary} />
@@ -160,7 +203,7 @@ const Invitations = () => {
                     .filter(participant => participant.role === 'organizer')
                     .map((participant, index) => (
                       <Text key={participant.user._id || `organizer-${index}`}>
-                        {participant.user.firstname} {participant.user.lastname}
+                        {`De ${participant.user.firstname} ${participant.user.lastname}`}
                       </Text>
                     ))}
                   <View style={styles.eventDate}>
@@ -178,11 +221,17 @@ const Invitations = () => {
                   gap: 10,
                 }}
               >
-                <Pressable style={styles.declineButton}>
+                <Pressable
+                  style={styles.declineButton}
+                  onPress={() => handleDeclineButton(item._id)}
+                >
                   <Entypo name='cross' size={18} color='white' />
                   <Text style={styles.text}>Refuser</Text>
                 </Pressable>
-                <Pressable style={styles.acceptButton} onPress={() => {}}>
+                <Pressable
+                  style={styles.acceptButton}
+                  onPress={() => handleAcceptButton(item._id)}
+                >
                   <Entypo name='check' size={18} color='white' />
                   <Text style={styles.text} onPress={() => {}}>
                     Accepter
@@ -196,7 +245,6 @@ const Invitations = () => {
     </View>
   );
 };
-
 export default Invitations;
 
 const styles = StyleSheet.create({
@@ -234,17 +282,6 @@ const styles = StyleSheet.create({
   },
   card: { ...theme.components.card.container },
 });
-
-//   const handleDeclineButton = async () => {
-//     try {
-//       const response = await axios.put(
-//         `${API_URL}/${idEvent}/:action-invitation`
-//       );
-//       return setEvents(response.data); //mise à jour du state avec les invitations
-//     } catch (error) {
-//       console.log(error.message);
-//     }
-//   }; //action de retrait du state
 
 //   const handleAcceptButton = async () => {
 //     // action d'ajout d'event à ma page event

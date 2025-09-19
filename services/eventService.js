@@ -27,10 +27,20 @@ export const getEvent = async eventId => {
 //Récupère toutes les invitations d'un utilisateur
 export const getInvitations = async () => {
   try {
-    const response = await api.get('/invitations');
+    const response = await api.get('/event/invitations');
     return response.data;
   } catch (error) {
-    error.message;
+    throw error;
+  }
+};
+
+//Décliner ou Accepter une invitation
+export const actionInvitations = async (eventId, action) => {
+  try {
+    const response = await api.put(`/event/${eventId}/participant/${action}`);
+    return response.data;
+  } catch (error) {
+    throw error;
   }
 };
 
