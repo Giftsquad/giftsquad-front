@@ -9,82 +9,16 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
-import AuthContext from '../../contexts/AuthContext';
 import { getInvitations } from '../../services/eventService';
 import { actionInvitations } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 import AuthContext from '../../contexts/AuthContext';
 
 const Invitations = () => {
-  const [invitations, setInvitations] = useState([
-    {
-      __v: 0,
-      _id: '68cbd7ef38b38db2099875b6',
-      createdAt: '2025-09-18T09:59:11.618Z',
-      event_budget: 20,
-      event_date: '2025-12-20T00:00:00.000Z',
-      event_name: 'Secret santa du bureau',
-      event_organizer: '68ca7655cf64393658222f01',
-      event_participants: [
-        {
-          user: { firstname: 'Marcel', lastname: 'Duroy' },
-          email: 'marcel.duroy@example.com',
-          role: 'organizer',
-          status: 'accepted',
-          joinedAt: '2025-09-18T09:59:11.618Z',
-        },
-      ],
-      event_type: 'Secret Santa',
-      giftList: [],
-      updatedAt: '2025-09-18T09:59:11.627Z',
-    },
-    {
-      __v: 0,
-      _id: '68cbd81d38b38db2099875bb',
-      createdAt: '2025-09-18T09:59:57.128Z',
-      event_budget: 20,
-      event_date: '2025-12-20T00:00:00.000Z',
-      event_name: "Secret santa de l'asso",
-      event_organizer: '68ca7655cf64393658222f01',
-      event_participants: [
-        {
-          user: { firstname: 'Raoul', lastname: 'Blanchard' },
-          email: 'raoul.blanchard@example.com',
-          role: 'organizer',
-          status: 'accepted',
-          joinedAt: '2025-09-18T09:59:57.128Z',
-        },
-      ],
-      event_type: 'Secret Santa',
-      giftList: [],
-      updatedAt: '2025-09-18T09:59:57.129Z',
-    },
-    {
-      __v: 0,
-      _id: '68cbd81d38b38db2099875b',
-      createdAt: '2025-09-18T09:59:57.128Z',
-      event_budget: 0,
-      event_date: '2025-11-15T00:00:00.000Z',
-      event_name: 'Anniversaire Joséphine',
-      event_organizer: '68ca7655cf64393658222f01',
-      event_participants: [
-        {
-          user: { firstname: 'Mireille', lastname: 'Blanchard' },
-          email: 'mireille.blanchard@example.com',
-          role: 'organizer',
-          status: 'accepted',
-          joinedAt: '2025-09-18T09:59:57.128Z',
-          participationAmount: 15,
-        },
-      ],
-      event_type: 'Birthday',
-      giftList: [],
-      updatedAt: '2025-09-18T09:59:57.129Z',
-    },
-  ]);
+  const [invitations, setInvitations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, setUser } = useContext(AuthContext);
-  // console.log(invitations);
+  const { user } = useContext(AuthContext);
+  console.log(invitations);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,7 +33,6 @@ const Invitations = () => {
         setIsLoading(false);
       }
     };
-
     if (user) {
       fetchData();
     } else {
@@ -110,44 +43,42 @@ const Invitations = () => {
   }, [user]);
 
   const handleDeclineButton = async id => {
+    console.log(id);
     try {
-      const response = await actionInvitations(id, 'decline');
+      const response = await actionInvitations(id, 'decline', user.email);
       console.log('Invitation déclinée :', response);
-      const copy = [...invitations];
-      //1 : faire une copie
-      const index = copy.findIndex(invitation => invitation._id === id);
-      // 2 : trouver l'index de mon événement
-      copy.splice(index, 1);
-      // 3 : modifier LA COPIE
-      // 4 : envoyer la copie (modifiée donc) dans le state
-      setUser(copy.splice(index, 1)); // 3 : modifier LA COPIE
-      return setInvitations(copy);
-      //retrait de l'invitation décliné dans la liste des invitations
+      if (response) {
+        setIsLoading(true);
+        const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
+        console.log(
+          "Récupération de toutes les invitations sans l'événement qui a été décliné"
+        );
+        setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
+      }
     } catch (error) {
-      console.log('Impossible de décliner l’invitation :', error.message);
+      console.log('Impossible de décliner l’invitation :', error.response);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleAcceptButton = async id => {
     //lorsque j'accepte l'invitation je veux que l'événement apparaisse sur ma page mes events et disparaisse de ma page invitation
     try {
-      const response = await actionInvitations(id, 'accept');
+      const response = await actionInvitations(id, 'accept', user.email);
       console.log('Invitation acceptée :', response);
-      const copy = [...invitations];
-      //1 : faire une copie
-      const index = copy.findIndex(invitation => invitation._id === id);
-      // 2 : trouver l'index de mon événement
-      copy.splice(index, 1);
-      // 3 : modifier LA COPIE
-      // 4 : envoyer la copie (modifiée donc) dans le state
-      setInvitations(copy);
-
-      const copyEvents = [...user.events];
-      copyEvents.push(copy);
-      setUser();
-      //retrait de l'invitation décliné dans la liste des invitations
+      if (response) {
+        setIsLoading(true);
+        const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
+        console.log(
+          "Récupération de toutes les invitations sans l'événement qui a été accepté"
+        );
+        setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
+      }
     } catch (error) {
-      console.log("Impossible d'accepter l’invitation :", error.message);
+      console.log("Impossible d'accepter l’invitation :", error.response);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -321,15 +252,3 @@ const styles = StyleSheet.create({
   },
   card: { ...theme.components.card.container },
 });
-
-//   const handleAcceptButton = async () => {
-//     // action d'ajout d'event à ma page event
-//     try {
-//       const response = await axios.put(
-//         `${API_URL}/${idEvent}/:action-invitation`
-//       );
-//       return setEvents(response.data); //mise à jour du state avec les invitations
-//     } catch (error) {
-//       console.log(error.message);
-//     }
-//   };
