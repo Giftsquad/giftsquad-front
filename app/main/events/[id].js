@@ -1,5 +1,5 @@
 import { FontAwesome5 } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import {
@@ -24,6 +24,7 @@ export default function EventDetailsScreen() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -48,7 +49,7 @@ export default function EventDetailsScreen() {
 
   // Calculer le montant collecté pour les anniversaires
   const calculateCollectedAmount = () => {
-    if (event.event_type !== 'Birthday') return 0;
+    if (event.event_type !== 'birthday') return 0;
     return (
       event.event_participants?.reduce((total, participant) => {
         return total + (participant.participationAmount || 0);
@@ -58,7 +59,7 @@ export default function EventDetailsScreen() {
 
   // Compter les participants qui participent (ont un montant)
   const getParticipatingCount = () => {
-    if (event.event_type !== 'Birthday') return 0;
+    if (event.event_type !== 'birthday') return 0;
     return (
       event.event_participants?.filter(
         participant =>
@@ -172,7 +173,7 @@ export default function EventDetailsScreen() {
           )}
 
           {/* Somme collectée - Anniversaire seulement */}
-          {event.event_type === 'Birthday' && (
+          {event.event_type === 'birthday' && (
             <View style={[styles.infoCard, styles.collectedCard]}>
               <FontAwesome5
                 name='euro-sign'
@@ -192,8 +193,13 @@ export default function EventDetailsScreen() {
         </View>
 
         {/* Bouton Liste de cadeaux - Anniversaire seulement */}
-        {event.event_type === 'Birthday' && (
-          <TouchableOpacity style={styles.giftListButton}>
+        {event.event_type?.toLowerCase() === 'birthday' && (
+          <TouchableOpacity
+            style={styles.giftListButton}
+            onPress={() =>
+              navigation.navigate('GiftList', { eventId: event._id })
+            }
+          >
             <FontAwesome5
               name='gift'
               size={20}
@@ -217,7 +223,7 @@ export default function EventDetailsScreen() {
 
               {/* Affichage selon le type d'événement */}
               <View style={styles.participantStatus}>
-                {event.event_type === 'Birthday' ? (
+                {event.event_type === 'birthday' ? (
                   // Pour les anniversaires : montant ou bouton participer
                   participant.participationAmount ? (
                     <View style={styles.amountTag}>

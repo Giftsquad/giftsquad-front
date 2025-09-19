@@ -4,7 +4,7 @@
 
 import api from './api';
 
-//Connecte un utilisateur avec email et mot de passe
+// Connecte un utilisateur avec email et mot de passe
 export const login = async (email, password) => {
   try {
     const response = await api.post('/user/login', {
@@ -17,7 +17,7 @@ export const login = async (email, password) => {
   }
 };
 
-//Crée un nouveau compte utilisateur
+// Crée un nouveau compte utilisateur
 export const signup = async userData => {
   try {
     const response = await api.post('/user/signup', userData);
@@ -27,7 +27,7 @@ export const signup = async userData => {
   }
 };
 
-//Valide un token existant
+// Valide un token existant
 export const validateToken = async () => {
   try {
     const response = await api.post('/user/validate');
@@ -37,7 +37,7 @@ export const validateToken = async () => {
   }
 };
 
-//Met à jour le profil utilisateur
+// Met à jour le profil utilisateur
 export const updateProfile = async userData => {
   try {
     const response = await api.put('/user/update', userData);

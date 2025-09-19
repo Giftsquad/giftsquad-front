@@ -24,7 +24,7 @@ export default function CreateEventScreen() {
   const navigation = useNavigation();
   // état pour stocker les infos du formulaire
   const [formData, setFormData] = useState({
-    type: 'Secret Santa', // valeur par défaut pour l'instant qu'on a qu'un seul type
+    type: '',
     name: '',
     date: '',
     budget: '',
@@ -81,7 +81,7 @@ export default function CreateEventScreen() {
       if (eventData?._id) {
         // Réinitialiser les champs et les erreurs
         setFormData({
-          type: 'Secret Santa',
+          type: '',
           name: '',
           date: '',
           budget: '',
@@ -131,9 +131,9 @@ export default function CreateEventScreen() {
               onValueChange={value => handleInputChange('type', value)}
               style={styles.picker}
             >
-              <Picker.Item label='Secret Santa' value='Secret Santa' />
-              <Picker.Item label='Christmas List' value='Christmas List' />
-              <Picker.Item label='Birthday' value='Birthday' />
+              <Picker.Item label='Secret Santa' value='secret_santa' />
+              <Picker.Item label='Christmas List' value='christmas_list' />
+              <Picker.Item label='Birthday' value='birthday' />
             </Picker>
 
             {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
