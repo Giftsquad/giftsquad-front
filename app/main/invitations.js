@@ -1,5 +1,5 @@
 import { Entypo, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,10 +9,12 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
 import { getInvitations } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 
 const Invitations = () => {
+  const { user } = useContext(AuthContext);
   const [invitations, setInvitations] = useState([
     {
       __v: 0,
@@ -88,17 +90,24 @@ const Invitations = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const allInvitations = await getInvitations(userData); //récupération des toutes les invitations du user
+        const allInvitations = await getInvitations(); //récupération des toutes les invitations du user
         console.log('Récupération de toutes les invitations');
-        return setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
+        setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       } catch (error) {
         console.log('Erreur de récupération des invitations', error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, [invitations]);
+
+    if (user) {
+      fetchData();
+    } else {
+      // Si pas d'utilisateur, vider la liste des invitations
+      setInvitations([]);
+      setIsLoading(false);
+    }
+  }, [user]);
 
   return isLoading ? (
     <ActivityIndicator size='large' color={theme.colors.primary} />

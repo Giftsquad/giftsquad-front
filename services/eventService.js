@@ -63,3 +63,13 @@ export const deleteEvent = async eventId => {
     throw error;
   }
 };
+
+//Ajoute un participant à un événement
+export const addParticipant = async (eventId, email) => {
+  try {
+    const response = await api.post(`/event/${eventId}/participant`, { email });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

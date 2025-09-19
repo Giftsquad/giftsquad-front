@@ -49,8 +49,12 @@ export default function EventsScreen() {
 
     if (user) {
       fetchEvents();
+    } else {
+      // Si pas d'utilisateur, vider la liste des événements
+      setEvents([]);
+      setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   return (
     <View
