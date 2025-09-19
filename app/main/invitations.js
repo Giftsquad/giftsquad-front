@@ -1,5 +1,7 @@
 import { Entypo, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+
 import { useEffect, useState, useContext } from 'react';
+
 import {
   ActivityIndicator,
   FlatList,
@@ -9,12 +11,14 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
 import { getInvitations } from '../../services/eventService';
 import { actionInvitations } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 import AuthContext from '../../contexts/AuthContext';
 
 const Invitations = () => {
+  const { user } = useContext(AuthContext);
   const [invitations, setInvitations] = useState([
     {
       __v: 0,
@@ -89,17 +93,24 @@ const Invitations = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const allInvitations = await getInvitations(userData); //récupération des toutes les invitations du user
+        const allInvitations = await getInvitations(); //récupération des toutes les invitations du user
         console.log('Récupération de toutes les invitations');
-        return setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
+        setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       } catch (error) {
         console.log('Erreur de récupération des invitations', error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
-  }, [invitations]);
+
+    if (user) {
+      fetchData();
+    } else {
+      // Si pas d'utilisateur, vider la liste des invitations
+      setInvitations([]);
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const handleDeclineButton = async id => {
     try {
@@ -154,12 +165,12 @@ const Invitations = () => {
     >
       <Header title='INVITATIONS' />
       <Text style={{ fontSize: 24, padding: 20 }}>
-        {`Vous avez ${invitations.length} invitations`.toUpperCase()}
+        {`Vous avez ${invitations?.length || 0} invitations`.toUpperCase()}
         {/* //affichage du nombre d'invitations du user */}
       </Text>
       <FlatList
         style={{ padding: 20, width: '100%', height: '80%' }}
-        data={invitations}
+        data={invitations || []}
         keyExtractor={item => String(item._id)}
         renderItem={({ item }) => {
           return (
@@ -169,25 +180,17 @@ const Invitations = () => {
                   style={{ justifyContent: 'center', alignItems: 'center' }}
                 >
                   {item.event_type === 'Secret Santa' && (
-                    <FontAwesome6
-                      name='gift'
-                      size={30}
-                      color={theme.colors.primary}
-                    />
+                    <FontAwesome6 name='gift' size={30} color='#FF6B35' />
                   )}
                   {item.event_type === 'Birthday' && (
                     <FontAwesome6
                       name='cake-candles'
                       size={30}
-                      color={theme.colors.primary}
+                      color='#2196F3'
                     />
                   )}
                   {item.event_type === 'Christmas List' && (
-                    <FontAwesome
-                      name='tree'
-                      size={30}
-                      color={theme.colors.primary}
-                    />
+                    <FontAwesome name='tree' size={30} color='#4CAF50' />
                   )}
                 </View>
                 <View>
@@ -198,6 +201,22 @@ const Invitations = () => {
                   >
                     {item.event_name.toUpperCase()}
                   </Text>
+                  <View style={styles.eventTypeContainer}>
+                    <View
+                      style={[
+                        styles.eventTypeBadge,
+                        item.event_type === 'Secret Santa' &&
+                          styles.secretSantaBadge,
+                        item.event_type === 'Birthday' && styles.birthdayBadge,
+                        item.event_type === 'Christmas List' &&
+                          styles.christmasListBadge,
+                      ]}
+                    >
+                      <Text style={styles.eventTypeText}>
+                        {item.event_type}
+                      </Text>
+                    </View>
+                  </View>
                   {/*  la fonction .map() ne retourne pas toujours un élément (quand participant.role !== 'organizer'), ce qui peut causer des problèmes de key */}
                   {item.event_participants
                     .filter(participant => participant.role === 'organizer')
@@ -257,6 +276,29 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  eventTypeContainer: {
+    marginBottom: 8,
+  },
+  eventTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  secretSantaBadge: {
+    backgroundColor: '#FF6B35',
+  },
+  birthdayBadge: {
+    backgroundColor: '#2196F3',
+  },
+  christmasListBadge: {
+    backgroundColor: '#4CAF50',
+  },
+  eventTypeText: {
+    fontSize: 12,
+    color: 'white',
+    fontWeight: 'bold',
   },
   declineButton: {
     flexDirection: 'row',

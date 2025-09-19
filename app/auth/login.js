@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -14,8 +13,10 @@ import {
 import AuthContext from '../../contexts/AuthContext';
 import { login as loginUser } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Entypo from '@expo/vector-icons/Entypo';
 
-const LoginScreen = () => {
+export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,80 +57,116 @@ const LoginScreen = () => {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header arrowShow={false} title='SE CONNECTER' />
-      <View style={theme.components.screen.centerContent}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Email'
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize='none'
-          />
-          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-        </View>
+      <Header arrowShow={false} title='Se Connecter' />
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Mot de passe'
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={true} // crypte le password avec des points au lieu de caractères
-            autoCapitalize='none'
-          />
-          {errors.password && (
-            <Text style={styles.errorText}>{errors.password}</Text>
+      {/* Form */}
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingBottom: 20,
+          paddingTop: 15,
+        }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps='handled'
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+      >
+        <View style={theme.components.card.container}>
+          {/* Email */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Email
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              placeholder='Email'
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize='none'
+            />
+            {errors.email && (
+              <Text style={theme.errorText}>{errors.email}</Text>
+            )}
+          </View>
+
+          {/* Mot de passe */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Mot de passe
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              placeholder='Mot de passe'
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={true} // crypte le password avec des points au lieu de caractères
+              autoCapitalize='none'
+            />
+            {errors.password && (
+              <Text style={theme.errorText}>{errors.password}</Text>
+            )}
+          </View>
+
+          {errors.general && (
+            <Text style={theme.errorText}>{errors.general}</Text>
           )}
-        </View>
 
-        {errors.general && (
-          <Text style={styles.errorText}>{errors.general}</Text>
-        )}
-
-        {/* déclenche l'envoi au back du mail + password puis récupère la réponse */}
-        <TouchableOpacity onPress={handleSubmit}>
-          {loading ? <ActivityIndicator /> : <Text>Se connecter</Text>}
-        </TouchableOpacity>
-
-        <View style={styles.backButton}>
-          <Ionicons name='person-add' size={24} color='#ccc' />
-          <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
-            <Text> Pas encore de compte ? Créez-en un !</Text>
+          {/* Bouton Créer mon compte */}
+          <TouchableOpacity
+            style={[
+              theme.components.button.primary,
+              { marginVertical: 20, alignSelf: 'center', width: '100%' },
+            ]}
+            onPress={handleSubmit}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {loading ? (
+                <ActivityIndicator color={theme.colors.text.white} />
+              ) : (
+                <Entypo name='login' size={24} color='white' />
+              )}
+              <Text
+                style={[
+                  theme.components.button.text.primary,
+                  { marginLeft: 10 },
+                ]}
+              >
+                {loading ? 'Création...' : 'Se connecter'}
+              </Text>
+            </View>
           </TouchableOpacity>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              alignSelf: 'center',
+            }}
+          >
+            <Ionicons name='person-add' size={24} color='#6fd34e' />
+            <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
+              <Text style={{ color: '#6fd34e' }}>
+                {' '}
+                Pas encore de compte ? Créez-en un !
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </KeyboardAwareScrollView>
     </View>
   );
-};
-
-export default LoginScreen;
-
-const styles = StyleSheet.create({
-  inputContainer: {
-    width: '60%',
-    marginVertical: 15,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-  },
-  errorText: {
-    color: theme.colors.text.error,
-    fontSize: 14,
-    marginTop: 5,
-    marginBottom: 10,
-  },
-  backButton: {
-    alignItems: 'center',
-    gap: 5,
-    marginVertical: 15,
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    borderColor: '#ccc',
-  },
-});
+}
