@@ -1,10 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -97,14 +95,14 @@ export default function SignupScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header arrowShow={true} title='Créer un compte' />
+      <Header arrowShow={false} title='Créer un compte' />
 
       {/* Form */}
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingBottom: 20,
-          paddingTop: Constants.statusBarHeight,
+          paddingTop: 15,
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps='handled'
@@ -132,7 +130,7 @@ export default function SignupScreen() {
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.firstname && (
-              <Text style={styles.errorText}>{errors.firstname}</Text>
+              <Text style={theme.errorText}>{errors.firstname}</Text>
             )}
           </View>
 
@@ -156,7 +154,7 @@ export default function SignupScreen() {
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.lastname && (
-              <Text style={styles.errorText}>{errors.lastname}</Text>
+              <Text style={theme.errorText}>{errors.lastname}</Text>
             )}
           </View>
 
@@ -181,7 +179,7 @@ export default function SignupScreen() {
               autoCapitalize='none'
             />
             {errors.nickname && (
-              <Text style={styles.errorText}>{errors.nickname}</Text>
+              <Text style={theme.errorText}>{errors.nickname}</Text>
             )}
             <Text
               style={{
@@ -216,7 +214,7 @@ export default function SignupScreen() {
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
+              <Text style={theme.errorText}>{errors.email}</Text>
             )}
           </View>
 
@@ -242,7 +240,7 @@ export default function SignupScreen() {
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
+              <Text style={theme.errorText}>{errors.password}</Text>
             )}
           </View>
 
@@ -270,52 +268,43 @@ export default function SignupScreen() {
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              <Text style={theme.errorText}>{errors.confirmPassword}</Text>
             )}
           </View>
 
           {/* Affichage des erreurs générales */}
           {errors.general && (
-            <Text style={styles.errorText}>{errors.general}</Text>
+            <Text style={theme.errorText}>{errors.general}</Text>
           )}
-
-          {/* Bouton de création */}
-          <TouchableOpacity
-            style={[theme.components.button.primary, { marginBottom: 20 }]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {loading ? (
-                <ActivityIndicator color={theme.colors.text.white} />
-              ) : (
-                <Ionicons
-                  name='person-add'
-                  size={20}
-                  color={theme.colors.text.white}
-                />
-              )}
-              <Text
-                style={[
-                  theme.components.button.text.primary,
-                  { marginLeft: 10 },
-                ]}
-              >
-                {loading ? 'Création...' : 'Créer mon compte'}
-              </Text>
-            </View>
-          </TouchableOpacity>
         </View>
+
+        {/* Bouton Créer mon compte */}
+        <TouchableOpacity
+          style={[
+            theme.components.button.primary,
+            { marginVertical: 20, alignSelf: 'center', width: '90%' },
+          ]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {loading ? (
+              <ActivityIndicator color={theme.colors.text.white} />
+            ) : (
+              <Ionicons
+                name='person-add'
+                size={20}
+                color={theme.colors.text.white}
+              />
+            )}
+            <Text
+              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+            >
+              {loading ? 'Création...' : 'Créer mon compte'}
+            </Text>
+          </View>
+        </TouchableOpacity>
       </KeyboardAwareScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  errorText: {
-    color: theme.colors.text.error,
-    fontSize: 14,
-    marginTop: 5,
-    marginBottom: 10,
-  },
-});

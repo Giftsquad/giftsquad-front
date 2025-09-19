@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-import { Slot } from 'expo-router';
+import { Slot, router } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -22,8 +22,14 @@ const RootLayout = () => {
 
   // Fonction logout qui réinitialise le state et supprime le token stocké
   const logout = async () => {
-    setUser(null);
-    await AsyncStorage.removeItem('token');
+    try {
+      console.log('Déconnexion en cours...');
+      await AsyncStorage.removeItem('token'); // supprime le token du login
+      setUser(null); // passe le state à déconnecté
+      router.replace('/auth/login');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion :', error);
+    }
   };
 
   useEffect(() => {
