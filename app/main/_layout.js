@@ -1,4 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack';
+import { Text, TouchableOpacity } from 'react-native';
 
 // Import des écrans
 import CreateEventScreen from './createEvent';
@@ -6,6 +7,8 @@ import EventsScreen from './events';
 import EventDetailsScreen from './events/[id]';
 import ProfilScreen from './profil';
 import InvitationsScreen from './invitations';
+import GiftListScreen from './events/giftList';
+import AddGiftScreen from './events/addGift';
 
 const Stack = createStackNavigator();
 
@@ -50,6 +53,30 @@ export default function EventLayout() {
         component={InvitationsScreen}
         options={{
           title: 'Invitations',
+        }}
+      />
+      <Stack.Screen
+        name='GiftList'
+        component={GiftListScreen}
+        options={({ navigation }) => ({
+          title: 'Liste de cadeaux',
+          headerShown: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ marginLeft: 10 }}
+            >
+              <Text style={{ fontSize: 18 }}>←</Text>
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name='addGift'
+        component={AddGiftScreen}
+        options={{
+          title: 'Ajouter un cadeau',
+          headerShown: true,
         }}
       />
     </Stack.Navigator>
