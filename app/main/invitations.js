@@ -1,5 +1,5 @@
 import { Entypo, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,82 +9,16 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
-import AuthContext from '../../contexts/AuthContext';
 import { getInvitations } from '../../services/eventService';
+import { actionInvitations } from '../../services/eventService';
 import { theme } from '../../styles/theme';
+import AuthContext from '../../contexts/AuthContext';
 
 const Invitations = () => {
-  const { user } = useContext(AuthContext);
-  const [invitations, setInvitations] = useState([
-    {
-      __v: 0,
-      _id: '68cbd7ef38b38db2099875b6',
-      createdAt: '2025-09-18T09:59:11.618Z',
-      event_budget: 20,
-      event_date: '2025-12-20T00:00:00.000Z',
-      event_name: 'Secret santa du bureau',
-      event_organizer: '68ca7655cf64393658222f01',
-      event_participants: [
-        {
-          user: { firstname: 'Marcel', lastname: 'Duroy' },
-          email: 'marcel.duroy@example.com',
-          role: 'organizer',
-          status: 'accepted',
-          joinedAt: '2025-09-18T09:59:11.618Z',
-        },
-      ],
-      event_type: 'Secret Santa',
-      giftList: [],
-      updatedAt: '2025-09-18T09:59:11.627Z',
-    },
-    {
-      __v: 0,
-      _id: '68cbd81d38b38db2099875bb',
-      createdAt: '2025-09-18T09:59:57.128Z',
-      event_budget: 20,
-      event_date: '2025-12-20T00:00:00.000Z',
-      event_name: "Secret santa de l'asso",
-      event_organizer: '68ca7655cf64393658222f01',
-      event_participants: [
-        {
-          user: { firstname: 'Raoul', lastname: 'Blanchard' },
-          email: 'raoul.blanchard@example.com',
-          role: 'organizer',
-          status: 'accepted',
-          joinedAt: '2025-09-18T09:59:57.128Z',
-        },
-      ],
-      event_type: 'Secret Santa',
-      giftList: [],
-      updatedAt: '2025-09-18T09:59:57.129Z',
-    },
-    {
-      __v: 0,
-      _id: '68cbd81d38b38db2099875b',
-      createdAt: '2025-09-18T09:59:57.128Z',
-      event_budget: 0,
-      event_date: '2025-11-15T00:00:00.000Z',
-      event_name: 'Anniversaire Joséphine',
-      event_organizer: '68ca7655cf64393658222f01',
-      event_participants: [
-        {
-          user: { firstname: 'Mireille', lastname: 'Blanchard' },
-          email: 'mireille.blanchard@example.com',
-          role: 'organizer',
-          status: 'accepted',
-          joinedAt: '2025-09-18T09:59:57.128Z',
-          participationAmount: 15,
-        },
-      ],
-      event_type: 'Birthday',
-      giftList: [],
-      updatedAt: '2025-09-18T09:59:57.129Z',
-    },
-  ]);
+  const [invitations, setInvitations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  //Comment récupérer les invitations ? => créer une route invitation en back qui récupère tous les event où l'utilisateur est participant
-
-  // console.log(invitations);
+  const { user } = useContext(AuthContext);
+  console.log(invitations);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,7 +33,6 @@ const Invitations = () => {
         setIsLoading(false);
       }
     };
-
     if (user) {
       fetchData();
     } else {
@@ -108,6 +41,46 @@ const Invitations = () => {
       setIsLoading(false);
     }
   }, [user]);
+
+  const handleDeclineButton = async id => {
+    console.log(id);
+    try {
+      const response = await actionInvitations(id, 'decline', user.email);
+      console.log('Invitation déclinée :', response);
+      if (response) {
+        setIsLoading(true);
+        const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
+        console.log(
+          "Récupération de toutes les invitations sans l'événement qui a été décliné"
+        );
+        setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
+      }
+    } catch (error) {
+      console.log('Impossible de décliner l’invitation :', error.response);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAcceptButton = async id => {
+    //lorsque j'accepte l'invitation je veux que l'événement apparaisse sur ma page mes events et disparaisse de ma page invitation
+    try {
+      const response = await actionInvitations(id, 'accept', user.email);
+      console.log('Invitation acceptée :', response);
+      if (response) {
+        setIsLoading(true);
+        const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
+        console.log(
+          "Récupération de toutes les invitations sans l'événement qui a été accepté"
+        );
+        setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
+      }
+    } catch (error) {
+      console.log("Impossible d'accepter l’invitation :", error.response);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return isLoading ? (
     <ActivityIndicator size='large' color={theme.colors.primary} />
@@ -177,7 +150,7 @@ const Invitations = () => {
                     .filter(participant => participant.role === 'organizer')
                     .map((participant, index) => (
                       <Text key={participant.user._id || `organizer-${index}`}>
-                        {participant.user.firstname} {participant.user.lastname}
+                        {`De ${participant.user.firstname} ${participant.user.lastname}`}
                       </Text>
                     ))}
                   <View style={styles.eventDate}>
@@ -195,11 +168,17 @@ const Invitations = () => {
                   gap: 10,
                 }}
               >
-                <Pressable style={styles.declineButton}>
+                <Pressable
+                  style={styles.declineButton}
+                  onPress={() => handleDeclineButton(item._id)}
+                >
                   <Entypo name='cross' size={18} color='white' />
                   <Text style={styles.text}>Refuser</Text>
                 </Pressable>
-                <Pressable style={styles.acceptButton} onPress={() => {}}>
+                <Pressable
+                  style={styles.acceptButton}
+                  onPress={() => handleAcceptButton(item._id)}
+                >
                   <Entypo name='check' size={18} color='white' />
                   <Text style={styles.text} onPress={() => {}}>
                     Accepter
@@ -213,7 +192,6 @@ const Invitations = () => {
     </View>
   );
 };
-
 export default Invitations;
 
 const styles = StyleSheet.create({
@@ -274,26 +252,3 @@ const styles = StyleSheet.create({
   },
   card: { ...theme.components.card.container },
 });
-
-//   const handleDeclineButton = async () => {
-//     try {
-//       const response = await axios.put(
-//         `${API_URL}/${idEvent}/:action-invitation`
-//       );
-//       return setEvents(response.data); //mise à jour du state avec les invitations
-//     } catch (error) {
-//       console.log(error.message);
-//     }
-//   }; //action de retrait du state
-
-//   const handleAcceptButton = async () => {
-//     // action d'ajout d'event à ma page event
-//     try {
-//       const response = await axios.put(
-//         `${API_URL}/${idEvent}/:action-invitation`
-//       );
-//       return setEvents(response.data); //mise à jour du state avec les invitations
-//     } catch (error) {
-//       console.log(error.message);
-//     }
-//   };

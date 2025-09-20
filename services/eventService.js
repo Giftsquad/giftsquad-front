@@ -34,6 +34,18 @@ export const getInvitations = async () => {
   }
 };
 
+//Décliner ou Accepter une invitation
+export const actionInvitations = async (eventId, action, email) => {
+  try {
+    const response = await api.put(
+      `/event/${eventId}/participant/${action}?email=${email}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 //Crée un nouvel événement
 export const createEvent = async eventData => {
   try {
