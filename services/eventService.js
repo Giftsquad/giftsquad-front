@@ -27,10 +27,10 @@ export const getEvent = async eventId => {
 //Récupère toutes les invitations d'un utilisateur
 export const getInvitations = async () => {
   try {
-    const response = await api.get('/invitations');
+    const response = await api.get('/event/invitations');
     return response.data;
   } catch (error) {
-    error.message;
+    throw error;
   }
 };
 
@@ -58,6 +58,16 @@ export const updateEvent = async (eventId, eventData) => {
 export const deleteEvent = async eventId => {
   try {
     const response = await api.delete(`/event/${eventId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//Ajoute un participant à un événement
+export const addParticipant = async (eventId, email) => {
+  try {
+    const response = await api.post(`/event/${eventId}/participant`, { email });
     return response.data;
   } catch (error) {
     throw error;

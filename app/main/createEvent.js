@@ -106,7 +106,7 @@ export default function CreateEventScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header title='CRÉER UN ÉVÈNEMENT' />
+      <Header title='Créer un évènement' />
 
       {/* ScrollView qui gère bien le clavier */}
       <KeyboardAwareScrollView
@@ -120,7 +120,9 @@ export default function CreateEventScreen() {
         enableOnAndroid={true}
         extraScrollHeight={20}
       >
+        {/* Form */}
         <View style={theme.components.card.container}>
+
           {/* Type de l'évènement */}
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.label}>Type de l'évènement</Text>
@@ -136,7 +138,7 @@ export default function CreateEventScreen() {
               <Picker.Item label='Birthday' value='birthday' />
             </Picker>
 
-            {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
+            {errors.type && <Text style={theme.errorText}>{errors.type}</Text>}
           </View>
 
           {/* Nom de l'évènement */}
@@ -149,7 +151,7 @@ export default function CreateEventScreen() {
               onChangeText={value => handleInputChange('name', value)}
               placeholderTextColor={theme.colors.text.secondary}
             />
-            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            {errors.name && <Text style={theme.errorText}>{errors.name}</Text>}
           </View>
 
           {/* Date de l'évènement */}
@@ -176,7 +178,7 @@ export default function CreateEventScreen() {
               </Text>
             </TouchableOpacity>
 
-            {errors.date && <Text style={styles.errorText}>{errors.date}</Text>}
+            {errors.date && <Text style={theme.errorText}>{errors.date}</Text>}
 
             {/* DatePicker modal Expo-compatible */}
             {open && (
@@ -207,54 +209,45 @@ export default function CreateEventScreen() {
               placeholderTextColor={theme.colors.text.secondary}
             />
             {errors.budget && (
-              <Text style={styles.errorText}>{errors.budget}</Text>
+              <Text style={theme.errorText}>{errors.budget}</Text>
             )}
           </View>
 
           {/* Erreur générale */}
           {errors.general && (
-            <Text style={styles.errorText}>{errors.general}</Text>
+            <Text style={theme.errorText}>{errors.general}</Text>
           )}
-
-          {/* Bouton de création */}
-          <TouchableOpacity
-            style={[theme.components.button.primary, { marginBottom: 20 }]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {loading ? (
-                <ActivityIndicator color={theme.colors.text.white} />
-              ) : (
-                <Ionicons
-                  name='add-circle'
-                  size={20}
-                  color={theme.colors.text.white}
-                />
-              )}
-              <Text
-                style={[
-                  theme.components.button.text.primary,
-                  { marginLeft: 10 },
-                ]}
-              >
-                {loading ? 'Création...' : "Créer l'évènement"}
-              </Text>
-            </View>
-          </TouchableOpacity>
         </View>
+
+        {/* Bouton Créer l'évènement */}
+        <TouchableOpacity
+          style={[theme.components.button.primary, { marginVertical: 30, width: "90%", alignSelf: "center" }]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {loading ? (
+              <ActivityIndicator color={theme.colors.text.white} />
+            ) : (
+              <Ionicons
+                name='add-circle'
+                size={20}
+                color={theme.colors.text.white}
+              />
+            )}
+            <Text
+              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+            >
+              {loading ? 'Création...' : "Créer l'évènement"}
+            </Text>
+          </View>
+        </TouchableOpacity>
       </KeyboardAwareScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  errorText: {
-    color: theme.colors.text.error,
-    fontSize: 14,
-    marginTop: 5,
-    marginBottom: 10,
-  },
   label: {
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.bold,

@@ -14,7 +14,7 @@ import {
 import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { handleApiError } from '../../../services/errorService';
-import { getEvent } from '../../../services/eventService';
+import { addParticipant, getEvent } from '../../../services/eventService';
 import { theme } from '../../../styles/theme';
 
 export default function EventDetailsScreen() {
@@ -24,7 +24,11 @@ export default function EventDetailsScreen() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const navigation = useNavigation();
+  const [participantEmail, setParticipantEmail] = useState('');
+  const [addingParticipant, setAddingParticipant] = useState(false);
+
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -66,6 +70,26 @@ export default function EventDetailsScreen() {
           participant.participationAmount && participant.participationAmount > 0
       ).length || 0
     );
+  };
+
+  // Fonction pour ajouter un participant
+  const handleAddParticipant = async () => {
+    if (!participantEmail.trim()) {
+      return;
+    }
+
+    try {
+      setAddingParticipant(true);
+      const updatedEvent = await addParticipant(id, participantEmail);
+      setEvent(updatedEvent);
+      setParticipantEmail('');
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du participant:", error);
+      const errors = handleApiError(error);
+      // Les erreurs seront affichées via le système de gestion d'erreurs global
+    } finally {
+      setAddingParticipant(false);
+    }
   };
 
   // Gestion des états de chargement et d'erreur
@@ -215,15 +239,16 @@ export default function EventDetailsScreen() {
 
           {event.event_participants?.map((participant, index) => (
             <View key={index} style={styles.participantRow}>
-              <Text style={styles.participantName}>
-                {participant.user?.firstname} {participant.user?.lastname}
-                {participant.user?._id === user?._id && ' (vous)'}
-                {participant.role === 'organizer' && ' - Organisateur'}
-              </Text>
+              <Text style={styles.participantName}>{participant.email}</Text>
 
               {/* Affichage selon le type d'événement */}
               <View style={styles.participantStatus}>
-                {event.event_type === 'birthday' ? (
+
+                {participant.role === 'organizer' ? (
+                  // Icône de couronne pour l'organisateur
+                  <FontAwesome5 name='crown' size={16} color='#FFD700' />
+                ) : event.event_type === 'Birthday' ? (
+
                   // Pour les anniversaires : montant ou bouton participer
                   participant.participationAmount ? (
                     <View style={styles.amountTag}>
@@ -289,13 +314,32 @@ export default function EventDetailsScreen() {
                 style={styles.emailInput}
                 placeholder='Email du participant'
                 placeholderTextColor={theme.colors.text.secondary}
+                value={participantEmail}
+                onChangeText={setParticipantEmail}
+                autoCapitalize='none'
+                keyboardType='email-address'
               />
-              <TouchableOpacity style={styles.addButton}>
-                <FontAwesome5
-                  name='plus'
-                  size={16}
-                  color={theme.colors.text.white}
-                />
+              <TouchableOpacity
+                style={[
+                  styles.addButton,
+                  (addingParticipant || !participantEmail.trim()) &&
+                    styles.addButtonDisabled,
+                ]}
+                onPress={handleAddParticipant}
+                disabled={addingParticipant || !participantEmail.trim()}
+              >
+                {addingParticipant ? (
+                  <ActivityIndicator
+                    size='small'
+                    color={theme.colors.text.white}
+                  />
+                ) : (
+                  <FontAwesome5
+                    name='plus'
+                    size={16}
+                    color={theme.colors.text.white}
+                  />
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -487,6 +531,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  addButtonDisabled: {
+    backgroundColor: theme.colors.text.secondary,
+    opacity: 0.6,
   },
 
   // Texte d'avertissement

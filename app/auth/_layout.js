@@ -17,13 +17,13 @@ export default function AuthLayout() {
       <Tabs.Screen
         name='signup'
         options={{
-          title: "S\'inscrire",
+          title: "S'inscrire",
           tabBarIcon: ({ color }) => (
             <Ionicons name='person-add' size={24} color={color} />
           ),
         }}
       />
-      
+
       <Tabs.Screen
         name='login'
         options={{
@@ -33,7 +33,6 @@ export default function AuthLayout() {
           ),
         }}
       />
-      
     </Tabs>
   );
 }

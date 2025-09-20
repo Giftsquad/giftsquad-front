@@ -1,20 +1,21 @@
 import { FontAwesome5, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
-import { useContext, useState } from 'react';
+import Constants from 'expo-constants';
+import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ScrollView,
 } from 'react-native';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
-import { theme } from '../../styles/theme';
 import { updateProfile } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
+import { theme } from '../../styles/theme';
 
 const Profil = () => {
   const { logout, user } = useContext(AuthContext);
@@ -25,6 +26,22 @@ const Profil = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   //Utilisateur récupéré: {"_id": "68ca7655cf64393658222f01", "email": "iseline@gmail.com", "events": [], "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline", "token": "AEZxtpQaE4NQ5Z40R2eDh6or7za2llGFCuM-wLEPF269_9b4YoDXzxnbzOyZn6xh"}
+
+  // Mettre à jour les champs du formulaire quand l'utilisateur change
+  useEffect(() => {
+    if (user) {
+      setFirstname(user.firstname || '');
+      setLastname(user.lastname || '');
+      setNickname(user.nickname || '');
+      setEmail(user.email || '');
+    } else {
+      // Si pas d'utilisateur, vider les champs
+      setFirstname('');
+      setLastname('');
+      setNickname('');
+      setEmail('');
+    }
+  }, [user]);
 
   const handleUpdate = async () => {
     if (!email.trim() || !nickname.trim()) {
@@ -63,7 +80,15 @@ const Profil = () => {
     }
   };
   return (
-    <View style={styles.main}>
+    <View
+      style={[
+        styles.main,
+        {
+          backgroundColor: theme.colors.background.primary,
+          paddingBottom: Constants.statusBarHeight + 20,
+        },
+      ]}
+    >
       <Header title='MON PROFIL' />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.logoProfil}>
