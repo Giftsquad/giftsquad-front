@@ -1,25 +1,22 @@
-import { useNavigation, useRoute } from '@react-navigation/native';
 import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
 
 import { useState } from 'react';
 import {
-  Alert,
-  Image,
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  Image,
+  Alert,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+import * as ImagePicker from 'expo-image-picker'; // libriaire Expo pour accéder à la galerie/photos
 import AsyncStorage from '@react-native-async-storage/async-storage'; // stockage local (ici pour récupérer le token utilisateur)
 import axios from 'axios';
-import * as ImagePicker from 'expo-image-picker'; // libriaire Expo pour accéder à la galerie/photos
 import { theme } from '../../../styles/theme';
 
-export default function AddGiftScreen() {
-  const route = useRoute();
-  const navigation = useNavigation();
+export default function AddGiftScreen({ route, navigation }) {
   // Récupère l'id de l'évènement transmis depuis la navigation
   const { eventId } = route.params;
   const [errors, setErrors] = useState({});
