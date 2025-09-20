@@ -1,30 +1,30 @@
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker'; // composant calendrier compatible Expo
+import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d’évènement
+import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  StyleSheet,
-  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
 import { handleApiError } from '../../services/errorService'; // fonction qui transforme les erreurs API
-import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices, etc.)
-import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d’évènement
-import { Ionicons } from '@expo/vector-icons';
 import { createEvent } from '../../services/eventService'; // fonction qui envoie les données au back
-import DateTimePicker from '@react-native-community/datetimepicker'; // composant calendrier compatible Expo
-import { useNavigation } from '@react-navigation/native';
+import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices, etc.)
 export default function CreateEventScreen() {
   // état qui gère l’ouverture/fermeture du calendrier
   const [open, setOpen] = useState(false);
   const navigation = useNavigation();
   // état pour stocker les infos du formulaire
   const [formData, setFormData] = useState({
-    type: '',
+    type: 'secret_santa', // valeur par défaut pour l'instant qu'on a qu'un seul type
     name: '',
     date: '',
     budget: '',
@@ -81,7 +81,7 @@ export default function CreateEventScreen() {
       if (eventData?._id) {
         // Réinitialiser les champs et les erreurs
         setFormData({
-          type: '',
+          type: 'secret_santa',
           name: '',
           date: '',
           budget: '',
@@ -122,7 +122,6 @@ export default function CreateEventScreen() {
       >
         {/* Form */}
         <View style={theme.components.card.container}>
-
           {/* Type de l'évènement */}
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.label}>Type de l'évènement</Text>
@@ -221,7 +220,10 @@ export default function CreateEventScreen() {
 
         {/* Bouton Créer l'évènement */}
         <TouchableOpacity
-          style={[theme.components.button.primary, { marginVertical: 30, width: "90%", alignSelf: "center" }]}
+          style={[
+            theme.components.button.primary,
+            { marginVertical: 30, width: '90%', alignSelf: 'center' },
+          ]}
           onPress={handleSubmit}
           disabled={loading}
         >

@@ -1,6 +1,5 @@
 import { FontAwesome5 } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { router } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -20,15 +19,13 @@ import { theme } from '../../../styles/theme';
 export default function EventDetailsScreen() {
   const { user } = useContext(AuthContext);
   const route = useRoute();
+  const navigation = useNavigation();
   const { id } = route.params;
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const navigation = useNavigation();
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
-
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -183,7 +180,7 @@ export default function EventDetailsScreen() {
           </View>
 
           {/* Budget conseillé - Secret Santa seulement */}
-          {event.event_type === 'Secret Santa' && event.event_budget && (
+          {event.event_type === 'secret_santa' && event.event_budget && (
             <View style={[styles.infoCard, styles.budgetCard]}>
               <FontAwesome5
                 name='euro-sign'
@@ -217,7 +214,7 @@ export default function EventDetailsScreen() {
         </View>
 
         {/* Bouton Liste de cadeaux - Anniversaire seulement */}
-        {event.event_type?.toLowerCase() === 'birthday' && (
+        {event.event_type === 'birthday' && (
           <TouchableOpacity
             style={styles.giftListButton}
             onPress={() =>
@@ -243,12 +240,10 @@ export default function EventDetailsScreen() {
 
               {/* Affichage selon le type d'événement */}
               <View style={styles.participantStatus}>
-
                 {participant.role === 'organizer' ? (
                   // Icône de couronne pour l'organisateur
                   <FontAwesome5 name='crown' size={16} color='#FFD700' />
-                ) : event.event_type === 'Birthday' ? (
-
+                ) : event.event_type === 'birthday' ? (
                   // Pour les anniversaires : montant ou bouton participer
                   participant.participationAmount ? (
                     <View style={styles.amountTag}>
@@ -269,7 +264,7 @@ export default function EventDetailsScreen() {
                       color={theme.colors.text.secondary}
                     />
                   )
-                ) : event.event_type === 'Secret Santa' ? (
+                ) : event.event_type === 'secret_santa' ? (
                   // Pour Secret Santa : statut d'invitation
                   participant.status === 'accepted' ? (
                     <FontAwesome5
@@ -345,7 +340,7 @@ export default function EventDetailsScreen() {
           </View>
 
           {/* Avertissement - Secret Santa seulement */}
-          {event.event_type === 'Secret Santa' && (
+          {event.event_type === 'secret_santa' && (
             <Text style={styles.warningText}>
               Attention : Une fois le tirage effectué, il ne sera plus possible
               de modifier la liste des participants.
@@ -354,7 +349,7 @@ export default function EventDetailsScreen() {
         </View>
 
         {/* Bouton de tirage au sort - Secret Santa seulement */}
-        {event.event_type === 'Secret Santa' && !event.drawnAt && (
+        {event.event_type === 'secret_santa' && !event.drawnAt && (
           <TouchableOpacity style={styles.drawButton}>
             <Text style={styles.drawButtonText}>
               Effectuer le tirage au sort

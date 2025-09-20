@@ -5,10 +5,10 @@ import { Text, TouchableOpacity } from 'react-native';
 import CreateEventScreen from './createEvent';
 import EventsScreen from './events';
 import EventDetailsScreen from './events/[id]';
-import ProfilScreen from './profil';
-import InvitationsScreen from './invitations';
-import GiftListScreen from './events/giftList';
 import AddGiftScreen from './events/addGift';
+import GiftListScreen from './events/giftList';
+import InvitationsScreen from './invitations';
+import ProfilScreen from './profil';
 
 const Stack = createStackNavigator();
 

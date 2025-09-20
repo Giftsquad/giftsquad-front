@@ -93,17 +93,17 @@ export default function EventsScreen() {
                 >
                   {/* Colonne gauche avec l'icône selon le type d'évènement */}
                   <View>
-                    {item.event_type === 'Secret Santa' && (
+                    {item.event_type === 'secret_santa' && (
                       <FontAwesome6 name='gift' size={30} color='#FF6B35' />
                     )}
-                    {item.event_type === 'Birthday' && (
+                    {item.event_type === 'birthday' && (
                       <FontAwesome6
                         name='cake-candles'
                         size={30}
                         color='#2196F3'
                       />
                     )}
-                    {item.event_type === 'Christmas List' && (
+                    {item.event_type === 'christmas_list' && (
                       <FontAwesome name='tree' size={30} color='#4CAF50' />
                     )}
                   </View>
@@ -115,16 +115,22 @@ export default function EventsScreen() {
                       <View
                         style={[
                           styles.eventTypeBadge,
-                          item.event_type === 'Secret Santa' &&
+                          item.event_type === 'secret_santa' &&
                             styles.secretSantaBadge,
-                          item.event_type === 'Birthday' &&
+                          item.event_type === 'birthday' &&
                             styles.birthdayBadge,
-                          item.event_type === 'Christmas List' &&
+                          item.event_type === 'christmas_list' &&
                             styles.christmasListBadge,
                         ]}
                       >
                         <Text style={styles.eventTypeText}>
-                          {item.event_type}
+                          {item.event_type === 'secret_santa'
+                            ? 'Secret Santa'
+                            : item.event_type === 'birthday'
+                            ? 'Birthday'
+                            : item.event_type === 'christmas_list'
+                            ? 'Christmas List'
+                            : item.event_type}
                         </Text>
                       </View>
                     </View>
