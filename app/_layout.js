@@ -13,11 +13,14 @@ import {
 } from '../services/authService';
 import {
   fetchEvent,
+  fetchEventGifts,
+  fetchEventWithGifts,
   fetchEvents,
   handleAddGift,
   handleAddParticipant,
   handleCreateEvent,
   handleDeleteEvent,
+  handleDeleteGift,
   handleRemoveParticipant,
   handleUpdateEvent,
 } from '../services/eventService';
@@ -58,6 +61,16 @@ const RootLayout = () => {
     return await fetchEvent(eventId, setEvents);
   };
 
+  // Fonction pour récupérer l'événement complet avec ses cadeaux
+  const loadEventWithGifts = async eventId => {
+    return await fetchEventWithGifts(eventId);
+  };
+
+  // Fonction pour récupérer tous les cadeaux d'un événement
+  const loadEventGifts = async eventId => {
+    return await fetchEventGifts(eventId);
+  };
+
   // Fonction pour ajouter un participant
   const addParticipantToEvent = async (eventId, email) => {
     return await handleAddParticipant(eventId, email, setEvents);
@@ -86,6 +99,11 @@ const RootLayout = () => {
   // Fonction pour ajouter un cadeau
   const addGiftToEvent = async (eventId, giftData) => {
     return await handleAddGift(eventId, giftData, setEvents);
+  };
+
+  // Fonction pour supprimer un cadeau
+  const deleteGiftById = async giftId => {
+    return await handleDeleteGift(giftId, setEvents);
   };
 
   useEffect(() => {
@@ -154,12 +172,15 @@ const RootLayout = () => {
           loading,
           fetchEvents: loadEvents,
           fetchEvent: loadEvent,
+          fetchEventWithGifts: loadEventWithGifts,
+          fetchEventGifts: loadEventGifts,
           handleAddParticipant: addParticipantToEvent,
           handleRemoveParticipant: removeParticipantFromEvent,
           handleDeleteEvent: deleteEventById,
           handleCreateEvent: createNewEvent,
           handleUpdateEvent: updateEventById,
           handleAddGift: addGiftToEvent,
+          handleDeleteGift: deleteGiftById,
         }}
       >
         <Slot />

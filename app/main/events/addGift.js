@@ -16,8 +16,8 @@ import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 
 export default function AddGiftScreen({ route, navigation }) {
-  // Récupère l'id de l'évènement transmis depuis la navigation
-  const { eventId } = route.params;
+  // Récupère l'événement complet transmis depuis la navigation
+  const { event } = route.params;
   const { handleAddGift } = useContext(AuthContext);
   const [errors, setErrors] = useState({});
 
@@ -25,7 +25,7 @@ export default function AddGiftScreen({ route, navigation }) {
   const [name, setName] = useState(''); // nom du cadeau
   const [price, setPrice] = useState(''); // prix du cadeau
   const [url, setUrl] = useState(''); // lien vers le cadeau (optionnel)
-  const [images, setImages] = useState([]); // images sélectionnées dans la galerie
+  const [images, setImages] = useState([]); // images sélectionnées dans la galerie (optionnel)
   const [loading, setLoading] = useState(false); // état du chargement (évite plusieurs clics)
 
   // Fonction qui ouvre la galerie du téléphone pour sélectionner plusieurs images
@@ -80,8 +80,13 @@ export default function AddGiftScreen({ route, navigation }) {
         formData.append('url', url);
       }
 
+      // Ajouter le type d'événement pour déterminer la bonne route
+      if (event && event.event_type) {
+        formData.append('eventType', event.event_type);
+      }
+
       // Appel API via le contexte
-      await handleAddGift(eventId, formData);
+      await handleAddGift(event._id, formData);
 
       // Succès → affiche une alerte et revient à la liste
       Alert.alert('Succès', 'Cadeau ajouté avec succès !');

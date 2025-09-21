@@ -119,11 +119,9 @@ export default function Christmas({ event, user }) {
       {/* Bouton Liste de cadeaux - Christmas List */}
       <TouchableOpacity
         style={styles.giftListButton}
-        onPress={() =>
-          navigation.navigate('GiftList', {
-            event: localEvent,
-          })
-        }
+        onPress={() => {
+          navigation.navigate('GiftList', { event: localEvent });
+        }}
       >
         <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
         <Text style={styles.giftListButtonText}>Liste de cadeaux</Text>

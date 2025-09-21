@@ -1,6 +1,9 @@
-import { useRoute } from '@react-navigation/native';
-import { useContext } from 'react';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useContext, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   Linking,
   ScrollView,
@@ -13,17 +16,80 @@ import { theme } from '../../../styles/theme';
 
 export default function GiftDetailScreen() {
   const route = useRoute();
+  const navigation = useNavigation();
   const { gift, event } = route.params;
-  const { events } = useContext(AuthContext);
+  const { events, user, handleDeleteGift } = useContext(AuthContext);
+  const [deleting, setDeleting] = useState(false);
 
   // Utiliser l'événement passé en paramètres ou le chercher dans le contexte
-  const currentEvent = event || events.find(e => e._id === event?._id);
+  const currentEvent = event || events.find(e => e._id === gift?.eventId);
+
+  // Vérifier si l'utilisateur peut supprimer le cadeau
+  const canDeleteGift = () => {
+    if (!user || !currentEvent || !gift || !gift._id) return false;
+
+    // Vérifier si l'utilisateur est l'organisateur
+    const isOrganizer = currentEvent.event_participants?.some(
+      participant =>
+        participant.user?._id === user._id && participant.role === 'organizer'
+    );
+
+    // Vérifier si l'utilisateur est l'auteur du cadeau
+    const isAuthor = gift.addedBy?._id === user._id;
+
+    return isOrganizer || isAuthor;
+  };
+
+  const handleDelete = () => {
+    // Vérifier que le cadeau existe avant de continuer
+    if (!gift || !gift._id) {
+      Alert.alert('Erreur', 'Cadeau introuvable.');
+      return;
+    }
+
+    Alert.alert(
+      'Supprimer le cadeau',
+      'Êtes-vous sûr de vouloir supprimer ce cadeau ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await handleDeleteGift(gift._id);
+              // Naviger vers la liste des cadeaux après suppression
+              // La liste sera mise à jour automatiquement via le contexte
+              navigation.navigate('GiftList', { event: currentEvent });
+              // Afficher l'alerte de succès après la navigation
+              setTimeout(() => {
+                Alert.alert('Succès', 'Cadeau supprimé avec succès.');
+              }, 100);
+            } catch (error) {
+              console.error('Erreur lors de la suppression du cadeau:', error);
+              Alert.alert(
+                'Erreur',
+                'Impossible de supprimer le cadeau. Veuillez réessayer.'
+              );
+            } finally {
+              setDeleting(false);
+            }
+          },
+          style: 'destructive',
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   // Déterminer la source du cadeau et le nom du participant
   let giftSource = null;
   let participantName = null;
 
-  if (currentEvent) {
+  if (currentEvent && gift) {
     // Vérifier si le cadeau est dans la giftList de l'événement
     if (
       currentEvent.giftList &&
@@ -49,8 +115,8 @@ export default function GiftDetailScreen() {
     }
   }
 
-  // Si le cadeau n'est pas trouvé
-  if (!gift) {
+  // Si le cadeau n'est pas trouvé ou si on est en train de supprimer
+  if (!gift || deleting) {
     return (
       <View
         style={[
@@ -67,8 +133,15 @@ export default function GiftDetailScreen() {
             marginTop: 50,
           }}
         >
-          Cadeau introuvable
+          {deleting ? 'Suppression en cours...' : 'Cadeau introuvable'}
         </Text>
+        {deleting && (
+          <ActivityIndicator
+            size='large'
+            color={theme.colors.primary}
+            style={{ marginTop: 20 }}
+          />
+        )}
       </View>
     );
   }
@@ -198,6 +271,47 @@ export default function GiftDetailScreen() {
             >
               Voir le produit
             </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Bouton de suppression */}
+        {canDeleteGift() && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: theme.colors.text.error,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              borderRadius: 8,
+              alignItems: 'center',
+              marginTop: 10,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              opacity: deleting ? 0.7 : 1,
+            }}
+            onPress={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <ActivityIndicator color='#fff' />
+            ) : (
+              <>
+                <FontAwesome5
+                  name='trash-alt'
+                  size={16}
+                  color='#fff'
+                  style={{ marginRight: 8 }}
+                />
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontSize: theme.typography.fontSize.md,
+                    fontWeight: theme.typography.fontWeight.bold,
+                  }}
+                >
+                  Supprimer le cadeau
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         )}
       </View>

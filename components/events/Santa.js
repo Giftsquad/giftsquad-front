@@ -111,7 +111,7 @@ export default function Santa({ event, user }) {
               day: 'numeric',
               month: 'long',
               year: 'numeric',
-            })}
+            })};
           </Text>
         </View>
 
@@ -193,7 +193,7 @@ export default function Santa({ event, user }) {
               <View style={styles.participantSeparator} />
             </View>
           );
-        })}
+        })};
 
         {/* Ajouter un participant (seulement pour l'organisateur) */}
         {isOrganizer && (

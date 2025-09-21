@@ -1,5 +1,7 @@
+import { useRoute } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   Linking,
@@ -10,59 +12,89 @@ import {
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 
-export default function GiftListScreen({ route, navigation }) {
-  const { event } = route.params; // récupéré via navigation.navigate('giftList', { event })}
-  const { events } = useContext(AuthContext);
+export default function GiftListScreen({ navigation }) {
+  const route = useRoute();
+  const { event } = route.params;
+  const { user, events } = useContext(AuthContext);
   const [allGifts, setAllGifts] = useState([]);
+  const [currentEvent, setCurrentEvent] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Toujours utiliser l'événement mis à jour depuis le contexte global
-  const currentEvent = events.find(e => e._id === event._id) || event;
-
-  // Utiliser useEffect pour mettre à jour la liste des cadeaux quand l'événement change
+  // Utiliser useEffect pour charger les cadeaux depuis l'événement passé en paramètres
+  // et se mettre à jour quand le contexte global change
   useEffect(() => {
-    // Vérifier si l'événement existe, sinon retourner un tableau vide
-    if (!currentEvent) {
-      setAllGifts([]);
-      return;
-    }
+    const loadGiftsFromEvent = () => {
+      if (!event || !user) {
+        setAllGifts([]);
+        setCurrentEvent(null);
+        return;
+      }
 
-    // Initialiser un tableau vide pour stocker tous les cadeaux
-    const gifts = [];
+      // Chercher l'événement mis à jour dans le contexte global
+      const updatedEvent = events.find(e => e._id === event._id) || event;
+      setCurrentEvent(updatedEvent);
 
-    // Ajouter les cadeaux de la giftList (pour les anniversaires)
-    // Vérifier si l'événement a une giftList et qu'elle n'est pas vide
-    if (currentEvent.giftList && currentEvent.giftList.length > 0) {
-      // Parcourir chaque cadeau de la giftList
-      currentEvent.giftList.forEach(gift => {
-        // Ajouter le cadeau au tableau
-        gifts.push(gift);
-      });
-    }
+      // Collecter les cadeaux directement dans le composant
+      const gifts = [];
 
-    // Ajouter les cadeaux des wishList des participants (pour Secret Santa et Christmas List)
-    // Vérifier si l'événement a des participants et qu'il y en a au moins un
-    if (
-      currentEvent.event_participants &&
-      currentEvent.event_participants.length > 0
-    ) {
-      // Parcourir chaque participant de l'événement
-      currentEvent.event_participants.forEach(participant => {
-        // Vérifier si le participant a une wishList et qu'elle n'est pas vide
-        if (participant.wishList && participant.wishList.length > 0) {
-          // Parcourir chaque cadeau de la wishList du participant
-          participant.wishList.forEach(gift => {
-            // Ajouter le cadeau au tableau
-            gifts.push(gift);
+      // Ajouter les cadeaux de la giftList de l'événement
+      if (updatedEvent.giftList && updatedEvent.giftList.length > 0) {
+        updatedEvent.giftList.forEach(gift => {
+          gifts.push({
+            ...gift,
+            source: 'giftList',
+            eventId: updatedEvent._id,
+            eventName: updatedEvent.event_name,
+            addedByParticipantName: gift.addedBy
+              ? gift.addedBy.username
+              : 'Inconnu',
           });
-        }
-      });
-    }
+        });
+      }
 
-    // Mettre à jour l'état avec le tableau contenant tous les cadeaux (giftList + wishList)
-    setAllGifts(gifts);
-  }, [currentEvent, events]); // Dépendance sur currentEvent ET events pour garantir la réactivité
+      // Ajouter les cadeaux des wishLists des participants
+      if (
+        updatedEvent.event_participants &&
+        updatedEvent.event_participants.length > 0
+      ) {
+        updatedEvent.event_participants.forEach(participant => {
+          if (participant.wishList && participant.wishList.length > 0) {
+            participant.wishList.forEach(gift => {
+              gifts.push({
+                ...gift,
+                source: 'wishList',
+                eventId: updatedEvent._id,
+                eventName: updatedEvent.event_name,
+                addedByParticipantName: participant.user
+                  ? participant.user.username
+                  : 'Inconnu',
+              });
+            });
+          }
+        });
+      }
 
-  // Si l'événement n'est pas trouvé, afficher un message d'erreur
+      setAllGifts(gifts);
+    };
+
+    loadGiftsFromEvent();
+  }, [event, user, events]); // Ajouter events aux dépendances
+
+  // Afficher un loader pendant le chargement
+  if (loading) {
+    return (
+      <View
+        style={[
+          theme.components.screen.container,
+          { backgroundColor: theme.colors.background.primary },
+        ]}
+      >
+        <ActivityIndicator size='large' color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  // Si aucun événement n'est trouvé
   if (!currentEvent) {
     return (
       <View
@@ -77,6 +109,8 @@ export default function GiftListScreen({ route, navigation }) {
             fontWeight: theme.typography.fontWeight.bold,
             color: theme.colors.text.error,
             marginBottom: 8,
+            textAlign: 'center',
+            marginTop: 50,
           }}
         >
           Événement introuvable
@@ -99,15 +133,19 @@ export default function GiftListScreen({ route, navigation }) {
             fontWeight: theme.typography.fontWeight.bold,
             color: theme.colors.text.primary,
             marginBottom: 8,
+            textAlign: 'center',
+            marginTop: 50,
           }}
         >
           Aucun cadeau ajouté pour l'instant
         </Text>
         {/* Bouton d'ajout affiché même si la liste est vide */}
         <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('addGift', { eventId: currentEvent._id })
-          }
+          onPress={() => {
+            navigation.navigate('addGift', {
+              event: currentEvent,
+            });
+          }}
         >
           <Text
             style={{
@@ -115,6 +153,7 @@ export default function GiftListScreen({ route, navigation }) {
               fontWeight: theme.typography.fontWeight.bold,
               color: theme.colors.text.primary,
               marginBottom: 8,
+              textAlign: 'center',
             }}
           >
             + Ajouter un cadeau
@@ -138,12 +177,12 @@ export default function GiftListScreen({ route, navigation }) {
               backgroundColor: '#f5f5f5',
               borderRadius: 8,
             }}
-            onPress={() =>
+            onPress={() => {
               navigation.navigate('gift', {
                 gift: item,
                 event: currentEvent,
-              })
-            }
+              });
+            }}
           >
             {/* Affichage des images */}
             {item.images && item.images.length > 0 && (
@@ -177,6 +216,19 @@ export default function GiftListScreen({ route, navigation }) {
               >
                 {item.name}
               </Text>
+              {/* Afficher le nom de l'événement */}
+              {item.eventName && (
+                <Text
+                  style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.text.secondary,
+                    marginBottom: 5,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Événement: {item.eventName}
+                </Text>
+              )}
               <Text
                 style={{
                   fontSize: theme.typography.fontSize.md,
@@ -187,7 +239,7 @@ export default function GiftListScreen({ route, navigation }) {
                 {item.price} €
               </Text>
               {/* Afficher qui a ajouté le cadeau */}
-              {item.addedBy && (
+              {item.addedByParticipantName && (
                 <Text
                   style={{
                     fontSize: theme.typography.fontSize.sm,
@@ -195,10 +247,7 @@ export default function GiftListScreen({ route, navigation }) {
                     marginBottom: 5,
                   }}
                 >
-                  Ajouté par :{' '}
-                  {item.addedBy.firstname ||
-                    item.addedBy.nickname ||
-                    'Utilisateur inconnu'}
+                  Ajouté par : {item.addedByParticipantName}
                 </Text>
               )}
               {item.url ? (
@@ -218,12 +267,14 @@ export default function GiftListScreen({ route, navigation }) {
         )}
       />
 
-      {/* Bouton d’ajout */}
+      {/* Bouton d'ajout */}
       <TouchableOpacity
         style={theme.components.card.container}
-        onPress={() =>
-          navigation.navigate('addGift', { eventId: currentEvent._id })
-        }
+        onPress={() => {
+          navigation.navigate('addGift', {
+            event: currentEvent,
+          });
+        }}
       >
         <Text style={{ textAlign: 'center', marginTop: 20 }}>
           + Ajouter un cadeau

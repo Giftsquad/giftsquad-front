@@ -87,9 +87,22 @@ export const updateEvent = async (eventId, eventData) => {
 };
 
 // Ajoute un cadeau à un événement
-export const addGift = async (eventId, giftData) => {
+export const addGift = async (eventId, giftData, eventType = null) => {
   try {
-    const response = await api.post(`/event/${eventId}/gift-list`, giftData, {
+    // Déterminer la route selon le type d'événement
+    let route;
+    if (eventType === 'secret_santa') {
+      route = `/event/${eventId}/gift`;
+    } else if (eventType === 'birthday') {
+      route = `/event/${eventId}/gift-list`;
+    } else if (eventType === 'christmas_list') {
+      route = `/event/${eventId}/wish-list`;
+    } else {
+      // Par défaut, utiliser la route gift-list
+      route = `/event/${eventId}/gift-list`;
+    }
+
+    const response = await api.post(route, giftData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -106,6 +119,41 @@ export const deleteEvent = async eventId => {
     const response = await api.delete(`/event/${eventId}`);
     return response.data;
   } catch (error) {
+    throw error;
+  }
+};
+
+// Fonction pour supprimer un cadeau
+export const deleteGift = async giftId => {
+  try {
+    const response = await api.delete(`/gifts/gift/${giftId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la suppression du cadeau:', error);
+    throw error;
+  }
+};
+
+// Fonction pour supprimer un cadeau avec mise à jour du contexte
+export const handleDeleteGift = async (giftId, setEvents) => {
+  try {
+    const response = await deleteGift(giftId);
+    console.log('Réponse de suppression:', response);
+
+    // Vérifier si la réponse contient l'événement mis à jour
+    const updatedEvent = response?.event || response;
+
+    if (setEvents && updatedEvent && updatedEvent._id) {
+      setEvents(prevEvents =>
+        prevEvents.map(event =>
+          event._id === updatedEvent._id ? updatedEvent : event
+        )
+      );
+    }
+
+    return updatedEvent;
+  } catch (error) {
+    console.error('Erreur lors de la suppression du cadeau:', error);
     throw error;
   }
 };
@@ -200,13 +248,39 @@ export const handleUpdateEvent = async (eventId, eventData, setEvents) => {
 // Fonction pour ajouter un cadeau
 export const handleAddGift = async (eventId, giftData, setEvents) => {
   try {
-    const updatedEvent = await addGift(eventId, giftData);
+    // Récupérer l'événement pour connaître son type
+    const eventResponse = await api.get(`/event/${eventId}`);
+    const event = eventResponse.data;
+
+    const updatedEvent = await addGift(eventId, giftData, event.event_type);
     setEvents(prevEvents =>
       prevEvents.map(event => (event._id === eventId ? updatedEvent : event))
     );
     return updatedEvent;
   } catch (error) {
     console.error("Erreur lors de l'ajout du cadeau:", error);
+    throw error;
+  }
+};
+
+// Fonction pour récupérer l'événement complet avec ses cadeaux
+export const fetchEventWithGifts = async eventId => {
+  try {
+    const response = await api.get(`/event/${eventId}/event`);
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'événement:", error);
+    throw error;
+  }
+};
+
+// Fonction pour récupérer tous les cadeaux d'un événement
+export const fetchEventGifts = async eventId => {
+  try {
+    const response = await api.get(`/event/${eventId}/gifts`);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des cadeaux:', error);
     throw error;
   }
 };
