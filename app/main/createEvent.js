@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker'; // composant calendrier compatible Expo
-import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d’évènement
+import { Picker } from '@react-native-picker/picker'; // menu déroulant pour choisir le type d'évènement
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -15,11 +15,12 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Header from '../../components/Header';
+import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService'; // fonction qui transforme les erreurs API
-import { createEvent } from '../../services/eventService'; // fonction qui envoie les données au back
 import { theme } from '../../styles/theme'; // styles globaux (couleurs, polices, etc.)
 export default function CreateEventScreen() {
-  // état qui gère l’ouverture/fermeture du calendrier
+  const { handleCreateEvent } = useContext(AuthContext);
+  // état qui gère l'ouverture/fermeture du calendrier
   const [open, setOpen] = useState(false);
   const navigation = useNavigation();
   // état pour stocker les infos du formulaire
@@ -30,7 +31,7 @@ export default function CreateEventScreen() {
     budget: '',
   });
 
-  // état qui dit si on est en train de créer l’évènement
+  // état qui dit si on est en train de créer l'évènement
   const [loading, setLoading] = useState(false);
 
   // état pour stocker les erreurs (ex : champ vide, erreur API, etc.)
@@ -69,15 +70,15 @@ export default function CreateEventScreen() {
     try {
       setLoading(true); // on affiche le loader
 
-      // On envoie les données à l’API
-      const eventData = await createEvent({
+      // On envoie les données à l'API via le contexte
+      const eventData = await handleCreateEvent({
         type: formData.type,
         name: formData.name,
         date: formatDateForAPI(formData.date),
         budget: formData.budget,
       });
 
-      // Si l’évènement est bien créé, on pourra rediriger vers la liste des évènements
+      // Si l'évènement est bien créé, on pourra rediriger vers la liste des évènements
       if (eventData?._id) {
         // Réinitialiser les champs et les erreurs
         setFormData({
@@ -91,7 +92,7 @@ export default function CreateEventScreen() {
         navigation.navigate('events');
       }
     } catch (error) {
-      // Si l’API renvoie une erreur, on l’affiche
+      // Si l'API renvoie une erreur, on l'affiche
       const errors = handleApiError(error);
       setErrors(errors);
     } finally {

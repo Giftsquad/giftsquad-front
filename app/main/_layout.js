@@ -6,7 +6,10 @@ import CreateEventScreen from './createEvent';
 import EventsScreen from './events';
 import EventDetailsScreen from './events/[id]';
 import AddGiftScreen from './events/addGift';
+import AddWishScreen from './events/addWish';
 import GiftListScreen from './events/giftList';
+import WishListScreen from './events/wishList';
+import GiftDetailScreen from './gifts/[id]';
 import InvitationsScreen from './invitations';
 import ProfilScreen from './profil';
 
@@ -76,6 +79,50 @@ export default function EventLayout() {
         component={AddGiftScreen}
         options={{
           title: 'Ajouter un cadeau',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name='addWish'
+        component={AddWishScreen}
+        options={{
+          title: 'Ajouter un souhait',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name='WishList'
+        component={WishListScreen}
+        options={({ navigation, route }) => {
+          const participant = route.params?.participant;
+          const participantName =
+            participant?.user?.firstname ||
+            participant?.user?.nickname ||
+            'Participant';
+          const isCurrentUser =
+            participant?.user?._id === route.params?.user?._id;
+
+          return {
+            title: isCurrentUser
+              ? 'Ma liste de souhaits'
+              : `Souhaits de ${participantName}`,
+            headerShown: true,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{ marginLeft: 10 }}
+              >
+                <Text style={{ fontSize: 18 }}>←</Text>
+              </TouchableOpacity>
+            ),
+          };
+        }}
+      />
+      <Stack.Screen
+        name='gift'
+        component={GiftDetailScreen}
+        options={{
+          title: 'Détail du cadeau',
           headerShown: true,
         }}
       />

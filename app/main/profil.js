@@ -94,7 +94,9 @@ const Profil = () => {
         <View style={styles.logoProfil}>
           <FontAwesome5 name='user-alt' size={46} color='white' />
         </View>
-        <Text>{`${firstname.toUpperCase()} ${lastname.toUpperCase()}`}</Text>
+        <Text>{`${firstname?.toUpperCase() || ''} ${
+          lastname?.toUpperCase() || ''
+        }`}</Text>
         <Text>{`@${nickname}`}</Text>
         <View style={styles.section}>
           <View style={styles.card}>

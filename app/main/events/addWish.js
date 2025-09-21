@@ -1,4 +1,4 @@
-import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
+import Constants from 'expo-constants';
 
 import { useContext, useState } from 'react';
 import {
@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-import * as ImagePicker from 'expo-image-picker'; // libriaire Expo pour accéder à la galerie/photos
+import * as ImagePicker from 'expo-image-picker';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 
-export default function AddGiftScreen({ route, navigation }) {
+export default function AddWishScreen({ route, navigation }) {
   // Récupère l'événement complet transmis depuis la navigation
   const { event } = route.params;
   const { handleAddGift } = useContext(AuthContext);
@@ -34,7 +34,6 @@ export default function AddGiftScreen({ route, navigation }) {
       mediaTypes: ImagePicker.MediaTypeOptions.Images, // uniquement images
       allowsMultipleSelection: true, // permet la sélection multiple
       selectionLimit: 5, // limite à 5 images maximum
-      // mediaTypes: [ImagePicker.MediaType.IMAGE], requiert mise à jour Expo SDK 51+
     });
 
     if (!result.canceled) {
@@ -75,7 +74,7 @@ export default function AddGiftScreen({ route, navigation }) {
         images.forEach((image, index) => {
           formData.append('images', {
             uri: image.uri, // chemin local de l'image
-            name: `gift_${index}.jpg`, // nom arbitraire avec index
+            name: `wish_${index}.jpg`, // nom arbitraire avec index
             type: 'image/jpeg', // type MIME
           });
         });
@@ -91,11 +90,11 @@ export default function AddGiftScreen({ route, navigation }) {
         formData.append('eventType', event.event_type);
       }
 
-      // Appel API via le contexte
-      await handleAddGift(event._id, formData, false); // isWish = false pour giftList
+      // Appel API via le contexte - pour les wishList, on utilise la route wish-list
+      await handleAddGift(event._id, formData, true); // isWish = true pour wishList
 
       // Succès → affiche une alerte et revient à la liste
-      Alert.alert('Succès', 'Cadeau ajouté avec succès !');
+      Alert.alert('Succès', 'Souhait ajouté avec succès !');
       navigation.goBack();
     } catch (error) {
       // En cas d'erreur → affiche dans la console et une alerte utilisateur
@@ -135,7 +134,7 @@ export default function AddGiftScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            Nom du cadeau
+            Nom du cadeau souhaité
           </Text>
           <TextInput
             style={theme.components.input.container}
@@ -155,7 +154,7 @@ export default function AddGiftScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            Prix
+            Prix approximatif
           </Text>
           <TextInput
             style={theme.components.input.container}
@@ -254,7 +253,16 @@ export default function AddGiftScreen({ route, navigation }) {
 
         {/* Lien du cadeau (optionnel) */}
         <View style={{ marginBottom: 20 }}>
-          <Text>Lien vers le produit (optionnel)</Text>
+          <Text
+            style={{
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text.primary,
+              marginBottom: 8,
+            }}
+          >
+            Lien vers le produit (optionnel)
+          </Text>
           <TextInput
             style={theme.components.input.container}
             placeholder='https://example.com/produit'
@@ -263,7 +271,7 @@ export default function AddGiftScreen({ route, navigation }) {
           />
         </View>
 
-        {/* Bouton Ajouter le cadeau */}
+        {/* Bouton Ajouter le souhait */}
         <TouchableOpacity
           style={[
             theme.components.button.primary,
@@ -279,7 +287,7 @@ export default function AddGiftScreen({ route, navigation }) {
               { textAlign: 'center' },
             ]}
           >
-            {loading ? 'Ajout en cours...' : 'Ajouter le cadeau'}
+            {loading ? 'Ajout en cours...' : 'Ajouter à ma liste de souhaits'}
           </Text>
         </TouchableOpacity>
       </KeyboardAwareScrollView>

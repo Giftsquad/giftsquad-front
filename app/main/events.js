@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,6 @@ import {
 import HamburgerMenu from '../../components/HamburgerMenu';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
-import { getEvents } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 
 // Import des icônes
@@ -21,40 +20,17 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function EventsScreen() {
-  // on récupère l'utilisateur connecté
-  const { user } = useContext(AuthContext);
+  // on récupère l'utilisateur connecté et les événements depuis le contexte
+  const { user, events, loading } = useContext(AuthContext);
   const navigation = useNavigation();
-
-  // state pour stocker la liste des évènements
-  const [events, setEvents] = useState([]);
-
-  // state qui indique si ça charge (true = on attend les données)
-  const [loading, setLoading] = useState(true);
 
   // state pour gérer l'ouverture/fermeture du menu hamburger
   const [menuVisible, setMenuVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const data = await getEvents();
-        setEvents(data);
-      } catch (error) {
-        console.error('Erreur lors du chargement des évènements:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchEvents();
-    } else {
-      // Si pas d'utilisateur, vider la liste des événements
-      setEvents([]);
-      setLoading(false);
-    }
-  }, [user]);
+  // Fonction pour gérer la navigation vers un événement
+  const navigateToEvent = eventId => {
+    navigation.navigate('event', { id: eventId });
+  };
 
   return (
     <View
@@ -89,7 +65,7 @@ export default function EventsScreen() {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[theme.components.card.container, styles.eventCard]}
-                  onPress={() => navigation.navigate('event', { id: item._id })}
+                  onPress={() => navigateToEvent(item._id)}
                 >
                   {/* Colonne gauche avec l'icône selon le type d'évènement */}
                   <View>

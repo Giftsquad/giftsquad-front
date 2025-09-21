@@ -46,3 +46,37 @@ export const updateProfile = async userData => {
     throw error;
   }
 };
+
+// Fonctions de gestion des données avec mise à jour du state
+export const handleLogin = async (userData, setUser) => {
+  try {
+    setUser(userData);
+    return userData;
+  } catch (error) {
+    console.error('Erreur lors de la connexion:', error);
+    throw error;
+  }
+};
+
+export const handleLogout = async setUser => {
+  try {
+    console.log('Déconnexion en cours...');
+    setUser(null);
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion :', error);
+  }
+};
+
+// Fonction pour récupérer l'utilisateur avec ses événements populés
+export const getUserWithEvents = async () => {
+  try {
+    const response = await api.get('/user/me/events');
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération de l'utilisateur avec ses événements:",
+      error
+    );
+    throw error;
+  }
+};
