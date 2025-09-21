@@ -1,8 +1,9 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,31 +11,37 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService';
-import { addParticipant, removeParticipant } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 
-export default function Santa({ event, user, onEventUpdate }) {
+export default function Santa({ event, user }) {
   const navigation = useNavigation();
+  const { handleAddParticipant, handleRemoveParticipant, handleDeleteEvent } =
+    useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
+  const [localEvent, setLocalEvent] = useState(event);
 
   // Vérifier si l'utilisateur connecté est l'organisateur
-  const isOrganizer = event.event_participants?.some(
+  const isOrganizer = localEvent.event_participants?.some(
     participant =>
       participant.user?._id === user?._id && participant.role === 'organizer'
   );
 
   // Fonction pour ajouter un participant
-  const handleAddParticipant = async () => {
+  const addParticipant = async () => {
     if (!participantEmail.trim()) {
       return;
     }
 
     try {
       setAddingParticipant(true);
-      const updatedEvent = await addParticipant(event._id, participantEmail);
-      onEventUpdate(updatedEvent);
+      const updatedEvent = await handleAddParticipant(
+        localEvent._id,
+        participantEmail
+      );
+      setLocalEvent(updatedEvent);
       setParticipantEmail('');
     } catch (error) {
       console.error("Erreur lors de l'ajout du participant:", error);
@@ -46,17 +53,45 @@ export default function Santa({ event, user, onEventUpdate }) {
   };
 
   // Fonction pour retirer un participant
-  const handleRemoveParticipant = async email => {
+  const removeParticipant = async email => {
     try {
-      await removeParticipant(event._id, email);
-      // Récupérer l'événement complet après la suppression
-      const { getEvent } = require('../../services/eventService');
-      const updatedEvent = await getEvent(event._id);
-      onEventUpdate(updatedEvent);
+      const updatedEvent = await handleRemoveParticipant(localEvent._id, email);
+      setLocalEvent(updatedEvent);
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
       handleApiError(error);
     }
+  };
+
+  // Fonction pour supprimer l'événement
+  const deleteEvent = () => {
+    Alert.alert(
+      "Supprimer l'événement",
+      'Êtes-vous sûr de vouloir supprimer cet événement ? Cette action supprimera tous les participants et est irréversible.',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await handleDeleteEvent(localEvent._id);
+              // Rediriger vers la liste des événements
+              navigation.goBack();
+            } catch (error) {
+              console.error(
+                "Erreur lors de la suppression de l'événement:",
+                error
+              );
+              handleApiError(error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -71,7 +106,7 @@ export default function Santa({ event, user, onEventUpdate }) {
           />
           <Text style={styles.infoText}>
             le{' '}
-            {new Date(event.event_date).toLocaleDateString('fr-FR', {
+            {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
@@ -81,7 +116,7 @@ export default function Santa({ event, user, onEventUpdate }) {
         </View>
 
         {/* Budget conseillé - Secret Santa seulement */}
-        {event.event_budget && (
+        {localEvent.event_budget && (
           <View style={[styles.infoCard, styles.budgetCard]}>
             <FontAwesome5
               name='euro-sign'
@@ -89,7 +124,7 @@ export default function Santa({ event, user, onEventUpdate }) {
               color={theme.colors.text.white}
             />
             <Text style={styles.infoText}>
-              BUDGET CONSEILLÉ : {event.event_budget}€
+              BUDGET CONSEILLÉ : {localEvent.event_budget}€
             </Text>
           </View>
         )}
@@ -99,7 +134,7 @@ export default function Santa({ event, user, onEventUpdate }) {
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
 
-        {event.event_participants?.map((participant, index) => (
+        {localEvent.event_participants?.map((participant, index) => (
           <View key={index} style={styles.participantRow}>
             <Text style={styles.participantName}>{participant.email}</Text>
 
@@ -134,7 +169,7 @@ export default function Santa({ event, user, onEventUpdate }) {
               {isOrganizer && participant.role !== 'organizer' && (
                 <TouchableOpacity
                   style={styles.removeButton}
-                  onPress={() => handleRemoveParticipant(participant.email)}
+                  onPress={() => removeParticipant(participant.email)}
                 >
                   <FontAwesome5
                     name='trash'
@@ -171,7 +206,7 @@ export default function Santa({ event, user, onEventUpdate }) {
                   (addingParticipant || !participantEmail.trim()) &&
                     styles.addButtonDisabled,
                 ]}
-                onPress={handleAddParticipant}
+                onPress={addParticipant}
                 disabled={addingParticipant || !participantEmail.trim()}
               >
                 {addingParticipant ? (
@@ -201,9 +236,21 @@ export default function Santa({ event, user, onEventUpdate }) {
       </View>
 
       {/* Bouton de tirage au sort - Secret Santa seulement (seulement pour l'organisateur) */}
-      {isOrganizer && !event.drawnAt && (
+      {isOrganizer && !localEvent.drawnAt && (
         <TouchableOpacity style={styles.drawButton}>
           <Text style={styles.drawButtonText}>Effectuer le tirage au sort</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
+      {isOrganizer && (
+        <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
+          <FontAwesome5
+            name='trash'
+            size={16}
+            color={theme.colors.text.white}
+          />
+          <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
         </TouchableOpacity>
       )}
     </ScrollView>
@@ -350,5 +397,23 @@ const styles = StyleSheet.create({
     color: theme.colors.text.white,
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.bold,
+  },
+
+  // Bouton de suppression d'événement
+  deleteButton: {
+    backgroundColor: theme.colors.accent,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: theme.colors.text.white,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginLeft: 8,
   },
 });

@@ -13,11 +13,10 @@ import Christmas from '../../../components/events/Christmas';
 import Santa from '../../../components/events/Santa';
 import AuthContext from '../../../contexts/AuthContext';
 import { handleApiError } from '../../../services/errorService';
-import { getEvent } from '../../../services/eventService';
 import { theme } from '../../../styles/theme';
 
 export default function EventDetailsScreen() {
-  const { user } = useContext(AuthContext);
+  const { user, events, fetchEvent } = useContext(AuthContext);
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params;
@@ -26,12 +25,13 @@ export default function EventDetailsScreen() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const loadEvent = async () => {
       try {
         setLoading(true);
         setError(null);
-        // Récupérer l'événement spécifique via l'API /event/:id
-        const eventData = await getEvent(id);
+
+        // Récupérer l'événement via l'API
+        const eventData = await fetchEvent(id);
         setEvent(eventData);
       } catch (error) {
         console.error("Erreur lors du chargement de l'événement:", error);
@@ -42,14 +42,9 @@ export default function EventDetailsScreen() {
     };
 
     if (id) {
-      fetchEvent();
+      loadEvent();
     }
-  }, []);
-
-  // Fonction pour mettre à jour l'événement après modification
-  const handleEventUpdate = updatedEvent => {
-    setEvent(updatedEvent);
-  };
+  }, [id]);
 
   // Gestion des états de chargement et d'erreur
   if (loading) {
@@ -116,25 +111,11 @@ export default function EventDetailsScreen() {
   const renderEventComponent = () => {
     switch (event.event_type) {
       case 'secret_santa':
-        return (
-          <Santa event={event} user={user} onEventUpdate={handleEventUpdate} />
-        );
+        return <Santa event={event} user={user} />;
       case 'birthday':
-        return (
-          <Birthday
-            event={event}
-            user={user}
-            onEventUpdate={handleEventUpdate}
-          />
-        );
+        return <Birthday event={event} user={user} />;
       case 'christmas_list':
-        return (
-          <Christmas
-            event={event}
-            user={user}
-            onEventUpdate={handleEventUpdate}
-          />
-        );
+        return <Christmas event={event} user={user} />;
       default:
         return (
           <View style={theme.components.screen.centerContent}>

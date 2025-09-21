@@ -1,94 +1,93 @@
 import Constants from 'expo-constants'; // pour gérer la status bar sur différents téléphones
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
-  View,
+  Alert,
+  Image,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  Alert,
+  View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import * as ImagePicker from 'expo-image-picker'; // libriaire Expo pour accéder à la galerie/photos
-import AsyncStorage from '@react-native-async-storage/async-storage'; // stockage local (ici pour récupérer le token utilisateur)
-import axios from 'axios';
+import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 
 export default function AddGiftScreen({ route, navigation }) {
   // Récupère l'id de l'évènement transmis depuis la navigation
   const { eventId } = route.params;
+  const { handleAddGift } = useContext(AuthContext);
   const [errors, setErrors] = useState({});
 
-  // États pour stocker les valeurs saisies par l’utilisateur
+  // États pour stocker les valeurs saisies par l'utilisateur
   const [name, setName] = useState(''); // nom du cadeau
   const [price, setPrice] = useState(''); // prix du cadeau
   const [url, setUrl] = useState(''); // lien vers le cadeau (optionnel)
-  const [image, setImage] = useState(null); // image sélectionnée dans la galerie
+  const [images, setImages] = useState([]); // images sélectionnées dans la galerie
   const [loading, setLoading] = useState(false); // état du chargement (évite plusieurs clics)
 
-  // Fonction qui ouvre la galerie du téléphone
-  const pickImage = async () => {
+  // Fonction qui ouvre la galerie du téléphone pour sélectionner plusieurs images
+  const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images, // uniquement images
+      allowsMultipleSelection: true, // permet la sélection multiple
+      selectionLimit: 5, // limite à 5 images maximum
       // mediaTypes: [ImagePicker.MediaType.IMAGE], requiert mise à jour Expo SDK 51+
     });
 
     if (!result.canceled) {
-      // on vérifie que l'utilisateur n'a pas annulé son choix d'image
-      setImage(result.assets[0]); // si une image est choisie, on prend la première en on la sauvegarde dans le state
+      // on vérifie que l'utilisateur n'a pas annulé son choix d'images
+      setImages(prevImages => [...prevImages, ...result.assets]); // ajouter les nouvelles images aux existantes
     }
+  };
+
+  // Fonction pour supprimer une image
+  const removeImage = index => {
+    setImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
   // Fonction qui envoie le formulaire au back
   const handleSubmit = async () => {
     // Vérifie que les champs obligatoires sont remplis
-    if (!name || !price || !image?.uri) {
-      Alert.alert('Erreur', 'Nom, prix et image sont obligatoires.');
+    if (!name || !price) {
+      Alert.alert('Erreur', 'Nom et prix sont obligatoires.');
       return;
     }
 
     try {
       setLoading(true);
 
-      // Récupère le token stocké lors du login
-      const token = await AsyncStorage.getItem('token');
-
-      // Création d’un FormData (format nécessaire pour envoyer fichiers + données)
+      // Création d'un FormData (format nécessaire pour envoyer fichiers + données)
       let formData = new FormData();
       formData.append('name', name);
       formData.append('price', parseFloat(price)); // transforme le string en nombre
-      formData.append('image', {
-        uri: image.uri, // chemin local de l’image
-        name: 'gift.jpg', // nom arbitraire
-        type: 'image/jpeg', // type MIME
-      });
 
-      // Appel API pour envoyer le cadeau au back
-      const response = await axios.post(
-        `http://192.168.1.12:3000/event/${eventId}/gift-list`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // envoie du token dans les headers
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      // Vérifie si le back répond avec un status 200
-      if (response.status !== 200) {
-        throw new Error(
-          response.data.message || "Erreur lors de l'ajout du cadeau"
-        );
+      // Ajouter les images seulement si elles sont sélectionnées
+      if (images && images.length > 0) {
+        images.forEach((image, index) => {
+          formData.append('images', {
+            uri: image.uri, // chemin local de l'image
+            name: `gift_${index}.jpg`, // nom arbitraire avec index
+            type: 'image/jpeg', // type MIME
+          });
+        });
       }
+
+      // Ajouter l'URL si fournie
+      if (url) {
+        formData.append('url', url);
+      }
+
+      // Appel API via le contexte
+      await handleAddGift(eventId, formData);
 
       // Succès → affiche une alerte et revient à la liste
       Alert.alert('Succès', 'Cadeau ajouté avec succès !');
       navigation.goBack();
     } catch (error) {
-      // En cas d’erreur → affiche dans la console et une alerte utilisateur
+      // En cas d'erreur → affiche dans la console et une alerte utilisateur
       console.error('Erreur API:', error.response?.data || error.message);
       Alert.alert('Erreur', error.response?.data?.message || error.message);
     } finally {
@@ -156,41 +155,90 @@ export default function AddGiftScreen({ route, navigation }) {
           />
         </View>
 
-        {/* Choisir une image */}
+        {/* Choisir des images */}
         <View style={{ marginBottom: 20 }}>
-          <Text>Image du cadeau</Text>
+          <Text
+            style={{
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text.primary,
+              marginBottom: 8,
+            }}
+          >
+            Images du cadeau (optionnel)
+          </Text>
           <TouchableOpacity
             style={[
               theme.components.input.container,
               { justifyContent: 'center' },
               errors.date && { borderColor: theme.colors.text.error },
             ]}
-            onPress={pickImage}
+            onPress={pickImages}
           >
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
                 fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
-                marginBottom: 8,
+                textAlign: 'center',
               }}
             >
-              Choisir une image
+              Choisir des images ({images.length}/5)
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Aperçu de l’image sélectionnée */}
-        {image && (
-          <Image
-            source={{ uri: image.uri }}
-            style={{
-              width: 150,
-              height: 150,
-              marginVertical: 10,
-              borderRadius: 8,
-            }}
-          />
+        {/* Aperçu des images sélectionnées */}
+        {images && images.length > 0 && (
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary,
+                marginBottom: 10,
+              }}
+            >
+              Images sélectionnées :
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+              {images.map((image, index) => (
+                <View key={index} style={{ position: 'relative' }}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 8,
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      top: -5,
+                      right: -5,
+                      backgroundColor: theme.colors.text.error,
+                      borderRadius: 10,
+                      width: 20,
+                      height: 20,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      ×
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
         )}
 
         {/* Lien du cadeau (optionnel) */}

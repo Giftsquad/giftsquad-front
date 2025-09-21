@@ -46,3 +46,24 @@ export const updateProfile = async userData => {
     throw error;
   }
 };
+
+// Fonctions de gestion des données avec mise à jour du state
+export const handleLogin = async (userData, setUser) => {
+  try {
+    setUser(userData);
+    return userData;
+  } catch (error) {
+    console.error('Erreur lors de la connexion:', error);
+    throw error;
+  }
+};
+
+export const handleLogout = async (setUser, setEvents) => {
+  try {
+    console.log('Déconnexion en cours...');
+    setUser(null);
+    setEvents([]);
+  } catch (error) {
+    console.error('Erreur lors de la déconnexion :', error);
+  }
+};

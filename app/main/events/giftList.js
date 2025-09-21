@@ -1,43 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
+  ActivityIndicator,
   FlatList,
   Image,
-  ActivityIndicator,
   Linking,
-  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
-import { useIsFocused } from '@react-navigation/native'; // pemet d'utiliser isFocused
 
 export default function GiftListScreen({ route, navigation }) {
   const { eventId } = route.params; // récupéré via navigation.navigate('addGift', { eventId })}
+  const { events, fetchEvent } = useContext(AuthContext);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const isFocused = useIsFocused(); // permet de relancer le fetch si goback()
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const loadEvent = async () => {
       try {
-        const token = await AsyncStorage.getItem('token');
-        const response = await fetch(
-          `http://192.168.1.12:3000/event/${eventId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        setLoading(true);
 
-        if (!response.ok) {
-          throw new Error("Impossible de récupérer l'événement");
+        // D'abord chercher dans la liste locale des événements
+        const localEvent = events.find(e => e._id === eventId);
+        if (localEvent) {
+          setEvent(localEvent);
+        } else {
+          // Si pas trouvé localement, récupérer via l'API
+          const eventData = await fetchEvent(eventId);
+          setEvent(eventData);
         }
-
-        const data = await response.json();
-        setEvent(data);
       } catch (error) {
         console.error('Erreur fetch event:', error);
       } finally {
@@ -45,10 +38,10 @@ export default function GiftListScreen({ route, navigation }) {
       }
     };
 
-    if (isFocused) {
-      fetchEvent(); // se relance à chaque retour sur la page
+    if (eventId) {
+      loadEvent();
     }
-  }, [eventId, isFocused]);
+  }, [eventId, events, fetchEvent]);
 
   if (loading) {
     return (
@@ -102,15 +95,55 @@ export default function GiftListScreen({ route, navigation }) {
         data={event.giftList}
         keyExtractor={item => item._id.toString()}
         renderItem={({ item }) => (
-          <View>
-            {item.image && <Image source={{ uri: item.image }} />}
+          <View
+            style={{
+              marginBottom: 20,
+              padding: 15,
+              backgroundColor: '#f5f5f5',
+              borderRadius: 8,
+            }}
+          >
+            {/* Affichage des images */}
+            {item.images && item.images.length > 0 && (
+              <View style={{ marginBottom: 10 }}>
+                <View
+                  style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}
+                >
+                  {item.images.map((image, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri: image.secure_url || image.url }}
+                      style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: 4,
+                      }}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+
             <View>
-              <Text>{item.name}</Text>
-              <Text>{item.price} €</Text>
+              <Text
+                style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 5 }}
+              >
+                {item.name}
+              </Text>
+              <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
+                {item.price} €
+              </Text>
               {item.url ? (
-                <Text onPress={() => Linking.openURL(item.url)}>
-                  Voir le produit
-                </Text>
+                <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
+                  <Text
+                    style={{
+                      color: '#007AFF',
+                      textDecorationLine: 'underline',
+                    }}
+                  >
+                    Voir le produit
+                  </Text>
+                </TouchableOpacity>
               ) : null}
             </View>
           </View>

@@ -1,8 +1,9 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,17 +11,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService';
-import { addParticipant, removeParticipant } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 
-export default function Birthday({ event, user, onEventUpdate }) {
+export default function Birthday({ event, user }) {
   const navigation = useNavigation();
+  const { handleAddParticipant, handleRemoveParticipant, handleDeleteEvent } =
+    useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
+  const [localEvent, setLocalEvent] = useState(event);
 
   // Vérifier si l'utilisateur connecté est l'organisateur
-  const isOrganizer = event.event_participants?.some(
+  const isOrganizer = localEvent.event_participants?.some(
     participant =>
       participant.user?._id === user?._id && participant.role === 'organizer'
   );
@@ -28,7 +32,7 @@ export default function Birthday({ event, user, onEventUpdate }) {
   // Calculer le montant collecté pour les anniversaires
   const calculateCollectedAmount = () => {
     return (
-      event.event_participants?.reduce((total, participant) => {
+      localEvent.event_participants?.reduce((total, participant) => {
         return total + (participant.participationAmount || 0);
       }, 0) || 0
     );
@@ -37,7 +41,7 @@ export default function Birthday({ event, user, onEventUpdate }) {
   // Compter les participants qui participent (ont un montant)
   const getParticipatingCount = () => {
     return (
-      event.event_participants?.filter(
+      localEvent.event_participants?.filter(
         participant =>
           participant.participationAmount && participant.participationAmount > 0
       ).length || 0
@@ -45,15 +49,18 @@ export default function Birthday({ event, user, onEventUpdate }) {
   };
 
   // Fonction pour ajouter un participant
-  const handleAddParticipant = async () => {
+  const addParticipant = async () => {
     if (!participantEmail.trim()) {
       return;
     }
 
     try {
       setAddingParticipant(true);
-      const updatedEvent = await addParticipant(event._id, participantEmail);
-      onEventUpdate(updatedEvent);
+      const updatedEvent = await handleAddParticipant(
+        localEvent._id,
+        participantEmail
+      );
+      setLocalEvent(updatedEvent);
       setParticipantEmail('');
     } catch (error) {
       console.error("Erreur lors de l'ajout du participant:", error);
@@ -65,17 +72,45 @@ export default function Birthday({ event, user, onEventUpdate }) {
   };
 
   // Fonction pour retirer un participant
-  const handleRemoveParticipant = async email => {
+  const removeParticipant = async email => {
     try {
-      await removeParticipant(event._id, email);
-      // Récupérer l'événement complet après la suppression
-      const { getEvent } = require('../../services/eventService');
-      const updatedEvent = await getEvent(event._id);
-      onEventUpdate(updatedEvent);
+      const updatedEvent = await handleRemoveParticipant(localEvent._id, email);
+      setLocalEvent(updatedEvent);
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
       handleApiError(error);
     }
+  };
+
+  // Fonction pour supprimer l'événement
+  const deleteEvent = () => {
+    Alert.alert(
+      "Supprimer l'événement",
+      'Êtes-vous sûr de vouloir supprimer cet événement ? Cette action supprimera tous les participants et est irréversible.',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await handleDeleteEvent(localEvent._id);
+              // Rediriger vers la liste des événements
+              navigation.goBack();
+            } catch (error) {
+              console.error(
+                "Erreur lors de la suppression de l'événement:",
+                error
+              );
+              handleApiError(error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -90,7 +125,7 @@ export default function Birthday({ event, user, onEventUpdate }) {
           />
           <Text style={styles.infoText}>
             le{' '}
-            {new Date(event.event_date).toLocaleDateString('fr-FR', {
+            {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
@@ -120,7 +155,9 @@ export default function Birthday({ event, user, onEventUpdate }) {
       {/* Bouton Liste de cadeaux - Anniversaire seulement */}
       <TouchableOpacity
         style={styles.giftListButton}
-        onPress={() => navigation.navigate('GiftList', { eventId: event._id })}
+        onPress={() =>
+          navigation.navigate('GiftList', { eventId: localEvent._id })
+        }
       >
         <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
         <Text style={styles.giftListButtonText}>Liste de cadeaux</Text>
@@ -130,7 +167,7 @@ export default function Birthday({ event, user, onEventUpdate }) {
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
 
-        {event.event_participants?.map((participant, index) => (
+        {localEvent.event_participants?.map((participant, index) => (
           <View key={index} style={styles.participantRow}>
             <Text style={styles.participantName}>{participant.email}</Text>
 
@@ -163,7 +200,7 @@ export default function Birthday({ event, user, onEventUpdate }) {
               {isOrganizer && participant.role !== 'organizer' && (
                 <TouchableOpacity
                   style={styles.removeButton}
-                  onPress={() => handleRemoveParticipant(participant.email)}
+                  onPress={() => removeParticipant(participant.email)}
                 >
                   <FontAwesome5
                     name='trash'
@@ -200,7 +237,7 @@ export default function Birthday({ event, user, onEventUpdate }) {
                   (addingParticipant || !participantEmail.trim()) &&
                     styles.addButtonDisabled,
                 ]}
-                onPress={handleAddParticipant}
+                onPress={addParticipant}
                 disabled={addingParticipant || !participantEmail.trim()}
               >
                 {addingParticipant ? (
@@ -220,6 +257,18 @@ export default function Birthday({ event, user, onEventUpdate }) {
           </View>
         )}
       </View>
+
+      {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
+      {isOrganizer && (
+        <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
+          <FontAwesome5
+            name='trash'
+            size={16}
+            color={theme.colors.text.white}
+          />
+          <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 }
@@ -400,5 +449,23 @@ const styles = StyleSheet.create({
   addButtonDisabled: {
     backgroundColor: theme.colors.text.secondary,
     opacity: 0.6,
+  },
+
+  // Bouton de suppression d'événement
+  deleteButton: {
+    backgroundColor: theme.colors.accent,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: theme.colors.text.white,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+    marginLeft: 8,
   },
 });
