@@ -60,10 +60,12 @@ export default function GiftDetailScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
-              await handleDeleteGift(gift._id);
+              // Déterminer si c'est un gift de wishlist ou giftList
+              const isWish = gift.source === 'wishList';
+              await handleDeleteGift(currentEvent._id, gift._id, isWish);
               // Naviger vers la liste des cadeaux après suppression
               // La liste sera mise à jour automatiquement via le contexte
-              navigation.navigate('GiftList', { event: currentEvent });
+              navigation.goBack();
               // Afficher l'alerte de succès après la navigation
               setTimeout(() => {
                 Alert.alert('Succès', 'Cadeau supprimé avec succès.');

@@ -7,15 +7,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect, useState } from 'react';
 import AuthContext from '../contexts/AuthContext';
 import {
+  getUserWithEvents,
   handleLogin,
   handleLogout,
-  validateToken,
 } from '../services/authService';
 import {
-  fetchEvent,
   fetchEventGifts,
   fetchEventWithGifts,
-  fetchEvents,
   handleAddGift,
   handleAddParticipant,
   handleCreateEvent,
@@ -30,7 +28,6 @@ import { theme } from '../styles/theme';
 const RootLayout = () => {
   const [user, setUser] = useState(null);
   const [isInit, setIsInit] = useState(false);
-  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Fonction login qui met à jour le state local et sauvegarde seulement le token
@@ -43,22 +40,35 @@ const RootLayout = () => {
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('token'); // supprime le token du login
-      await handleLogout(setUser, setEvents);
+      await handleLogout(setUser);
       router.replace('/auth/login');
     } catch (error) {
       console.error('Erreur lors de la déconnexion :', error);
     }
   };
 
-  // Fonction pour charger les événements
-  const loadEvents = async () => {
-    if (!user) return;
-    await fetchEvents(setEvents, setLoading);
+  // Fonction pour charger l'utilisateur avec ses événements
+  const loadUserWithEvents = async () => {
+    try {
+      setLoading(true);
+      const userWithEvents = await getUserWithEvents();
+      setUser(userWithEvents);
+    } catch (error) {
+      console.error('Erreur lors du chargement des événements:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Fonction pour récupérer un événement spécifique
+  // Fonction pour recharger les événements (utile après ajout de gift)
+  const refreshEvents = async () => {
+    await loadUserWithEvents();
+  };
+
+  // Fonction pour récupérer un événement spécifique depuis user.events
   const loadEvent = async eventId => {
-    return await fetchEvent(eventId, setEvents);
+    if (!user || !user.events) return null;
+    return user.events.find(event => event._id === eventId);
   };
 
   // Fonction pour récupérer l'événement complet avec ses cadeaux
@@ -73,37 +83,51 @@ const RootLayout = () => {
 
   // Fonction pour ajouter un participant
   const addParticipantToEvent = async (eventId, email) => {
-    return await handleAddParticipant(eventId, email, setEvents);
+    const result = await handleAddParticipant(eventId, email);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   // Fonction pour supprimer un participant
   const removeParticipantFromEvent = async (eventId, email) => {
-    return await handleRemoveParticipant(eventId, email, setEvents);
+    const result = await handleRemoveParticipant(eventId, email);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   // Fonction pour supprimer un événement
   const deleteEventById = async eventId => {
-    return await handleDeleteEvent(eventId, setEvents);
+    const result = await handleDeleteEvent(eventId);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   // Fonction pour créer un événement
   const createNewEvent = async eventData => {
-    return await handleCreateEvent(eventData, setEvents);
+    const result = await handleCreateEvent(eventData);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   // Fonction pour mettre à jour un événement
   const updateEventById = async (eventId, eventData) => {
-    return await handleUpdateEvent(eventId, eventData, setEvents);
+    const result = await handleUpdateEvent(eventId, eventData);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   // Fonction pour ajouter un cadeau
-  const addGiftToEvent = async (eventId, giftData) => {
-    return await handleAddGift(eventId, giftData, setEvents);
+  const addGiftToEvent = async (eventId, giftData, isWish = false) => {
+    const result = await handleAddGift(eventId, giftData, isWish);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   // Fonction pour supprimer un cadeau
-  const deleteGiftById = async giftId => {
-    return await handleDeleteGift(giftId, setEvents);
+  const deleteGiftById = async (eventId, giftId, isWish = false) => {
+    const result = await handleDeleteGift(eventId, giftId, isWish);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
   };
 
   useEffect(() => {
@@ -113,8 +137,8 @@ const RootLayout = () => {
 
       if (token) {
         try {
-          // Récupérer l'objet utilisateur complet depuis le backend via validateToken
-          const userData = await validateToken();
+          // Récupérer l'utilisateur avec ses événements populés
+          const userData = await getUserWithEvents();
           setUser(userData);
         } catch (error) {
           console.log('Erreur lors de la récupération des données utilisateur');
@@ -133,14 +157,7 @@ const RootLayout = () => {
     fetchAsyncItem();
   }, []);
 
-  // Charger les événements quand l'utilisateur change
-  useEffect(() => {
-    if (user) {
-      loadEvents();
-    } else {
-      setEvents([]);
-    }
-  }, [user]);
+  // Les événements sont maintenant directement dans user.events, pas besoin de useEffect séparé
 
   // Pendant que isInit est false (données pas encore récupérées), on affiche un loader
   if (!isInit) {
@@ -168,9 +185,10 @@ const RootLayout = () => {
           login,
           logout,
           isInit,
-          events,
+          events: user?.events || [],
           loading,
-          fetchEvents: loadEvents,
+          fetchEvents: refreshEvents,
+          refreshEvents: refreshEvents,
           fetchEvent: loadEvent,
           fetchEventWithGifts: loadEventWithGifts,
           fetchEventGifts: loadEventGifts,

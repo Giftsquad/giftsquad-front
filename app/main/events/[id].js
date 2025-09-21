@@ -30,7 +30,7 @@ export default function EventDetailsScreen() {
         setLoading(true);
         setError(null);
 
-        // Récupérer l'événement via l'API
+        // Récupérer l'événement depuis user.events
         const eventData = await fetchEvent(id);
         setEvent(eventData);
       } catch (error) {

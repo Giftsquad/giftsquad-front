@@ -12,20 +12,22 @@ import {
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 
-export default function GiftListScreen({ navigation }) {
+export default function WishListScreen({ navigation }) {
   const route = useRoute();
-  const { event } = route.params;
+  const { event, participant } = route.params;
   const { user, events, refreshEvents, loading, handleDeleteGift } =
     useContext(AuthContext);
-  const [allGifts, setAllGifts] = useState([]);
+  const [wishListGifts, setWishListGifts] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(null);
+  const [currentParticipant, setCurrentParticipant] = useState(null);
 
-  // Utiliser useEffect pour charger les cadeaux depuis l'événement passé en paramètres
+  // Utiliser useEffect pour charger les cadeaux de la wishList du participant spécifique
   // et se mettre à jour quand le contexte global change
   useEffect(() => {
     if (!event || !user) {
-      setAllGifts([]);
+      setWishListGifts([]);
       setCurrentEvent(null);
+      setCurrentParticipant(null);
       return;
     }
 
@@ -33,63 +35,71 @@ export default function GiftListScreen({ navigation }) {
     const updatedEvent = events.find(e => e._id === event._id) || event;
     setCurrentEvent(updatedEvent);
 
-    // Collecter les cadeaux directement dans le composant
+    // Si un participant spécifique est passé, utiliser ses souhaits
+    let targetParticipant = participant;
+
+    // Si pas de participant spécifique, utiliser l'utilisateur connecté
+    if (!targetParticipant && user) {
+      targetParticipant = updatedEvent.event_participants?.find(
+        p => p.user?._id === user._id
+      );
+    }
+
+    setCurrentParticipant(targetParticipant);
+
+    // Collecter les cadeaux de la wishList du participant
     const gifts = [];
 
-    // Ajouter les cadeaux de la giftList de l'événement
-    if (updatedEvent.giftList && updatedEvent.giftList.length > 0) {
-      updatedEvent.giftList.forEach(gift => {
+    // Essayer de trouver le participant dans l'événement mis à jour
+    let actualParticipant = targetParticipant;
+    if (updatedEvent?.event_participants && targetParticipant) {
+      const foundParticipant = updatedEvent.event_participants.find(
+        p => p.user?._id === targetParticipant.user?._id
+      );
+      if (foundParticipant) {
+        actualParticipant = foundParticipant;
+      }
+    }
+
+    if (
+      actualParticipant &&
+      actualParticipant.wishList &&
+      actualParticipant.wishList.length > 0
+    ) {
+      actualParticipant.wishList.forEach(gift => {
         gifts.push({
           ...gift,
-          source: 'giftList',
+          source: 'wishList',
           eventId: updatedEvent._id,
           eventName: updatedEvent.event_name,
-          addedByParticipantName: gift.addedBy
-            ? gift.addedBy.firstname || gift.addedBy.nickname || 'Inconnu'
-            : 'Inconnu',
+          addedByParticipantName:
+            actualParticipant.user?.firstname ||
+            actualParticipant.user?.nickname ||
+            'Participant',
           // Ajouter les informations pour l'affichage
-          isPersonalGiftList: gift.addedBy?._id === user?._id,
+          isPersonalWishList: actualParticipant.user?._id === user?._id,
           addedByUser: gift.addedBy,
           addedAt: gift.createdAt || gift.addedAt,
         });
       });
     }
 
-    // Ajouter les cadeaux des wishLists des participants
-    if (
-      updatedEvent.event_participants &&
-      updatedEvent.event_participants.length > 0
-    ) {
-      updatedEvent.event_participants.forEach(participant => {
-        if (participant.wishList && participant.wishList.length > 0) {
-          participant.wishList.forEach(gift => {
-            gifts.push({
-              ...gift,
-              source: 'wishList',
-              eventId: updatedEvent._id,
-              eventName: updatedEvent.event_name,
-              addedByParticipantName: participant.user
-                ? participant.user.firstname ||
-                  participant.user.nickname ||
-                  'Inconnu'
-                : 'Inconnu',
-              // Ajouter les informations pour l'affichage
-              isPersonalWishList: participant.user?._id === user?._id,
-              addedByUser: gift.addedBy,
-              addedAt: gift.createdAt || gift.addedAt,
-            });
-          });
-        }
-      });
-    }
+    setWishListGifts(gifts);
+  }, [event?._id, participant?._id, user?._id, events, events.length]);
 
-    setAllGifts(gifts);
-  }, [event, user, events]);
+  // Recharger les événements quand on revient sur l'écran
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refreshEvents();
+    });
+
+    return unsubscribe;
+  }, [navigation, refreshEvents]);
 
   // Fonction pour supprimer un cadeau
-  const handleDeleteGiftListGift = async giftId => {
+  const handleDeleteWishGift = async giftId => {
     try {
-      await handleDeleteGift(currentEvent._id, giftId, false); // isWish = false pour giftList
+      await handleDeleteGift(currentEvent._id, giftId, true); // isWish = true
     } catch (error) {
       console.error('Erreur lors de la suppression du cadeau:', error);
     }
@@ -134,7 +144,27 @@ export default function GiftListScreen({ navigation }) {
     );
   }
 
-  if (allGifts.length === 0) {
+  if (wishListGifts.length === 0) {
+    const participantName =
+      currentParticipant?.user?.firstname ||
+      currentParticipant?.user?.nickname ||
+      'Ce participant';
+
+    // Vérifier si c'est l'utilisateur actuel par ID ou par email
+    const isCurrentUser =
+      currentParticipant?.user?._id === user?._id ||
+      currentParticipant?.email === user?.email;
+
+    // Debug: vérifier pourquoi le bouton n'apparaît pas
+    console.log('Debug wishlist button (empty list):', {
+      currentParticipantId: currentParticipant?.user?._id,
+      currentUserId: user?._id,
+      isCurrentUser,
+      participantName,
+      currentParticipantEmail: currentParticipant?.email,
+      userEmail: user?.email,
+    });
+
     return (
       <View
         style={[
@@ -152,28 +182,46 @@ export default function GiftListScreen({ navigation }) {
             marginTop: 50,
           }}
         >
-          Aucun cadeau ajouté pour l'instant
+          {isCurrentUser
+            ? 'Votre liste de souhaits est vide'
+            : `La liste de souhaits de ${participantName} est vide`}
         </Text>
-        {/* Bouton d'ajout affiché même si la liste est vide */}
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('addGift', {
-              event: currentEvent,
-            });
+        <Text
+          style={{
+            fontSize: theme.typography.fontSize.sm,
+            color: theme.colors.text.secondary,
+            textAlign: 'center',
+            marginTop: 10,
+            marginBottom: 30,
           }}
         >
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.md,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              marginBottom: 8,
-              textAlign: 'center',
+          {isCurrentUser
+            ? 'Ajoutez des cadeaux que vous souhaitez recevoir'
+            : `${participantName} n'a pas encore ajouté de souhaits`}
+        </Text>
+        {/* Bouton d'ajout affiché seulement si c'est l'utilisateur connecté */}
+        {isCurrentUser && (
+          <TouchableOpacity
+            style={[
+              theme.components.button.primary,
+              { alignSelf: 'center', paddingHorizontal: 20 },
+            ]}
+            onPress={() => {
+              navigation.navigate('addWish', {
+                event: currentEvent,
+              });
             }}
           >
-            + Ajouter un cadeau
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                theme.components.button.text.primary,
+                { textAlign: 'center' },
+              ]}
+            >
+              + Ajouter un souhait
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -182,7 +230,7 @@ export default function GiftListScreen({ navigation }) {
     <View style={{ flex: 1 }}>
       <FlatList
         style={{ flex: 1, padding: 20 }}
-        data={allGifts}
+        data={wishListGifts}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -253,7 +301,7 @@ export default function GiftListScreen({ navigation }) {
               >
                 {item.price} €
               </Text>
-              {/* Afficher qui a ajouté le cadeau selon le type */}
+              {/* Afficher qui a ajouté le cadeau selon le type de wishlist */}
               {item.addedAt && (
                 <Text
                   style={{
@@ -286,9 +334,10 @@ export default function GiftListScreen({ navigation }) {
                 </TouchableOpacity>
               ) : null}
               {/* Bouton de suppression pour l'utilisateur connecté */}
-              {item.addedBy?._id === user?._id && (
+              {(currentParticipant?.user?._id === user?._id ||
+                currentParticipant?.email === user?.email) && (
                 <TouchableOpacity
-                  onPress={() => handleDeleteGiftListGift(item._id)}
+                  onPress={() => handleDeleteWishGift(item._id)}
                   style={{
                     backgroundColor: theme.colors.text.error,
                     paddingVertical: 8,
@@ -314,19 +363,42 @@ export default function GiftListScreen({ navigation }) {
         )}
       />
 
-      {/* Bouton d'ajout */}
-      <TouchableOpacity
-        style={theme.components.card.container}
-        onPress={() => {
-          navigation.navigate('addGift', {
-            event: currentEvent,
-          });
-        }}
-      >
-        <Text style={{ textAlign: 'center', marginTop: 20 }}>
-          + Ajouter un cadeau
-        </Text>
-      </TouchableOpacity>
+      {/* Bouton d'ajout - seulement si c'est l'utilisateur connecté */}
+      {(() => {
+        // Vérifier si c'est l'utilisateur actuel par ID ou par email
+        const isCurrentUser =
+          currentParticipant?.user?._id === user?._id ||
+          currentParticipant?.email === user?.email;
+        console.log('Debug wishlist button (with gifts):', {
+          currentParticipantId: currentParticipant?.user?._id,
+          currentUserId: user?._id,
+          isCurrentUser,
+          currentParticipantEmail: currentParticipant?.email,
+          userEmail: user?.email,
+        });
+        return isCurrentUser;
+      })() && (
+        <TouchableOpacity
+          style={[
+            theme.components.button.primary,
+            { margin: 20, alignSelf: 'center', paddingHorizontal: 20 },
+          ]}
+          onPress={() => {
+            navigation.navigate('addWish', {
+              event: currentEvent,
+            });
+          }}
+        >
+          <Text
+            style={[
+              theme.components.button.text.primary,
+              { textAlign: 'center' },
+            ]}
+          >
+            + Ajouter un souhait
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

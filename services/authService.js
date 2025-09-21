@@ -58,12 +58,25 @@ export const handleLogin = async (userData, setUser) => {
   }
 };
 
-export const handleLogout = async (setUser, setEvents) => {
+export const handleLogout = async setUser => {
   try {
     console.log('Déconnexion en cours...');
     setUser(null);
-    setEvents([]);
   } catch (error) {
     console.error('Erreur lors de la déconnexion :', error);
+  }
+};
+
+// Fonction pour récupérer l'utilisateur avec ses événements populés
+export const getUserWithEvents = async () => {
+  try {
+    const response = await api.get('/user/me/events');
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération de l'utilisateur avec ses événements:",
+      error
+    );
+    throw error;
   }
 };

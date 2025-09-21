@@ -87,11 +87,19 @@ export const updateEvent = async (eventId, eventData) => {
 };
 
 // Ajoute un cadeau à un événement
-export const addGift = async (eventId, giftData, eventType = null) => {
+export const addGift = async (
+  eventId,
+  giftData,
+  eventType = null,
+  isWish = false
+) => {
   try {
-    // Déterminer la route selon le type d'événement
+    // Déterminer la route selon le type d'événement et si c'est un wish
     let route;
-    if (eventType === 'secret_santa') {
+    if (isWish) {
+      // Pour les wishes, utiliser la route wish-list
+      route = `/event/${eventId}/wish-list`;
+    } else if (eventType === 'secret_santa') {
       route = `/event/${eventId}/gift`;
     } else if (eventType === 'birthday') {
       route = `/event/${eventId}/gift-list`;
@@ -124,9 +132,16 @@ export const deleteEvent = async eventId => {
 };
 
 // Fonction pour supprimer un cadeau
-export const deleteGift = async giftId => {
+export const deleteGift = async (eventId, giftId, isWish = false) => {
   try {
-    const response = await api.delete(`/gifts/gift/${giftId}`);
+    let response;
+    if (isWish) {
+      // Pour les wishlists, utiliser la route spécifique
+      response = await api.delete(`/gifts/${eventId}/wish-list/${giftId}`);
+    } else {
+      // Pour les giftLists, utiliser la route générique
+      response = await api.delete(`/gifts/gift/${giftId}`);
+    }
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la suppression du cadeau:', error);
@@ -135,9 +150,14 @@ export const deleteGift = async giftId => {
 };
 
 // Fonction pour supprimer un cadeau avec mise à jour du contexte
-export const handleDeleteGift = async (giftId, setEvents) => {
+export const handleDeleteGift = async (
+  eventId,
+  giftId,
+  isWish = false,
+  setEvents
+) => {
   try {
-    const response = await deleteGift(giftId);
+    const response = await deleteGift(eventId, giftId, isWish);
     console.log('Réponse de suppression:', response);
 
     // Vérifier si la réponse contient l'événement mis à jour
@@ -184,26 +204,20 @@ export const fetchEvent = async (eventId, setEvents) => {
   }
 };
 
-export const handleAddParticipant = async (eventId, email, setEvents) => {
+export const handleAddParticipant = async (eventId, email) => {
   try {
-    const updatedEvent = await addParticipant(eventId, email);
-    setEvents(prevEvents =>
-      prevEvents.map(event => (event._id === eventId ? updatedEvent : event))
-    );
-    return updatedEvent;
+    const response = await addParticipant(eventId, email);
+    return response;
   } catch (error) {
     console.error("Erreur lors de l'ajout du participant:", error);
     throw error;
   }
 };
 
-export const handleRemoveParticipant = async (eventId, email, setEvents) => {
+export const handleRemoveParticipant = async (eventId, email) => {
   try {
     await removeParticipant(eventId, email);
     const updatedEvent = await getEvent(eventId);
-    setEvents(prevEvents =>
-      prevEvents.map(event => (event._id === eventId ? updatedEvent : event))
-    );
     return updatedEvent;
   } catch (error) {
     console.error('Erreur lors de la suppression du participant:', error);
@@ -211,20 +225,19 @@ export const handleRemoveParticipant = async (eventId, email, setEvents) => {
   }
 };
 
-export const handleDeleteEvent = async (eventId, setEvents) => {
+export const handleDeleteEvent = async eventId => {
   try {
     await deleteEvent(eventId);
-    setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+    return true;
   } catch (error) {
     console.error("Erreur lors de la suppression de l'événement:", error);
     throw error;
   }
 };
 
-export const handleCreateEvent = async (eventData, setEvents) => {
+export const handleCreateEvent = async eventData => {
   try {
     const newEvent = await createEvent(eventData);
-    setEvents(prevEvents => [newEvent, ...prevEvents]);
     return newEvent;
   } catch (error) {
     console.error("Erreur lors de la création de l'événement:", error);
@@ -232,12 +245,9 @@ export const handleCreateEvent = async (eventData, setEvents) => {
   }
 };
 
-export const handleUpdateEvent = async (eventId, eventData, setEvents) => {
+export const handleUpdateEvent = async (eventId, eventData) => {
   try {
     const updatedEvent = await updateEvent(eventId, eventData);
-    setEvents(prevEvents =>
-      prevEvents.map(event => (event._id === eventId ? updatedEvent : event))
-    );
     return updatedEvent;
   } catch (error) {
     console.error("Erreur lors de la mise à jour de l'événement:", error);
@@ -246,16 +256,24 @@ export const handleUpdateEvent = async (eventId, eventData, setEvents) => {
 };
 
 // Fonction pour ajouter un cadeau
-export const handleAddGift = async (eventId, giftData, setEvents) => {
+export const handleAddGift = async (eventId, giftData, isWish = false) => {
   try {
     // Récupérer l'événement pour connaître son type
     const eventResponse = await api.get(`/event/${eventId}`);
     const event = eventResponse.data;
 
-    const updatedEvent = await addGift(eventId, giftData, event.event_type);
-    setEvents(prevEvents =>
-      prevEvents.map(event => (event._id === eventId ? updatedEvent : event))
+    // Vérifier que l'événement existe et a un type
+    if (!event || !event.event_type) {
+      throw new Error("Événement introuvable ou type d'événement manquant");
+    }
+
+    const updatedEvent = await addGift(
+      eventId,
+      giftData,
+      event.event_type,
+      isWish
     );
+
     return updatedEvent;
   } catch (error) {
     console.error("Erreur lors de l'ajout du cadeau:", error);

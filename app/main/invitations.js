@@ -181,11 +181,31 @@ const Invitations = () => {
                   {/*  la fonction .map() ne retourne pas toujours un élément (quand participant.role !== 'organizer'), ce qui peut causer des problèmes de key */}
                   {item.event_participants
                     .filter(participant => participant.role === 'organizer')
-                    .map((participant, index) => (
-                      <Text key={participant.user._id || `organizer-${index}`}>
-                        {participant.user.firstname} {participant.user.lastname}
-                      </Text>
-                    ))}
+                    .map((participant, index) => {
+                      // Logique d'affichage du nom selon le statut
+                      const getParticipantName = () => {
+                        // Pour l'organisateur, toujours afficher prénom + nom si disponibles
+                        if (
+                          participant.user?.firstname &&
+                          participant.user?.lastname
+                        ) {
+                          return `${participant.user.firstname} ${participant.user.lastname}`;
+                        }
+                        if (participant.user?.firstname) {
+                          return participant.user.firstname;
+                        }
+                        // Sinon, afficher l'email
+                        return participant.email;
+                      };
+
+                      return (
+                        <Text
+                          key={participant.user?._id || `organizer-${index}`}
+                        >
+                          {getParticipantName()}
+                        </Text>
+                      );
+                    })}
                   <View style={styles.eventDate}>
                     <FontAwesome name='calendar' size={20} color='black' />
                     <Text>

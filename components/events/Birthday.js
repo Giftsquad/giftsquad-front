@@ -56,11 +56,26 @@ export default function Birthday({ event, user }) {
 
     try {
       setAddingParticipant(true);
-      const updatedEvent = await handleAddParticipant(
+      const result = await handleAddParticipant(
         localEvent._id,
         participantEmail
       );
-      setLocalEvent(updatedEvent);
+
+      // Gérer la réponse selon si l'utilisateur a un compte ou non
+      if (result.userExists === false) {
+        Alert.alert(
+          'Invitation envoyée',
+          `L'invitation a été envoyée à ${participantEmail}. Cette personne n'a pas encore de compte et devra d'abord en créer un pour accepter l'invitation.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Invitation envoyée',
+          `L'invitation a été envoyée avec succès à ${participantEmail}.`,
+          [{ text: 'OK' }]
+        );
+      }
+
       setParticipantEmail('');
     } catch (error) {
       console.error("Erreur lors de l'ajout du participant:", error);
@@ -182,9 +197,46 @@ export default function Birthday({ event, user }) {
             return styles.participantNameGreyed; // Style grisé pour en attente
           };
 
+          // Logique d'affichage du nom selon le statut
+          const getParticipantName = () => {
+            // Si le participant a accepté et a des infos utilisateur complètes
+            if (
+              participant.status === 'accepted' &&
+              participant.user?.firstname &&
+              participant.user?.lastname
+            ) {
+              return `${participant.user.firstname} ${participant.user.lastname}`;
+            }
+            // Si le participant a accepté mais n'a que le prénom
+            if (
+              participant.status === 'accepted' &&
+              participant.user?.firstname
+            ) {
+              return participant.user.firstname;
+            }
+            // Pour l'organisateur, toujours afficher prénom + nom si disponibles
+            if (
+              participant.role === 'organizer' &&
+              participant.user?.firstname &&
+              participant.user?.lastname
+            ) {
+              return `${participant.user.firstname} ${participant.user.lastname}`;
+            }
+            if (
+              participant.role === 'organizer' &&
+              participant.user?.firstname
+            ) {
+              return participant.user.firstname;
+            }
+            // Sinon, afficher l'email (en attente, refusé, ou pas d'infos utilisateur)
+            return participant.email;
+          };
+
+          const participantName = getParticipantName();
+
           return (
             <View key={index} style={styles.participantRow}>
-              <Text style={getEmailStyle()}>{participant.email}</Text>
+              <Text style={getEmailStyle()}>{participantName}</Text>
 
               <View style={styles.participantActions}>
                 <View style={styles.participantStatus}>
