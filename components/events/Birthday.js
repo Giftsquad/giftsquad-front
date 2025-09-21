@@ -169,53 +169,80 @@ export default function Birthday({ event, user }) {
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
 
-        {localEvent.event_participants?.map((participant, index) => (
-          <View key={index} style={styles.participantRow}>
-            <Text style={styles.participantName}>{participant.email}</Text>
+        {localEvent.event_participants?.map((participant, index) => {
+          // Déterminer le style de l'email selon le statut
+          const getEmailStyle = () => {
+            if (participant.role === 'organizer') {
+              return styles.participantName; // Style normal pour l'organisateur
+            }
+            if (participant.status === 'accepted') {
+              return styles.participantName; // Style normal pour accepté
+            }
+            if (participant.status === 'declined') {
+              return styles.participantNameGreyed; // Style grisé pour refusé
+            }
+            return styles.participantNameGreyed; // Style grisé pour en attente
+          };
 
-            <View style={styles.participantActions}>
-              <View style={styles.participantStatus}>
-                {participant.role === 'organizer' ? (
-                  // Icône de couronne pour l'organisateur
-                  <FontAwesome5 name='crown' size={16} color='#FFD700' />
-                ) : // Pour les anniversaires : montant ou bouton participer
-                participant.participationAmount ? (
-                  <View style={styles.amountTag}>
-                    <Text style={styles.amountText}>
-                      {participant.participationAmount}€
-                    </Text>
-                  </View>
-                ) : participant.user?._id === user?._id ? (
-                  <TouchableOpacity style={styles.participateButton}>
-                    <Text style={styles.participateButtonText}>Participer</Text>
+          return (
+            <View key={index} style={styles.participantRow}>
+              <Text style={getEmailStyle()}>{participant.email}</Text>
+
+              <View style={styles.participantActions}>
+                <View style={styles.participantStatus}>
+                  {participant.role === 'organizer' ? (
+                    // Icône de couronne pour l'organisateur
+                    <FontAwesome5 name='crown' size={16} color='#FFD700' />
+                  ) : // Pour les anniversaires : statut d'invitation puis montant ou bouton participer
+                  participant.status === 'accepted' ? (
+                    participant.participationAmount ? (
+                      <View style={styles.amountTag}>
+                        <Text style={styles.amountText}>
+                          {participant.participationAmount}€
+                        </Text>
+                      </View>
+                    ) : participant.user?._id === user?._id ? (
+                      <TouchableOpacity style={styles.participateButton}>
+                        <Text style={styles.participateButtonText}>
+                          Participer
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null
+                  ) : participant.status === 'declined' ? (
+                    <FontAwesome5
+                      name='times-circle'
+                      size={16}
+                      color={theme.colors.text.error}
+                    />
+                  ) : (
+                    // Icône de sablier pour les participants en attente
+                    <FontAwesome5
+                      name='hourglass-half'
+                      size={16}
+                      color={theme.colors.text.secondary}
+                    />
+                  )}
+                </View>
+
+                {/* Bouton de suppression pour les participants non-organisateurs (seulement pour l'organisateur) */}
+                {isOrganizer && participant.role !== 'organizer' && (
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeParticipant(participant.email)}
+                  >
+                    <FontAwesome5
+                      name='trash'
+                      size={14}
+                      color={theme.colors.accent}
+                    />
                   </TouchableOpacity>
-                ) : (
-                  <FontAwesome5
-                    name='clock'
-                    size={16}
-                    color={theme.colors.text.secondary}
-                  />
                 )}
               </View>
 
-              {/* Bouton de suppression pour les participants non-organisateurs (seulement pour l'organisateur) */}
-              {isOrganizer && participant.role !== 'organizer' && (
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeParticipant(participant.email)}
-                >
-                  <FontAwesome5
-                    name='trash'
-                    size={14}
-                    color={theme.colors.accent}
-                  />
-                </TouchableOpacity>
-              )}
+              <View style={styles.participantSeparator} />
             </View>
-
-            <View style={styles.participantSeparator} />
-          </View>
-        ))}
+          );
+        })}
 
         {/* Ajouter un participant (seulement pour l'organisateur) */}
         {isOrganizer && (
@@ -361,6 +388,12 @@ const styles = StyleSheet.create({
   participantName: {
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.text.primary,
+    flex: 1,
+  },
+
+  participantNameGreyed: {
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text.secondary,
     flex: 1,
   },
 
