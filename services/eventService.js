@@ -85,3 +85,13 @@ export const addParticipant = async (eventId, email) => {
     throw error;
   }
 };
+
+//Retire un participant d'un événement (seulement pour l'organisateur)
+export const removeParticipant = async (eventId, email) => {
+  try {
+    const response = await api.delete(`/event/${eventId}/participant/${email}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

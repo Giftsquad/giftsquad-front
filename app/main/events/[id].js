@@ -151,7 +151,10 @@ export default function EventDetailsScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header title={event.event_name.toUpperCase()} arrowShow={true} />
+      <Header
+        title={event.event_name?.toUpperCase() || 'ÉVÉNEMENT'}
+        arrowShow={true}
+      />
       {renderEventComponent()}
     </View>
   );

@@ -11,13 +11,19 @@ import {
   View,
 } from 'react-native';
 import { handleApiError } from '../../services/errorService';
-import { addParticipant } from '../../services/eventService';
+import { addParticipant, removeParticipant } from '../../services/eventService';
 import { theme } from '../../styles/theme';
 
 export default function Christmas({ event, user, onEventUpdate }) {
   const navigation = useNavigation();
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
+
+  // Vérifier si l'utilisateur connecté est l'organisateur
+  const isOrganizer = event.event_participants?.some(
+    participant =>
+      participant.user?._id === user?._id && participant.role === 'organizer'
+  );
 
   // Fonction pour ajouter un participant
   const handleAddParticipant = async () => {
@@ -36,6 +42,20 @@ export default function Christmas({ event, user, onEventUpdate }) {
       // Les erreurs seront affichées via le système de gestion d'erreurs global
     } finally {
       setAddingParticipant(false);
+    }
+  };
+
+  // Fonction pour retirer un participant
+  const handleRemoveParticipant = async email => {
+    try {
+      await removeParticipant(event._id, email);
+      // Récupérer l'événement complet après la suppression
+      const { getEvent } = require('../../services/eventService');
+      const updatedEvent = await getEvent(event._id);
+      onEventUpdate(updatedEvent);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du participant:', error);
+      handleApiError(error);
     }
   };
 
@@ -78,17 +98,33 @@ export default function Christmas({ event, user, onEventUpdate }) {
           <View key={index} style={styles.participantRow}>
             <Text style={styles.participantName}>{participant.email}</Text>
 
-            <View style={styles.participantStatus}>
-              {participant.role === 'organizer' ? (
-                // Icône de couronne pour l'organisateur
-                <FontAwesome5 name='crown' size={16} color='#FFD700' />
-              ) : (
-                // Pour Christmas List : icône d'attente
-                <FontAwesome5
-                  name='clock'
-                  size={16}
-                  color={theme.colors.text.secondary}
-                />
+            <View style={styles.participantActions}>
+              <View style={styles.participantStatus}>
+                {participant.role === 'organizer' ? (
+                  // Icône de couronne pour l'organisateur
+                  <FontAwesome5 name='crown' size={16} color='#FFD700' />
+                ) : (
+                  // Pour Christmas List : icône d'attente
+                  <FontAwesome5
+                    name='clock'
+                    size={16}
+                    color={theme.colors.text.secondary}
+                  />
+                )}
+              </View>
+
+              {/* Bouton de suppression pour les participants non-organisateurs (seulement pour l'organisateur) */}
+              {isOrganizer && participant.role !== 'organizer' && (
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => handleRemoveParticipant(participant.email)}
+                >
+                  <FontAwesome5
+                    name='trash'
+                    size={14}
+                    color={theme.colors.accent}
+                  />
+                </TouchableOpacity>
               )}
             </View>
 
@@ -96,43 +132,47 @@ export default function Christmas({ event, user, onEventUpdate }) {
           </View>
         ))}
 
-        {/* Ajouter un participant */}
-        <View style={styles.addParticipantSection}>
-          <Text style={styles.addParticipantLabel}>Ajouter un participant</Text>
-          <View style={styles.addParticipantInput}>
-            <TextInput
-              style={styles.emailInput}
-              placeholder='Email du participant'
-              placeholderTextColor={theme.colors.text.secondary}
-              value={participantEmail}
-              onChangeText={setParticipantEmail}
-              autoCapitalize='none'
-              keyboardType='email-address'
-            />
-            <TouchableOpacity
-              style={[
-                styles.addButton,
-                (addingParticipant || !participantEmail.trim()) &&
-                  styles.addButtonDisabled,
-              ]}
-              onPress={handleAddParticipant}
-              disabled={addingParticipant || !participantEmail.trim()}
-            >
-              {addingParticipant ? (
-                <ActivityIndicator
-                  size='small'
-                  color={theme.colors.text.white}
-                />
-              ) : (
-                <FontAwesome5
-                  name='plus'
-                  size={16}
-                  color={theme.colors.text.white}
-                />
-              )}
-            </TouchableOpacity>
+        {/* Ajouter un participant (seulement pour l'organisateur) */}
+        {isOrganizer && (
+          <View style={styles.addParticipantSection}>
+            <Text style={styles.addParticipantLabel}>
+              Ajouter un participant
+            </Text>
+            <View style={styles.addParticipantInput}>
+              <TextInput
+                style={styles.emailInput}
+                placeholder='Email du participant'
+                placeholderTextColor={theme.colors.text.secondary}
+                value={participantEmail}
+                onChangeText={setParticipantEmail}
+                autoCapitalize='none'
+                keyboardType='email-address'
+              />
+              <TouchableOpacity
+                style={[
+                  styles.addButton,
+                  (addingParticipant || !participantEmail.trim()) &&
+                    styles.addButtonDisabled,
+                ]}
+                onPress={handleAddParticipant}
+                disabled={addingParticipant || !participantEmail.trim()}
+              >
+                {addingParticipant ? (
+                  <ActivityIndicator
+                    size='small'
+                    color={theme.colors.text.white}
+                  />
+                ) : (
+                  <FontAwesome5
+                    name='plus'
+                    size={16}
+                    color={theme.colors.text.white}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -207,8 +247,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  participantActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   participantStatus: {
     alignItems: 'flex-end',
+  },
+  removeButton: {
+    padding: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
   },
 
   participantSeparator: {

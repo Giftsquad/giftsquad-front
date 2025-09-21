@@ -154,7 +154,7 @@ const Invitations = () => {
                     numberOfLines={1}
                     ellipsizeMode='tail'
                   >
-                    {item.event_name.toUpperCase()}
+                    {item.event_name?.toUpperCase() || 'ÉVÉNEMENT'}
                   </Text>
                   <View style={styles.eventTypeContainer}>
                     <View
