@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Linking,
@@ -13,45 +12,77 @@ import { theme } from '../../../styles/theme';
 
 export default function GiftListScreen({ route, navigation }) {
   const { eventId } = route.params; // récupéré via navigation.navigate('addGift', { eventId })}
-  const { events, fetchEvent } = useContext(AuthContext);
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { events } = useContext(AuthContext);
+  const [allGifts, setAllGifts] = useState([]);
 
+  // Récupérer l'événement directement depuis le contexte global
+  const event = events.find(e => e._id === eventId);
+
+  // Utiliser useEffect pour mettre à jour la liste des cadeaux quand l'événement change
   useEffect(() => {
-    const loadEvent = async () => {
-      try {
-        setLoading(true);
-
-        // D'abord chercher dans la liste locale des événements
-        const localEvent = events.find(e => e._id === eventId);
-        if (localEvent) {
-          setEvent(localEvent);
-        } else {
-          // Si pas trouvé localement, récupérer via l'API
-          const eventData = await fetchEvent(eventId);
-          setEvent(eventData);
-        }
-      } catch (error) {
-        console.error('Erreur fetch event:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (eventId) {
-      loadEvent();
+    // Vérifier si l'événement existe, sinon retourner un tableau vide
+    if (!event) {
+      setAllGifts([]);
+      return;
     }
-  }, [eventId, events, fetchEvent]);
 
-  if (loading) {
+    // Initialiser un tableau vide pour stocker tous les cadeaux
+    const gifts = [];
+
+    // Ajouter les cadeaux de la giftList (pour les anniversaires)
+    // Vérifier si l'événement a une giftList et qu'elle n'est pas vide
+    if (event.giftList && event.giftList.length > 0) {
+      // Parcourir chaque cadeau de la giftList
+      event.giftList.forEach(gift => {
+        // Ajouter le cadeau au tableau
+        gifts.push(gift);
+      });
+    }
+
+    // Ajouter les cadeaux des wishList des participants (pour Secret Santa et Christmas List)
+    // Vérifier si l'événement a des participants et qu'il y en a au moins un
+    if (event.event_participants && event.event_participants.length > 0) {
+      // Parcourir chaque participant de l'événement
+      event.event_participants.forEach(participant => {
+        // Vérifier si le participant a une wishList et qu'elle n'est pas vide
+        if (participant.wishList && participant.wishList.length > 0) {
+          // Parcourir chaque cadeau de la wishList du participant
+          participant.wishList.forEach(gift => {
+            // Ajouter le cadeau au tableau
+            gifts.push(gift);
+          });
+        }
+      });
+    }
+
+    // Mettre à jour l'état avec le tableau contenant tous les cadeaux (giftList + wishList)
+    setAllGifts(gifts);
+  }, [event]); // Dépendance sur l'objet event pour garantir la réactivité
+
+  // Si l'événement n'est pas trouvé, afficher un message d'erreur
+  if (!event) {
     return (
-      <View>
-        <ActivityIndicator size='large' color='#007AFF' />
+      <View
+        style={[
+          theme.components.screen.container,
+          { backgroundColor: theme.colors.background.primary },
+        ]}
+      >
+        <Text
+          style={{
+            fontSize: theme.typography.fontSize.md,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.colors.text.error,
+            marginBottom: 8,
+          }}
+        >
+          Événement introuvable
+        </Text>
       </View>
     );
   }
 
-  if (!event?.giftList || event.giftList.length === 0) {
+  if (allGifts.length === 0) {
     return (
       <View
         style={[
@@ -67,9 +98,9 @@ export default function GiftListScreen({ route, navigation }) {
             marginBottom: 8,
           }}
         >
-          Aucun cadeau ajouté pour l’instant
+          Aucun cadeau ajouté pour l'instant
         </Text>
-        {/* Bouton d’ajout affiché même si la liste est vide */}
+        {/* Bouton d'ajout affiché même si la liste est vide */}
         <TouchableOpacity
           onPress={() => navigation.navigate('addGift', { eventId })}
         >
@@ -92,8 +123,8 @@ export default function GiftListScreen({ route, navigation }) {
     <View style={{ flex: 1 }}>
       <FlatList
         style={{ flex: 1, padding: 20 }}
-        data={event.giftList}
-        keyExtractor={item => item._id.toString()}
+        data={allGifts}
+        keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={({ item }) => (
           <View
             style={{
@@ -114,9 +145,10 @@ export default function GiftListScreen({ route, navigation }) {
                       key={index}
                       source={{ uri: image.secure_url || image.url }}
                       style={{
-                        width: 60,
-                        height: 60,
+                        width: 80,
+                        height: 80,
                         borderRadius: 4,
+                        resizeMode: 'cover',
                       }}
                     />
                   ))}
@@ -126,18 +158,28 @@ export default function GiftListScreen({ route, navigation }) {
 
             <View>
               <Text
-                style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 5 }}
+                style={{
+                  fontSize: theme.typography.fontSize.lg,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  marginBottom: 5,
+                }}
               >
                 {item.name}
               </Text>
-              <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  color: theme.colors.text.secondary,
+                  marginBottom: 5,
+                }}
+              >
                 {item.price} €
               </Text>
               {item.url ? (
                 <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
                   <Text
                     style={{
-                      color: '#007AFF',
+                      color: theme.colors.primary.main,
                       textDecorationLine: 'underline',
                     }}
                   >
