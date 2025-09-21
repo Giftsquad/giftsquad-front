@@ -7,6 +7,7 @@ import EventsScreen from './events';
 import EventDetailsScreen from './events/[id]';
 import AddGiftScreen from './events/addGift';
 import GiftListScreen from './events/giftList';
+import GiftDetailScreen from './gifts/[id]';
 import InvitationsScreen from './invitations';
 import ProfilScreen from './profil';
 
@@ -76,6 +77,14 @@ export default function EventLayout() {
         component={AddGiftScreen}
         options={{
           title: 'Ajouter un cadeau',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name='gift'
+        component={GiftDetailScreen}
+        options={{
+          title: 'Détail du cadeau',
           headerShown: true,
         }}
       />

@@ -156,7 +156,9 @@ export default function Birthday({ event, user }) {
       <TouchableOpacity
         style={styles.giftListButton}
         onPress={() =>
-          navigation.navigate('GiftList', { eventId: localEvent._id })
+          navigation.navigate('GiftList', {
+            event: localEvent,
+          })
         }
       >
         <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
