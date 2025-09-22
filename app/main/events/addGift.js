@@ -31,10 +31,9 @@ export default function AddGiftScreen({ route, navigation }) {
   // Fonction qui ouvre la galerie du téléphone pour sélectionner plusieurs images
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // uniquement images
+      mediaTypes: 'images', // uniquement images
       allowsMultipleSelection: true, // permet la sélection multiple
       selectionLimit: 5, // limite à 5 images maximum
-      // mediaTypes: [ImagePicker.MediaType.IMAGE], requiert mise à jour Expo SDK 51+
     });
 
     if (!result.canceled) {

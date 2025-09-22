@@ -15,7 +15,7 @@ import { login as loginUser } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Entypo from '@expo/vector-icons/Entypo';
-
+import Constants from 'expo-constants';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,10 +54,13 @@ export default function LoginScreen() {
     <View
       style={[
         theme.components.screen.container,
-        { backgroundColor: theme.colors.background.primary },
+        {
+          backgroundColor: theme.colors.background.primary,
+          paddingBottom: Constants.statusBarHeight + 20,
+        },
       ]}
     >
-      <Header arrowShow={false} title='Se Connecter' />
+      <Header arrowShow={false} title='Login' />
 
       {/* Form */}
       <KeyboardAwareScrollView
@@ -77,7 +80,6 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 marginBottom: 8,
               }}
@@ -86,10 +88,11 @@ export default function LoginScreen() {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Email'
+              placeholder='Votre email'
               value={email}
               onChangeText={setEmail}
               autoCapitalize='none'
+              keyboardType='email-address'
             />
             {errors.email && (
               <Text style={theme.errorText}>{errors.email}</Text>
@@ -101,7 +104,6 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 marginBottom: 8,
               }}
@@ -110,7 +112,7 @@ export default function LoginScreen() {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Mot de passe'
+              placeholder='Votre mot de passe'
               value={password}
               onChangeText={setPassword}
               secureTextEntry={true} // crypte le password avec des points au lieu de caractères
@@ -145,26 +147,25 @@ export default function LoginScreen() {
                   { marginLeft: 10 },
                 ]}
               >
-                {loading ? 'Création...' : 'Se connecter'}
+                {loading ? 'Connexion...' : 'Se connecter'}
               </Text>
             </View>
           </TouchableOpacity>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              alignSelf: 'center',
-            }}
-          >
-            <Ionicons name='person-add' size={24} color='#6fd34e' />
-            <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
-              <Text style={{ color: '#6fd34e' }}>
-                {' '}
-                Pas encore de compte ? Créez-en un !
-              </Text>
-            </TouchableOpacity>
-          </View>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            alignSelf: 'center',
+          }}
+        >
+          <Ionicons name='person-add' size={24} color='#6fd34e' />
+          <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
+            <Text style={{ color: '#6fd34e' }}>
+              {' '}
+              Pas encore de compte ? Créez-en un !
+            </Text>
+          </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
     </View>

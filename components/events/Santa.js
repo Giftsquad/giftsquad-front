@@ -27,6 +27,7 @@ export default function Santa({ event, user }) {
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
   const [localEvent, setLocalEvent] = useState(event);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
@@ -184,18 +185,6 @@ export default function Santa({ event, user }) {
           };
 
           const wishCount = participant.wishList?.length || 0;
-
-          // Debug: vérifier les IDs
-          console.log('Debug wishlist button:', {
-            participantId: participant.user?._id,
-            currentUserId: user?._id,
-            isCurrentUser: participant.user?._id === user?._id,
-            wishCount,
-            shouldBeDisabled:
-              wishCount === 0 && participant.user?._id !== user?._id,
-            participantEmail: participant.email,
-            userEmail: user?.email,
-          });
 
           // Vérifier si c'est l'utilisateur connecté (par ID ou par email si l'ID n'est pas disponible)
           const isCurrentUser =
@@ -383,6 +372,17 @@ export default function Santa({ event, user }) {
           <Text style={styles.drawButtonText}>Effectuer le tirage au sort</Text>
         </TouchableOpacity>
       )}
+
+      <Modal visible={modalVisible} animationType='fade' transparent={true}>
+        <View>
+          <Text>CONFIRMATION DU TIRAGE</Text>
+          <Pressable onPress={() => setModalVisible(!modalVisible)}>
+            <Entypo name='cross' size={24} color='black' />
+          </Pressable>
+        </View>
+        <Text>Etes-vous sûr de vouloir effectuer le tirage au sort ?</Text>
+        <Text>Attention : Cette action est irreversible.</Text>
+      </Modal>
 
       {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
       {isOrganizer && (
