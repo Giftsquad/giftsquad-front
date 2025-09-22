@@ -340,3 +340,14 @@ export const fetchEventGifts = async eventId => {
     throw error;
   }
 };
+
+//Fonction pour effectuer le tirage au sort
+export const handleDrawParticipant = async eventId => {
+  try {
+    const response = await api.post(`/event/${eventId}/draw`);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors du tirage au sort:', error);
+    throw error;
+  }
+};

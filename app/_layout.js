@@ -19,6 +19,7 @@ import {
   handleCreateEvent,
   handleDeleteEvent,
   handleDeleteGift,
+  handleDrawParticipant,
   handlePurchaseWishGift,
   handleRemoveParticipant,
   handleUpdateEvent,
@@ -133,6 +134,11 @@ const RootLayout = () => {
     return result;
   };
 
+
+  //Fonction pour effectuer le tirage au sort
+  const drawParticipant = async eventId => {
+    const result = await handleDrawParticipant(eventId);
+
   // Fonction pour mettre une option sur un cadeau
   const purchaseWishGiftById = async (eventId, giftId) => {
     const result = await handlePurchaseWishGift(eventId, giftId);
@@ -209,6 +215,7 @@ const RootLayout = () => {
           handleUpdateEvent: updateEventById,
           handleAddGift: addGiftToEvent,
           handleDeleteGift: deleteGiftById,
+          handleDrawParticipant: drawParticipant,
           handlePurchaseWishGift: purchaseWishGiftById,
         }}
       >
