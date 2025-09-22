@@ -57,7 +57,7 @@ export default function LoginScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header arrowShow={false} title='Login' />
+      <Header arrowShow={false} title='Se Connecter' />
 
       {/* Form */}
       <KeyboardAwareScrollView
@@ -77,6 +77,7 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 marginBottom: 8,
               }}
@@ -85,7 +86,7 @@ export default function LoginScreen() {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Votre email'
+              placeholder='Email'
               value={email}
               onChangeText={setEmail}
               autoCapitalize='none'
@@ -100,6 +101,7 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 marginBottom: 8,
               }}
@@ -108,7 +110,7 @@ export default function LoginScreen() {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Votre mot de passe'
+              placeholder='Mot de passe'
               value={password}
               onChangeText={setPassword}
               secureTextEntry={true} // crypte le password avec des points au lieu de caractères
@@ -147,21 +149,22 @@ export default function LoginScreen() {
               </Text>
             </View>
           </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            alignSelf: 'center',
-          }}
-        >
-          <Ionicons name='person-add' size={24} color='#6fd34e' />
-          <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
-            <Text style={{ color: '#6fd34e' }}>
-              {' '}
-              Pas encore de compte ? Créez-en un !
-            </Text>
-          </TouchableOpacity>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              alignSelf: 'center',
+            }}
+          >
+            <Ionicons name='person-add' size={24} color='#6fd34e' />
+            <TouchableOpacity onPress={() => router.navigate('/auth/signup')}>
+              <Text style={{ color: '#6fd34e' }}>
+                {' '}
+                Pas encore de compte ? Créez-en un !
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </KeyboardAwareScrollView>
     </View>
