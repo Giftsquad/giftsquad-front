@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useContext, useState } from 'react';
 import {
   Alert,
@@ -229,11 +230,12 @@ export default function AddWishScreen({ route, navigation }) {
             <TouchableOpacity
               style={[
                 theme.components.input.container,
-                { justifyContent: 'center' },
+                { flexDirection: 'row', gap: 10, justifyContent: 'center' },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
               onPress={pickImages}
             >
+              <AntDesign name='picture' size={24} color='black' />
               <Text
                 style={{
                   fontSize: theme.typography.fontSize.md,
