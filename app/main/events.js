@@ -61,11 +61,13 @@ export default function EventsScreen() {
             <FlatList
               style={{ flex: 1, padding: 20 }}
               data={events}
-              keyExtractor={item => item._id.toString()}
+              keyExtractor={(item, index) =>
+                item._id ? item._id.toString() : index.toString()
+              }
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[theme.components.card.container, styles.eventCard]}
-                  onPress={() => navigateToEvent(item._id)}
+                  onPress={() => item._id && navigateToEvent(item._id)}
                 >
                   {/* Colonne gauche avec l'icône selon le type d'évènement */}
                   <View>
