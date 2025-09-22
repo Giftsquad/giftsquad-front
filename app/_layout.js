@@ -134,10 +134,12 @@ const RootLayout = () => {
     return result;
   };
 
-
   //Fonction pour effectuer le tirage au sort
   const drawParticipant = async eventId => {
     const result = await handleDrawParticipant(eventId);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
+  };
 
   // Fonction pour mettre une option sur un cadeau
   const purchaseWishGiftById = async (eventId, giftId) => {
