@@ -95,7 +95,7 @@ export default function SignupScreen() {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
-      <Header arrowShow={false} title='Créer un compte' />
+      <Header arrowShow={true} title='Créer un compte' />
 
       {/* Form */}
       <KeyboardAwareScrollView
@@ -276,34 +276,36 @@ export default function SignupScreen() {
           {errors.general && (
             <Text style={theme.errorText}>{errors.general}</Text>
           )}
+          {/* Bouton Créer mon compte */}
+          <TouchableOpacity
+            style={[
+              theme.components.button.primary,
+              { marginVertical: 20, alignSelf: 'center', width: '90%' },
+            ]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {loading ? (
+                <ActivityIndicator color={theme.colors.text.white} />
+              ) : (
+                <Ionicons
+                  name='person-add'
+                  size={20}
+                  color={theme.colors.text.white}
+                />
+              )}
+              <Text
+                style={[
+                  theme.components.button.text.primary,
+                  { marginLeft: 10 },
+                ]}
+              >
+                {loading ? 'Création...' : 'Créer mon compte'}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
-
-        {/* Bouton Créer mon compte */}
-        <TouchableOpacity
-          style={[
-            theme.components.button.primary,
-            { marginVertical: 20, alignSelf: 'center', width: '90%' },
-          ]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {loading ? (
-              <ActivityIndicator color={theme.colors.text.white} />
-            ) : (
-              <Ionicons
-                name='person-add'
-                size={20}
-                color={theme.colors.text.white}
-              />
-            )}
-            <Text
-              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
-            >
-              {loading ? 'Création...' : 'Créer mon compte'}
-            </Text>
-          </View>
-        </TouchableOpacity>
       </KeyboardAwareScrollView>
     </View>
   );
