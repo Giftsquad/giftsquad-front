@@ -1,4 +1,4 @@
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import {
@@ -10,6 +10,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
+  Pressable,
 } from 'react-native';
 import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService';
@@ -23,11 +25,13 @@ export default function Santa({ event, user }) {
     handleDeleteEvent,
     events,
     refreshEvents,
+    handleDrawParticipant,
   } = useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
   const [localEvent, setLocalEvent] = useState(event);
   const [modalVisible, setModalVisible] = useState(false);
+  const [draw, setDraw] = useState(false);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
@@ -161,6 +165,14 @@ export default function Santa({ event, user }) {
             />
             <Text style={styles.infoText}>
               BUDGET CONSEILLÉ : {localEvent.event_budget}€
+            </Text>
+          </View>
+        )}
+        {/* Résultat du tirage au sort*/}
+        {draw === true && (
+          <View style={styles.drawButton}>
+            <Text style={styles.drawButtonText}>
+              VOUS AVEZ TIRÉ <Text style={{ color: 'black' }}>PRENOM</Text>
             </Text>
           </View>
         )}
@@ -329,7 +341,7 @@ export default function Santa({ event, user }) {
           );
         })}
         {/* Ajouter un participant (seulement pour l'organisateur) */}
-        {isOrganizer && (
+        {isOrganizer && !draw && (
           <View style={styles.addParticipantSection}>
             <Text style={styles.addParticipantLabel}>
               Ajouter un participant
@@ -370,7 +382,7 @@ export default function Santa({ event, user }) {
           </View>
         )}
         {/* Avertissement - Secret Santa seulement (seulement pour l'organisateur) */}
-        {isOrganizer && (
+        {isOrganizer && !draw && (
           <Text style={styles.warningText}>
             Attention : Une fois le tirage effectué, il ne sera plus possible de
             modifier la liste des participants.
@@ -379,21 +391,106 @@ export default function Santa({ event, user }) {
       </View>
 
       {/* Bouton de tirage au sort - Secret Santa seulement (seulement pour l'organisateur) */}
-      {isOrganizer && !localEvent.drawnAt && (
-        <TouchableOpacity style={styles.drawButton}>
+      {isOrganizer && !localEvent.drawnAt && !draw ? (
+        <TouchableOpacity
+          style={styles.drawButton}
+          onPress={() => {
+            setModalVisible(true);
+          }}
+        >
           <Text style={styles.drawButtonText}>Effectuer le tirage au sort</Text>
         </TouchableOpacity>
+      ) : (
+        <View
+          style={{
+            backgroundColor: theme.components.tabBar.inactiveTintColor,
+            paddingVertical: 15,
+            paddingHorizontal: 20,
+            borderRadius: 8,
+            alignItems: 'center',
+            marginTop: 20,
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            style={{
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: theme.typography.fontSize.md,
+            }}
+          >
+            Tirage au sort effectué
+          </Text>
+        </View>
       )}
 
-      <Modal visible={modalVisible} animationType='fade' transparent={true}>
-        <View>
-          <Text>CONFIRMATION DU TIRAGE</Text>
-          <Pressable onPress={() => setModalVisible(!modalVisible)}>
-            <Entypo name='cross' size={24} color='black' />
-          </Pressable>
+      {/*  Modal pour révéler le tirage au sort */}
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modal}>
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text>CONFIRMATION DU TIRAGE</Text>
+            <Pressable onPress={() => setModalVisible(!modalVisible)}>
+              <Entypo name='cross' size={24} color='grey' />
+            </Pressable>
+          </View>
+          <View style={{ width: '100%', alignItems: 'center' }}>
+            <Ionicons name='warning' size={36} color='orange' />
+          </View>
+          <Text>Etes-vous sûr de vouloir effectuer le tirage au sort ?</Text>
+          <Text>
+            <Text style={{ fontWeight: 'bold' }}>Attention :</Text> Cette action
+            est irréversible.
+          </Text>
+          <View style={{ gap: 10 }}>
+            <Text>• Tous les participants seront notifiés par email</Text>
+            <Text>
+              • Il ne sera plus possible d'ajouter de nouveaux participants
+            </Text>
+            <Text>• Le résultat du tirage sera définitif</Text>
+          </View>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity
+              style={{
+                width: '50%',
+                height: 40,
+                backgroundColor: theme.colors.accent,
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                borderRadius: 5,
+              }}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text style={styles.deleteButtonText}>Annuler</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                width: '50%',
+                height: 40,
+                backgroundColor: theme.colors.primary,
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                borderRadius: 5,
+              }}
+              onPress={() => {
+                const updatedEvent = handleDrawParticipant(localEvent._id);
+                setLocalEvent(updatedEvent);
+                setDraw(true);
+                setModalVisible(!modalVisible);
+              }}
+            >
+              <Text style={styles.drawButtonText}>Confirmer le tirage</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <Text>Etes-vous sûr de vouloir effectuer le tirage au sort ?</Text>
-        <Text>Attention : Cette action est irreversible.</Text>
       </Modal>
 
       {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
@@ -548,10 +645,12 @@ const styles = StyleSheet.create({
   // Bouton de tirage au sort
   drawButton: {
     backgroundColor: theme.colors.primary,
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
 
   drawButtonText: {
@@ -637,5 +736,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     padding: 20,
+  },
+
+  //style de modal
+  modal: {
+    margin: 'auto',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: '95%',
+    height: 380,
+    padding: 22,
+    alignItems: 'flex-start',
+    gap: 20,
+    shadowColor: '#020202ff',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalButtons: {
+    gap: 10,
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
   },
 });

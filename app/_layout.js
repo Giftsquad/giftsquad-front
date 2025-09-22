@@ -19,6 +19,7 @@ import {
   handleCreateEvent,
   handleDeleteEvent,
   handleDeleteGift,
+  handleDrawParticipant,
   handleRemoveParticipant,
   handleUpdateEvent,
 } from '../services/eventService';
@@ -130,6 +131,13 @@ const RootLayout = () => {
     return result;
   };
 
+  //Fonction pour effectuer le tirage au sort
+  const drawParticipant = async eventId => {
+    const result = await handleDrawParticipant(eventId);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
+  };
+
   useEffect(() => {
     // Fonction lancée au démarrage pour initialiser l'app
     const fetchAsyncItem = async () => {
@@ -199,6 +207,7 @@ const RootLayout = () => {
           handleUpdateEvent: updateEventById,
           handleAddGift: addGiftToEvent,
           handleDeleteGift: deleteGiftById,
+          handleDrawParticipant: drawParticipant,
         }}
       >
         <Slot />
