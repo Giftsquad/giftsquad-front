@@ -1,6 +1,6 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,11 +17,36 @@ import { theme } from '../../styles/theme';
 
 export default function Birthday({ event, user }) {
   const navigation = useNavigation();
-  const { handleAddParticipant, handleRemoveParticipant, handleDeleteEvent } =
-    useContext(AuthContext);
+  const {
+    handleAddParticipant,
+    handleRemoveParticipant,
+    handleDeleteEvent,
+    events,
+    refreshEvents,
+  } = useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
   const [localEvent, setLocalEvent] = useState(event);
+
+  // Utiliser useEffect pour se mettre à jour quand les données changent
+  useEffect(() => {
+    console.log(
+      'Birthday useEffect triggered - events changed:',
+      events.length
+    );
+    const updatedEvent = events.find(e => e._id === event._id) || event;
+    console.log('Birthday - updatedEvent found:', updatedEvent ? 'YES' : 'NO');
+    setLocalEvent(updatedEvent);
+  }, [event._id, events]); // Utiliser event._id au lieu de event pour éviter les re-renders inutiles
+
+  // Recharger les événements quand on revient de l'ajout d'un gift
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refreshEvents();
+    });
+
+    return unsubscribe;
+  }, [navigation, refreshEvents]);
 
   // Vérifier si l'utilisateur connecté est l'organisateur
   const isOrganizer = localEvent.event_participants?.some(
@@ -236,7 +261,9 @@ export default function Birthday({ event, user }) {
 
           return (
             <View key={index} style={styles.participantRow}>
-              <Text style={getEmailStyle()}>{participantName}</Text>
+              <Text style={[getEmailStyle(), { flex: 1 }]}>
+                {participantName}
+              </Text>
 
               <View style={styles.participantActions}>
                 <View style={styles.participantStatus}>
