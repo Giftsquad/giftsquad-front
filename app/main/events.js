@@ -58,10 +58,11 @@ export default function EventsScreen() {
         ) : (
           <>
             {/* Liste des évènements */}
+            
             <FlatList
               style={{ flex: 1, padding: 20 }}
               data={events}
-              keyExtractor={item => item._id.toString()}
+              keyExtractor={item => String(item._id)}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[theme.components.card.container, styles.eventCard]}

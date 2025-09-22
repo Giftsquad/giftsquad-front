@@ -158,7 +158,7 @@ export default function GiftDetailScreen() {
     >
       {/* Images du cadeau */}
       {gift.images && gift.images.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
+        <View style={{ marginBottom: 20, alignItems: "center", }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {gift.images.map((image, index) => (
               <Image
