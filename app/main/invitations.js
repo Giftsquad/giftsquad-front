@@ -27,7 +27,7 @@ const Invitations = () => {
       event_participants: [
         {
           user: { firstname: 'Marcel', lastname: 'Duroy' },
-          email: 'marcel.duroy@example.com',
+          email: 'marcel.duroy@example.com', 
           role: 'organizer',
           status: 'accepted',
           joinedAt: '2025-09-18T09:59:11.618Z',

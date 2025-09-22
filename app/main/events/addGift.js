@@ -43,6 +43,7 @@ export default function AddGiftScreen({ route, navigation }) {
     }
   };
 
+  // Fonction pour la permission d'ouvrir la caméra
   const takeAPhoto = async () => {
     //Demander le droit d'accéder à l'appareil photo
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -197,36 +198,44 @@ export default function AddGiftScreen({ route, navigation }) {
             >
               Images du cadeau (optionnel)
             </Text>
-              <TouchableOpacity
-                style={[
-                  theme.components.input.container,
-                  { flexDirection: "row", gap: 10, justifyContent: 'center', marginBottom: 20 },
-                  errors.date && { borderColor: theme.colors.text.error },
-                ]}
-                onPress={takeAPhoto}
-              >
-                <FontAwesome name='camera' size={24} color='black' />
-                <Text
-                  style={{
-                    fontSize: theme.typography.fontSize.md,
-                    fontWeight: theme.typography.fontWeight.bold,
-                    color: theme.colors.text.primary,
-                    textAlign: 'center',
-                  }}
-                >
-                  Accéder à l'appareil photo ({images.length}/5)
-                </Text>
-              </TouchableOpacity>
 
+            {/* Accès à la caméra */}
             <TouchableOpacity
               style={[
                 theme.components.input.container,
-                { flexDirection: "row", gap: 10, justifyContent: 'center' },
+                {
+                  flexDirection: 'row',
+                  gap: 10,
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                },
+                errors.date && { borderColor: theme.colors.text.error },
+              ]}
+              onPress={takeAPhoto}
+            >
+              <FontAwesome name='camera' size={24} color='black' />
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                  textAlign: 'center',
+                }}
+              >
+                Accéder à l'appareil photo ({images.length}/5)
+              </Text>
+            </TouchableOpacity>
+
+            {/* Accès à la galleire photo */}
+            <TouchableOpacity
+              style={[
+                theme.components.input.container,
+                { flexDirection: 'row', gap: 10, justifyContent: 'center' },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
               onPress={pickImages}
             >
-              <AntDesign name="picture" size={24} color="black" />
+              <AntDesign name='picture' size={24} color='black' />
               <Text
                 style={{
                   fontSize: theme.typography.fontSize.md,
