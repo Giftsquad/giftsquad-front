@@ -30,14 +30,9 @@ export default function Birthday({ event, user }) {
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
-    console.log(
-      'Birthday useEffect triggered - events changed:',
-      events.length
-    );
     const updatedEvent = events.find(e => e._id === event._id) || event;
-    console.log('Birthday - updatedEvent found:', updatedEvent ? 'YES' : 'NO');
     setLocalEvent(updatedEvent);
-  }, [event._id, events]); // Utiliser event._id au lieu de event pour éviter les re-renders inutiles
+  }, [event._id, events]);
 
   // Recharger les événements quand on revient de l'ajout d'un gift
   useEffect(() => {

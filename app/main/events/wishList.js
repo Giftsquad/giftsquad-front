@@ -155,16 +155,6 @@ export default function WishListScreen({ navigation }) {
       currentParticipant?.user?._id === user?._id ||
       currentParticipant?.email === user?.email;
 
-    // Debug: vérifier pourquoi le bouton n'apparaît pas
-    console.log('Debug wishlist button (empty list):', {
-      currentParticipantId: currentParticipant?.user?._id,
-      currentUserId: user?._id,
-      isCurrentUser,
-      participantName,
-      currentParticipantEmail: currentParticipant?.email,
-      userEmail: user?.email,
-    });
-
     return (
       <View
         style={[
@@ -369,13 +359,6 @@ export default function WishListScreen({ navigation }) {
         const isCurrentUser =
           currentParticipant?.user?._id === user?._id ||
           currentParticipant?.email === user?.email;
-        console.log('Debug wishlist button (with gifts):', {
-          currentParticipantId: currentParticipant?.user?._id,
-          currentUserId: user?._id,
-          isCurrentUser,
-          currentParticipantEmail: currentParticipant?.email,
-          userEmail: user?.email,
-        });
         return isCurrentUser;
       })() && (
         <TouchableOpacity

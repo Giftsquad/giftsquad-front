@@ -186,18 +186,6 @@ export default function Santa({ event, user }) {
 
           const wishCount = participant.wishList?.length || 0;
 
-          // Debug: vérifier les IDs
-          console.log('Debug wishlist button:', {
-            participantId: participant.user?._id,
-            currentUserId: user?._id,
-            isCurrentUser: participant.user?._id === user?._id,
-            wishCount,
-            shouldBeDisabled:
-              wishCount === 0 && participant.user?._id !== user?._id,
-            participantEmail: participant.email,
-            userEmail: user?.email,
-          });
-
           // Vérifier si c'est l'utilisateur connecté (par ID ou par email si l'ID n'est pas disponible)
           const isCurrentUser =
             participant.user?._id === user?._id ||

@@ -30,14 +30,9 @@ export default function Christmas({ event, user }) {
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
-    console.log(
-      'Christmas useEffect triggered - events changed:',
-      events.length
-    );
     const updatedEvent = events.find(e => e._id === event._id) || event;
-    console.log('Christmas - updatedEvent found:', updatedEvent ? 'YES' : 'NO');
     setLocalEvent(updatedEvent);
-  }, [event._id, events]); // Utiliser event._id au lieu de event pour éviter les re-renders inutiles
+  }, [event._id, events]);
 
   // Recharger les événements quand on revient de l'ajout d'un gift
   useEffect(() => {
@@ -186,18 +181,6 @@ export default function Christmas({ event, user }) {
           };
 
           const wishCount = participant.wishList?.length || 0;
-
-          // Debug: vérifier les IDs
-          console.log('Debug wishlist button:', {
-            participantId: participant.user?._id,
-            currentUserId: user?._id,
-            isCurrentUser: participant.user?._id === user?._id,
-            wishCount,
-            shouldBeDisabled:
-              wishCount === 0 && participant.user?._id !== user?._id,
-            participantEmail: participant.email,
-            userEmail: user?.email,
-          });
 
           // Vérifier si c'est l'utilisateur connecté (par ID ou par email si l'ID n'est pas disponible)
           const isCurrentUser =

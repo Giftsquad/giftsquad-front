@@ -34,6 +34,8 @@ const RootLayout = () => {
   const login = async userData => {
     await handleLogin(userData, setUser);
     await AsyncStorage.setItem('token', userData.token);
+    // Recharger les événements après la connexion
+    await loadUserWithEvents();
   };
 
   // Fonction logout qui réinitialise le state et supprime le token stocké

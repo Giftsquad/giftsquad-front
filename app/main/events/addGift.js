@@ -58,18 +58,9 @@ export default function AddGiftScreen({ route, navigation }) {
 
     // Vérifier que l'événement est valide
     if (!event || !event._id) {
-      console.log('Debug addGift - Event invalide:', {
-        event,
-        eventId: event?._id,
-      });
       Alert.alert('Erreur', 'Événement invalide.');
       return;
     }
-
-    console.log('Debug addGift - Event valide:', {
-      eventId: event._id,
-      eventType: event.event_type,
-    });
 
     try {
       setLoading(true);
