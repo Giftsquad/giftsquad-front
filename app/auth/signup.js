@@ -14,6 +14,7 @@ import AuthContext from '../../contexts/AuthContext';
 import { signup } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
+import Constants from 'expo-constants';
 
 export default function SignupScreen() {
   const [formData, setFormData] = useState({
@@ -92,7 +93,10 @@ export default function SignupScreen() {
     <View
       style={[
         theme.components.screen.container,
-        { backgroundColor: theme.colors.background.primary },
+        {
+          backgroundColor: theme.colors.background.primary,
+          paddingBottom: Constants.statusBarHeight + 20,
+        },
       ]}
     >
       <Header arrowShow={true} title='Créer un compte' />

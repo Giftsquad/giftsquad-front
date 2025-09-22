@@ -20,6 +20,7 @@ import {
   handleDeleteEvent,
   handleDeleteGift,
   handleDrawParticipant,
+  handlePurchaseWishGift,
   handleRemoveParticipant,
   handleUpdateEvent,
 } from '../services/eventService';
@@ -35,6 +36,8 @@ const RootLayout = () => {
   const login = async userData => {
     await handleLogin(userData, setUser);
     await AsyncStorage.setItem('token', userData.token);
+    // Recharger les événements après la connexion
+    await loadUserWithEvents();
   };
 
   // Fonction logout qui réinitialise le state et supprime le token stocké
@@ -131,9 +134,14 @@ const RootLayout = () => {
     return result;
   };
 
+
   //Fonction pour effectuer le tirage au sort
   const drawParticipant = async eventId => {
     const result = await handleDrawParticipant(eventId);
+
+  // Fonction pour mettre une option sur un cadeau
+  const purchaseWishGiftById = async (eventId, giftId) => {
+    const result = await handlePurchaseWishGift(eventId, giftId);
     await refreshEvents(); // Recharger les données après modification
     return result;
   };
@@ -208,6 +216,7 @@ const RootLayout = () => {
           handleAddGift: addGiftToEvent,
           handleDeleteGift: deleteGiftById,
           handleDrawParticipant: drawParticipant,
+          handlePurchaseWishGift: purchaseWishGiftById,
         }}
       >
         <Slot />

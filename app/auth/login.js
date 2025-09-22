@@ -15,7 +15,7 @@ import { login as loginUser } from '../../services/authService';
 import { handleApiError } from '../../services/errorService';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Entypo from '@expo/vector-icons/Entypo';
-
+import Constants from 'expo-constants';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,7 +54,10 @@ export default function LoginScreen() {
     <View
       style={[
         theme.components.screen.container,
-        { backgroundColor: theme.colors.background.primary },
+        {
+          backgroundColor: theme.colors.background.primary,
+          paddingBottom: Constants.statusBarHeight + 20,
+        },
       ]}
     >
       <Header arrowShow={false} title='Login' />
@@ -89,6 +92,7 @@ export default function LoginScreen() {
               value={email}
               onChangeText={setEmail}
               autoCapitalize='none'
+              keyboardType='email-address'
             />
             {errors.email && (
               <Text style={theme.errorText}>{errors.email}</Text>
@@ -143,7 +147,7 @@ export default function LoginScreen() {
                   { marginLeft: 10 },
                 ]}
               >
-                {loading ? 'Création...' : 'Se connecter'}
+                {loading ? 'Connexion...' : 'Se connecter'}
               </Text>
             </View>
           </TouchableOpacity>

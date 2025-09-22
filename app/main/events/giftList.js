@@ -7,10 +7,12 @@ import {
   Linking,
   Text,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from 'react-native';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function GiftListScreen({ navigation }) {
   const route = useRoute();
@@ -19,6 +21,26 @@ export default function GiftListScreen({ navigation }) {
     useContext(AuthContext);
   const [allGifts, setAllGifts] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(null);
+  const [localEvent, setLocalEvent] = useState(event);
+
+  // Calculer le montant collecté pour les anniversaires
+  // Calcule la somme des participations
+  const calculateCollectedAmount = () => {
+    return (
+      localEvent.event_participants?.reduce((total, participant) => {
+        return total + (participant.participationAmount || 0);
+      }, 0) || 0
+    );
+  };
+
+  // Calcule le total des prix des cadeaux
+  const calculateTotalAmount = () => {
+    return (
+      (currentEvent?.giftList || []).reduce((total, gift) => {
+        return total + (gift.price || 0);
+      }, 0) || 0
+    );
+  };
 
   // Utiliser useEffect pour charger les cadeaux depuis l'événement passé en paramètres
   // et se mettre à jour quand le contexte global change
@@ -156,23 +178,32 @@ export default function GiftListScreen({ navigation }) {
         </Text>
         {/* Bouton d'ajout affiché même si la liste est vide */}
         <TouchableOpacity
+          style={[
+            theme.components.button.primary,
+            { marginVertical: 30, width: '90%', alignSelf: 'center' },
+          ]}
           onPress={() => {
             navigation.navigate('addGift', {
               event: currentEvent,
             });
           }}
         >
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.md,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              marginBottom: 8,
-              textAlign: 'center',
-            }}
-          >
-            + Ajouter un cadeau
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {loading ? (
+              <ActivityIndicator color={theme.colors.text.white} />
+            ) : (
+              <Ionicons
+                name='add-circle'
+                size={20}
+                color={theme.colors.text.white}
+              />
+            )}
+            <Text
+              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+            >
+              + Ajouter un cadeau
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -180,6 +211,16 @@ export default function GiftListScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Somme collectée - Anniversaire seulement */}
+      <View style={[styles.infoCard, styles.collectedCard]}>
+        <View style={styles.collectedInfo}>
+          <Text style={styles.collectedAmount}>
+            Montant total collecté : {calculateCollectedAmount()} € sur{' '}
+            {calculateTotalAmount()} €
+          </Text>
+        </View>
+      </View>
+
       <FlatList
         style={{ flex: 1, padding: 20 }}
         data={allGifts}
@@ -231,6 +272,7 @@ export default function GiftListScreen({ navigation }) {
               >
                 {item.name}
               </Text>
+
               {/* Afficher le nom de l'événement */}
               {item.eventName && (
                 <Text
@@ -253,6 +295,7 @@ export default function GiftListScreen({ navigation }) {
               >
                 {item.price} €
               </Text>
+
               {/* Afficher qui a ajouté le cadeau selon le type */}
               {item.addedAt && (
                 <Text
@@ -316,17 +359,51 @@ export default function GiftListScreen({ navigation }) {
 
       {/* Bouton d'ajout */}
       <TouchableOpacity
-        style={theme.components.card.container}
+        style={[
+          theme.components.button.primary,
+          { marginVertical: 30, width: '90%', alignSelf: 'center' },
+        ]}
         onPress={() => {
           navigation.navigate('addGift', {
             event: currentEvent,
           });
         }}
       >
-        <Text style={{ textAlign: 'center', marginTop: 20 }}>
-          + Ajouter un cadeau
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text
+              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+            >
+            + Ajouter un cadeau
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  // Cartes d'information (date et montant collecté)
+  infoCard: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'center',
+    padding: 15,
+    backgroundColor: '#FF6B35', // Orange pour la date
+  },
+
+  collectedCard: {
+    backgroundColor: '#FFE082', // Orange clair pour le montant collecté
+  },
+
+  collectedAmount: {
+    color: '#FF6B35', // Orange
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+
+  participantsCount: {
+    color: '#FF6B35', // Orange
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+});

@@ -178,6 +178,44 @@ export const handleDeleteGift = async (
   }
 };
 
+// Fonction pour mettre une option sur un cadeau
+export const purchaseWishGift = async (eventId, giftId) => {
+  try {
+    const response = await api.put(
+      `/gifts/${eventId}/wish-list/${giftId}/purchase`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de l'option sur le cadeau:", error);
+    throw error;
+  }
+};
+
+// Fonction pour mettre une option sur un cadeau avec mise à jour du contexte
+export const handlePurchaseWishGift = async (eventId, giftId, setEvents) => {
+  try {
+    const response = await purchaseWishGift(eventId, giftId);
+    console.log("Réponse d'option:", response);
+
+    // Vérifier si la réponse contient l'événement mis à jour
+    const updatedEvent = response?.event || response;
+
+    if (setEvents && updatedEvent && updatedEvent._id) {
+      setEvents(prevEvents =>
+        prevEvents.map(event =>
+          event._id === updatedEvent._id ? updatedEvent : event
+        )
+      );
+    }
+
+    return updatedEvent;
+  } catch (error) {
+    console.error("Erreur lors de l'option sur le cadeau:", error);
+    throw error;
+  }
+};
+
 // Fonctions de gestion des données avec mise à jour du state
 export const fetchEvents = async (setEvents, setLoading) => {
   try {

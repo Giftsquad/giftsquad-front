@@ -32,7 +32,7 @@ export default function Christmas({ event, user }) {
   useEffect(() => {
     const updatedEvent = events.find(e => e._id === event._id) || event;
     setLocalEvent(updatedEvent);
-  }, [event, events]); // events est dans les dépendances pour se mettre à jour automatiquement
+  }, [event._id, events]);
 
   // Recharger les événements quand on revient de l'ajout d'un gift
   useEffect(() => {
@@ -150,17 +150,6 @@ export default function Christmas({ event, user }) {
         </View>
       </View>
 
-      {/* Bouton Liste de cadeaux - Christmas List */}
-      <TouchableOpacity
-        style={styles.giftListButton}
-        onPress={() => {
-          navigation.navigate('GiftList', { event: localEvent });
-        }}
-      >
-        <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
-        <Text style={styles.giftListButtonText}>Liste de cadeaux</Text>
-      </TouchableOpacity>
-
       {/* Section Participants */}
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
@@ -181,18 +170,6 @@ export default function Christmas({ event, user }) {
           };
 
           const wishCount = participant.wishList?.length || 0;
-
-          // Debug: vérifier les IDs
-          console.log('Debug wishlist button:', {
-            participantId: participant.user?._id,
-            currentUserId: user?._id,
-            isCurrentUser: participant.user?._id === user?._id,
-            wishCount,
-            shouldBeDisabled:
-              wishCount === 0 && participant.user?._id !== user?._id,
-            participantEmail: participant.email,
-            userEmail: user?.email,
-          });
 
           // Vérifier si c'est l'utilisateur connecté (par ID ou par email si l'ID n'est pas disponible)
           const isCurrentUser =
@@ -400,23 +377,6 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-    color: theme.colors.text.white,
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.bold,
-    marginLeft: 10,
-  },
-
-  // Bouton Liste de cadeaux
-  giftListButton: {
-    backgroundColor: '#4CAF50', // Vert pour la liste de cadeaux
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-
-  giftListButtonText: {
     color: theme.colors.text.white,
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.bold,

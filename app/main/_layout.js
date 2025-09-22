@@ -52,6 +52,20 @@ export default function EventLayout() {
         }}
       />
       <Stack.Screen
+        name='eventWishList'
+        component={WishListScreen}
+        options={{
+          title: 'Ma liste de souhaits',
+        }}
+      />
+      <Stack.Screen
+        name='eventAddWish'
+        component={AddWishScreen}
+        options={{
+          title: 'Ajouter un souhait',
+        }}
+      />
+      <Stack.Screen
         name='invitations'
         component={InvitationsScreen}
         options={{
@@ -87,7 +101,6 @@ export default function EventLayout() {
         component={AddWishScreen}
         options={{
           title: 'Ajouter un souhait',
-          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -105,8 +118,7 @@ export default function EventLayout() {
           return {
             title: isCurrentUser
               ? 'Ma liste de souhaits'
-              : `Souhaits de ${participantName}`,
-            headerShown: true,
+              : `Liste de ${participantName}`,
             headerLeft: () => (
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -123,7 +135,6 @@ export default function EventLayout() {
         component={GiftDetailScreen}
         options={{
           title: 'Détail du cadeau',
-          headerShown: true,
         }}
       />
     </Stack.Navigator>
