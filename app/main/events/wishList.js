@@ -5,18 +5,26 @@ import {
   FlatList,
   Image,
   Linking,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
+import Header from '../../../components/Header';
 
 export default function WishListScreen({ navigation }) {
   const route = useRoute();
   const { event, participant } = route.params;
-  const { user, events, refreshEvents, loading, handleDeleteGift } =
-    useContext(AuthContext);
+  const {
+    user,
+    events,
+    refreshEvents,
+    loading,
+    handleDeleteGift,
+    handlePurchaseWishGift,
+  } = useContext(AuthContext);
   const [wishListGifts, setWishListGifts] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [currentParticipant, setCurrentParticipant] = useState(null);
@@ -105,6 +113,15 @@ export default function WishListScreen({ navigation }) {
     }
   };
 
+  // Fonction pour mettre une option sur un cadeau
+  const handlePurchaseWish = async giftId => {
+    try {
+      await handlePurchaseWishGift(currentEvent._id, giftId, true);
+    } catch (error) {
+      console.error("Erreur lors de l'option sur le cadeau:", error);
+    }
+  };
+
   // Afficher un loader pendant le chargement
   if (loading) {
     return (
@@ -144,16 +161,16 @@ export default function WishListScreen({ navigation }) {
     );
   }
 
+  // Vérifier si c'est l'utilisateur actuel par ID ou par email
+  const isCurrentUser =
+    currentParticipant?.user?._id === user?._id ||
+    currentParticipant?.email === user?.email;
+
   if (wishListGifts.length === 0) {
     const participantName =
       currentParticipant?.user?.firstname ||
       currentParticipant?.user?.nickname ||
       'Ce participant';
-
-    // Vérifier si c'est l'utilisateur actuel par ID ou par email
-    const isCurrentUser =
-      currentParticipant?.user?._id === user?._id ||
-      currentParticipant?.email === user?.email;
 
     return (
       <View
@@ -162,6 +179,15 @@ export default function WishListScreen({ navigation }) {
           { backgroundColor: theme.colors.background.primary },
         ]}
       >
+        <Header
+          title={
+            isCurrentUser
+              ? 'Ma liste de souhaits'
+              : `Liste de ${participant.user.firstname} ${participant.user.lastname}`
+          }
+          arrowShow={true}
+        />
+
         <Text
           style={{
             fontSize: theme.typography.fontSize.md,
@@ -217,19 +243,27 @@ export default function WishListScreen({ navigation }) {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={[
+        theme.components.screen.container,
+        { backgroundColor: theme.colors.background.primary },
+      ]}
+    >
+      <Header
+        title={
+          isCurrentUser
+            ? 'Ma liste de souhaits'
+            : `Liste de ${participant.user.firstname} ${participant.user.lastname}`
+        }
+        arrowShow={true}
+      />
+
       <FlatList
         style={{ flex: 1, padding: 20 }}
         data={wishListGifts}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={{
-              marginBottom: 20,
-              padding: 15,
-              backgroundColor: '#f5f5f5',
-              borderRadius: 8,
-            }}
             onPress={() => {
               navigation.navigate('gift', {
                 gift: item,
@@ -237,130 +271,155 @@ export default function WishListScreen({ navigation }) {
               });
             }}
           >
-            {/* Affichage des images */}
-            {item.images && item.images.length > 0 && (
-              <View style={{ marginBottom: 10 }}>
-                <View
-                  style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}
-                >
-                  {item.images.map((image, index) => (
-                    <Image
-                      key={index}
-                      source={{ uri: image.secure_url || image.url }}
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 4,
-                        resizeMode: 'cover',
-                      }}
-                    />
-                  ))}
+            <View
+              style={{
+                marginBottom: 20,
+                padding: 15,
+                backgroundColor: '#f5f5f5',
+                borderRadius: 8,
+              }}
+            >
+              {/* Affichage des images */}
+              {item.images && item.images.length > 0 && (
+                <View style={{ marginBottom: 10 }}>
+                  <View
+                    style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}
+                  >
+                    {item.images.map((image, index) => (
+                      <Image
+                        key={index}
+                        source={{ uri: image.secure_url || image.url }}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 4,
+                          resizeMode: 'cover',
+                        }}
+                      />
+                    ))}
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
 
-            <View>
-              <Text
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  marginBottom: 5,
-                }}
-              >
-                {item.name}
-              </Text>
-              {/* Afficher le nom de l'événement */}
-              {item.eventName && (
-                <Text
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
-                    marginBottom: 5,
-                    fontStyle: 'italic',
-                  }}
-                >
-                  Événement: {item.eventName}
-                </Text>
-              )}
-              <Text
-                style={{
-                  fontSize: theme.typography.fontSize.md,
-                  color: theme.colors.text.secondary,
-                  marginBottom: 5,
-                }}
-              >
-                {item.price} €
-              </Text>
-              {/* Afficher qui a ajouté le cadeau selon le type de wishlist */}
-              {item.addedAt && (
-                <Text
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
-                    marginBottom: 5,
-                  }}
-                >
-                  {`Ajouté le ${new Date(item.addedAt).toLocaleDateString(
-                    'fr-FR'
-                  )} par ${
-                    item.addedByUser?.firstname && item.addedByUser?.lastname
-                      ? `${item.addedByUser.firstname} ${item.addedByUser.lastname}`
-                      : item.addedByUser?.firstname ||
-                        item.addedByUser?.nickname ||
-                        'Inconnu'
-                  }`}
-                </Text>
-              )}
-              {item.url ? (
-                <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
+              <View>
+                {/* Afficher qui a ajouté le cadeau selon le type de wishlist */}
+                {item.addedAt && (
                   <Text
                     style={{
-                      color: theme.colors.primary.main,
-                      textDecorationLine: 'underline',
-                    }}
-                  >
-                    Voir le produit
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
-              {/* Bouton de suppression pour l'utilisateur connecté */}
-              {(currentParticipant?.user?._id === user?._id ||
-                currentParticipant?.email === user?.email) && (
-                <TouchableOpacity
-                  onPress={() => handleDeleteWishGift(item._id)}
-                  style={{
-                    backgroundColor: theme.colors.text.error,
-                    paddingVertical: 8,
-                    paddingHorizontal: 16,
-                    borderRadius: 6,
-                    marginTop: 10,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: 'white',
                       fontSize: theme.typography.fontSize.sm,
-                      fontWeight: theme.typography.fontWeight.bold,
+                      color: theme.colors.text.secondary,
+                      marginBottom: 5,
                     }}
                   >
-                    Supprimer
+                    {`Ajouté le ${new Date(item.addedAt).toLocaleDateString(
+                      'fr-FR'
+                    )}`}
                   </Text>
-                </TouchableOpacity>
-              )}
+                )}
+                <Text
+                  style={{
+                    fontSize: theme.typography.fontSize.lg,
+                    fontWeight: theme.typography.fontWeight.bold,
+                    marginBottom: 5,
+                  }}
+                >
+                  {item.name}
+                </Text>
+                {item.description && (
+                  <Text
+                    style={{
+                      fontSize: theme.typography.fontSize.md,
+                      color: theme.colors.text.secondary,
+                      marginBottom: 5,
+                    }}
+                  >
+                    {item.description}
+                  </Text>
+                )}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: item.url ? 'space-between' : 'flex-end',
+                  }}
+                >
+                  {item.url ? (
+                    <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
+                      <Text
+                        style={{
+                          backgroundColor: theme.colors.primary,
+                          ...styles.button,
+                        }}
+                      >
+                        Voir le produit
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
+                  {/* Bouton de suppression pour l'utilisateur connecté */}
+                  {(currentParticipant?.user?._id === user?._id ||
+                    currentParticipant?.email === user?.email) && (
+                    <TouchableOpacity
+                      onPress={() => handleDeleteWishGift(item._id)}
+                    >
+                      <Text
+                        style={{
+                          backgroundColor: theme.colors.text.error,
+                          ...styles.button,
+                        }}
+                      >
+                        Supprimer
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                {!isCurrentUser && !item.purchasedBy && (
+                  <TouchableOpacity
+                    onPress={() => handlePurchaseWish(item._id)}
+                  >
+                    <Text
+                      style={{
+                        backgroundColor: theme.colors.secondary,
+                        textAlign: 'center',
+                        ...styles.button,
+                      }}
+                    >
+                      Je m'occupe de ce cadeau
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {!isCurrentUser &&
+                  item.purchasedBy &&
+                  item.purchasedBy._id === user._id && (
+                    <Text
+                      style={{
+                        backgroundColor: theme.colors.primary,
+                        textAlign: 'center',
+                        ...styles.button,
+                      }}
+                    >
+                      Vous vous occupez de ce cadeau
+                    </Text>
+                  )}
+                {!isCurrentUser &&
+                  item.purchasedBy &&
+                  item.purchasedBy._id !== user._id && (
+                    <Text
+                      style={{
+                        backgroundColor: theme.colors.text.primary,
+                        textAlign: 'center',
+                        ...styles.button,
+                      }}
+                    >
+                      Quelqu'un s'occupe de ce cadeau
+                    </Text>
+                  )}
+              </View>
             </View>
           </TouchableOpacity>
         )}
       />
 
       {/* Bouton d'ajout - seulement si c'est l'utilisateur connecté */}
-      {(() => {
-        // Vérifier si c'est l'utilisateur actuel par ID ou par email
-        const isCurrentUser =
-          currentParticipant?.user?._id === user?._id ||
-          currentParticipant?.email === user?.email;
-        return isCurrentUser;
-      })() && (
+      {isCurrentUser && (
         <TouchableOpacity
           style={[
             theme.components.button.primary,
@@ -385,3 +444,15 @@ export default function WishListScreen({ navigation }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginTop: 10,
+    color: 'white',
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+});
