@@ -159,12 +159,11 @@ export default function GiftDetailScreen() {
       <Header title='Détail du cadeau' arrowShow={true} />
       {/* Images du cadeau */}
       {gift.images && gift.images.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
-          <ScrollView
-            style={{ padding: 20 }}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          >
+
+        <View style={{ marginBottom: 20, alignItems: "center", }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+
+
             {gift.images.map((image, index) => (
               <Image
                 key={index}

@@ -110,6 +110,7 @@ En iOS ou sur device réel, remplace par l’IP locale de ta machine (ex: http:/
 
 - Picker pour utiliser le menu déroulant de suggestion de type d’évènement : yarn add @react-native-picker/picker 
 - Picker pour utiliser le calendrier des dates : npx expo install react-native-date-picker
+- Picker pour la gestion des images : yarn add expo-image-picker pour gérer l’image
 
 
  
