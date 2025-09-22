@@ -150,17 +150,6 @@ export default function Christmas({ event, user }) {
         </View>
       </View>
 
-      {/* Bouton Liste de cadeaux - Christmas List */}
-      <TouchableOpacity
-        style={styles.giftListButton}
-        onPress={() => {
-          navigation.navigate('GiftList', { event: localEvent });
-        }}
-      >
-        <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
-        <Text style={styles.giftListButtonText}>Liste de cadeaux</Text>
-      </TouchableOpacity>
-
       {/* Section Participants */}
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
@@ -388,23 +377,6 @@ const styles = StyleSheet.create({
   },
 
   infoText: {
-    color: theme.colors.text.white,
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.bold,
-    marginLeft: 10,
-  },
-
-  // Bouton Liste de cadeaux
-  giftListButton: {
-    backgroundColor: '#4CAF50', // Vert pour la liste de cadeaux
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-
-  giftListButtonText: {
     color: theme.colors.text.white,
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.bold,

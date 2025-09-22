@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
+import Header from '../../../components/Header';
 
 export default function GiftDetailScreen() {
   const route = useRoute();
@@ -149,17 +150,21 @@ export default function GiftDetailScreen() {
   }
 
   return (
-    <ScrollView
+    <View
       style={[
         theme.components.screen.container,
         { backgroundColor: theme.colors.background.primary },
       ]}
-      contentContainerStyle={{ padding: 20 }}
     >
+      <Header title='Détail du cadeau' arrowShow={true} />
       {/* Images du cadeau */}
       {gift.images && gift.images.length > 0 && (
         <View style={{ marginBottom: 20 }}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView
+            style={{ padding: 20 }}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
             {gift.images.map((image, index) => (
               <Image
                 key={index}
@@ -190,16 +195,31 @@ export default function GiftDetailScreen() {
           {gift.name}
         </Text>
 
-        <Text
-          style={{
-            fontSize: theme.typography.fontSize.lg,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.primary.main,
-            marginBottom: 15,
-          }}
-        >
-          {gift.price} €
-        </Text>
+        {gift.description && (
+          <Text
+            style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.primary.main,
+              marginBottom: 15,
+            }}
+          >
+            {gift.description}
+          </Text>
+        )}
+
+        {gift.price && (
+          <Text
+            style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.primary.main,
+              marginBottom: 15,
+            }}
+          >
+            {gift.price} €
+          </Text>
+        )}
 
         {/* Qui a ajouté le cadeau */}
         {gift.addedBy && (
@@ -317,6 +337,6 @@ export default function GiftDetailScreen() {
           </TouchableOpacity>
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 }

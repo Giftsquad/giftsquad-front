@@ -92,6 +92,7 @@ export default function LoginScreen() {
               value={email}
               onChangeText={setEmail}
               autoCapitalize='none'
+              keyboardType='email-address'
             />
             {errors.email && (
               <Text style={theme.errorText}>{errors.email}</Text>
@@ -146,7 +147,7 @@ export default function LoginScreen() {
                   { marginLeft: 10 },
                 ]}
               >
-                {loading ? 'Création...' : 'Se connecter'}
+                {loading ? 'Connexion...' : 'Se connecter'}
               </Text>
             </View>
           </TouchableOpacity>
