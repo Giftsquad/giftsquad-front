@@ -18,7 +18,7 @@ import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-export default function Santa({ event, user }) {
+export default function Santa({ event, setEvent }) {
   const navigation = useNavigation();
   const {
     handleAddParticipant,
@@ -27,18 +27,21 @@ export default function Santa({ event, user }) {
     events,
     refreshEvents,
     handleDrawParticipant,
+    user,
   } = useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
-  const [localEvent, setLocalEvent] = useState(event);
+  // const [localEvent, setLocalEvent] = useState(event);
   const [modalVisible, setModalVisible] = useState(false);
-  const [draw, setDraw] = useState(false);
+  const [modal2Visible, setModal2Visible] = useState(false);
+  const [currentParticipant, setCurrentParticipant] = useState(null);
+  const [showDraw, setShowdraw] = useState(false);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
     const updatedEvent = events.find(e => e._id === event._id) || event;
-    setLocalEvent(updatedEvent);
-  }, [event, events]); // events est dans les dépendances pour se mettre à jour automatiquement
+    setEvent(updatedEvent);
+  }, [events]); // events est dans les dépendances pour se mettre à jour automatiquement
 
   // Recharger les événements quand on revient de l'ajout d'un gift
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function Santa({ event, user }) {
   }, [navigation, refreshEvents]);
 
   // Vérifier si l'utilisateur connecté est l'organisateur
-  const isOrganizer = localEvent.event_participants?.some(
+  const isOrganizer = event.event_participants?.some(
     participant =>
       participant.user?._id === user?._id && participant.role === 'organizer'
   );
@@ -63,10 +66,7 @@ export default function Santa({ event, user }) {
 
     try {
       setAddingParticipant(true);
-      const result = await handleAddParticipant(
-        localEvent._id,
-        participantEmail
-      );
+      const result = await handleAddParticipant(event._id, participantEmail);
 
       // Gérer la réponse selon si l'utilisateur a un compte ou non
       if (result.userExists === false) {
@@ -96,7 +96,7 @@ export default function Santa({ event, user }) {
   // Fonction pour retirer un participant
   const removeParticipant = async email => {
     try {
-      await handleRemoveParticipant(localEvent._id, email);
+      await handleRemoveParticipant(event._id, email);
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
       handleApiError(error);
@@ -118,7 +118,7 @@ export default function Santa({ event, user }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await handleDeleteEvent(localEvent._id);
+              await handleDeleteEvent(event._id);
               // Rediriger vers la liste des événements
               navigation.goBack();
             } catch (error) {
@@ -134,23 +134,147 @@ export default function Santa({ event, user }) {
     );
   };
 
-  return (
-    <KeyboardAwareScrollView
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps='handled'
-      enableOnAndroid={true}
-      extraScrollHeight={20}
-    >
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
-        {/* Informations principales - Date et Budget */}
-        <View style={styles.infoContainer}>
-          <View style={styles.infoCard}>
+
+  //fonction pour comparer l'id du user connecté et de son id participant
+  const findOwner = event => {
+    const owner = event.event_participants.find(
+      participant => participant.user._id === user._id
+    );
+    console.log(owner);
+    return owner;
+  };
+  // fonction pour afficher la personne qu'il a tiré au sort
+  const findAssigned = (event, owner, type) => {
+    if (type === 'assignedBy') {
+      const assignedBy = event.event_participants.find(
+        participant => participant.user._id === owner.assignedBy
+      );
+      console.log('ici =>', assignedBy);
+      return assignedBy.user.firstname;
+    } else if (type === 'assignedTo') {
+      // fonction pour révéler le prénom de la personne qu'un autre participant a tiré au sort
+      const assignedTo = event.event_participants.find(
+        participant => participant.user._id === owner.assignedTo
+      );
+      return assignedTo.user.firstname;
+    }
+  };
+
+  return event ? (
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+      {/* Informations principales - Date et Budget */}
+      <View style={styles.infoContainer}>
+        <View style={styles.infoCard}>
+          <FontAwesome5
+            name='calendar'
+            size={20}
+            color={theme.colors.text.white}
+          />
+          <Text style={styles.infoText}>
+            le{' '}
+            {new Date(event.event_date).toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </Text>
+        </View>
+
+        {/* Budget conseillé - Secret Santa seulement */}
+        {event.event_budget && (
+          <View style={[styles.infoCard, styles.budgetCard]}>
+
             <FontAwesome5
               name='calendar'
               size={20}
               color={theme.colors.text.white}
             />
             <Text style={styles.infoText}>
+
+              BUDGET CONSEILLÉ : {event.event_budget}€
+            </Text>
+          </View>
+        )}
+        {/* Résultat du tirage au sort*/}
+        {event.event_participants[0].assignedBy && (
+          <View style={styles.drawButton}>
+            <Text style={styles.drawButtonText}>
+              VOUS AVEZ TIRÉ{' '}
+              <Text style={{ color: 'black' }}>
+                {findAssigned(
+                  event,
+                  findOwner(event),
+                  'assignedBy'
+                ).toUpperCase()}
+              </Text>
+            </Text>
+          </View>
+        )}
+      </View>
+      {/* Section Participants */}
+      <View style={styles.participantsSection}>
+        <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
+        {event.event_participants?.map((participant, index) => {
+          // Déterminer le style de l'email selon le statut
+          const getEmailStyle = () => {
+            if (participant.role === 'organizer') {
+              return styles.participantName; // Style normal pour l'organisateur
+            }
+            if (participant.status === 'accepted') {
+              return styles.participantName; // Style normal pour accepté
+            }
+            if (participant.status === 'declined') {
+              return styles.participantNameGreyed; // Style grisé pour refusé
+            }
+            return styles.participantNameGreyed; // Style grisé pour en attente
+          };
+
+          const wishCount = participant.wishList?.length || 0;
+
+          // Vérifier si c'est l'utilisateur connecté (par ID ou par email si l'ID n'est pas disponible)
+          const isCurrentUser =
+            participant.user?._id === user?._id ||
+            (participant.user?._id === undefined &&
+              participant.email === user?.email);
+
+          // Logique d'affichage du nom selon le statut
+          const getParticipantName = () => {
+            // Si le participant a accepté et a des infos utilisateur complètes
+            if (
+              participant.status === 'accepted' &&
+              participant.user?.firstname &&
+              participant.user?.lastname
+            ) {
+              return `${participant.user.firstname} ${participant.user.lastname}`;
+            }
+            // Si le participant a accepté mais n'a que le prénom
+            if (
+              participant.status === 'accepted' &&
+              participant.user?.firstname
+            ) {
+              return participant.user.firstname;
+            }
+            // Pour l'organisateur, toujours afficher prénom + nom si disponibles
+            if (
+              participant.role === 'organizer' &&
+              participant.user?.firstname &&
+              participant.user?.lastname
+            ) {
+              return `${participant.user.firstname} ${participant.user.lastname}`;
+            }
+            if (
+              participant.role === 'organizer' &&
+              participant.user?.firstname
+            ) {
+              return participant.user.firstname;
+            }
+            // Sinon, afficher l'email (en attente, refusé, ou pas d'infos utilisateur)
+            return participant.email;
+          };
+
+          const participantName = getParticipantName();
+
               le{' '}
               {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
                 weekday: 'long',
@@ -160,6 +284,7 @@ export default function Santa({ event, user }) {
               })}
             </Text>
           </View>
+
 
           {/* Budget conseillé - Secret Santa seulement */}
           {localEvent.event_budget && (
@@ -304,7 +429,7 @@ export default function Santa({ event, user }) {
                   ]}
                   onPress={() => {
                     navigation.navigate('WishList', {
-                      event: localEvent,
+                      event: event,
                       participant: participant,
                     });
                   }}
@@ -367,8 +492,184 @@ export default function Santa({ event, user }) {
                     />
                   )}
                 </TouchableOpacity>
+
+                {/* Bouton pour voir le tirage au sort des participants si la personne est l'organisatrice de l'event */}
+                {isOrganizer && event.event_participants[0].assignedBy && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setCurrentParticipant(participant);
+                      setModal2Visible(true);
+                    }}
+                  >
+                    <Ionicons name='eye-outline' size={24} color='green' />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
+
+          );
+        })}
+        {/* Modal 2 pour révéler le tirage au sort de chacun  */}
+        <Modal visible={modal2Visible} transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <View
+                style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text>{`TIRAGE DE ${currentParticipant?.user.firstname.toUpperCase()}`}</Text>
+                <Pressable
+                  onPress={() => {
+                    setModal2Visible(!modal2Visible), setShowdraw(false);
+                  }}
+                >
+                  <Entypo name='cross' size={24} color='grey' />
+                </Pressable>
+              </View>
+              <Text>{`Voulez vous voir qui ${currentParticipant?.user.firstname} a tiré ?`}</Text>
+              {!showDraw ? (
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      height: 40,
+                      backgroundColor: theme.colors.accent,
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      borderRadius: 5,
+                    }}
+                    onPress={() => setModal2Visible(!modal2Visible)}
+                  >
+                    <Text style={styles.deleteButtonText}>Annuler</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      height: 40,
+                      backgroundColor: theme.colors.primary,
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      borderRadius: 5,
+                    }}
+                    onPress={() => {
+                      setShowdraw(true);
+                    }}
+                  >
+                    <Text style={styles.drawButtonText}>Voir le tirage</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <Text>
+                  {`${currentParticipant?.user.firstname} a tiré ${
+                    currentParticipant &&
+                    showDraw &&
+                    findAssigned(
+                      event,
+                      event.event_participants.find(
+                        participant =>
+                          participant.user._id ===
+                          currentParticipant?.assignedTo
+                      ),
+                      'assignedTo'
+                    ).toUpperCase()
+                  }`}
+                </Text>
+              )}
+            </View>
+          </View>
+        </Modal>
+        {/* Ajouter un participant (seulement pour l'organisateur et si le tirage au sort n'a pas été effectué) */}
+        {isOrganizer && !event.event_participants[0].assignedBy && (
+          <View style={styles.addParticipantSection}>
+            <Text style={styles.addParticipantLabel}>
+              Ajouter un participant
+            </Text>
+            <View style={styles.addParticipantInput}>
+              <TextInput
+                style={styles.emailInput}
+                placeholder='Email du participant'
+                placeholderTextColor={theme.colors.text.secondary}
+                value={participantEmail}
+                onChangeText={setParticipantEmail}
+                autoCapitalize='none'
+                keyboardType='email-address'
+              />
+              <TouchableOpacity
+                style={[
+                  styles.addButton,
+                  (addingParticipant || !participantEmail.trim()) &&
+                    styles.addButtonDisabled,
+                ]}
+                onPress={addParticipant}
+                disabled={addingParticipant || !participantEmail.trim()}
+              >
+                {addingParticipant ? (
+                  <ActivityIndicator
+                    size='small'
+                    color={theme.colors.text.white}
+                  />
+                ) : (
+                  <FontAwesome5
+                    name='plus'
+                    size={16}
+                    color={theme.colors.text.white}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        {/* Avertissement - Secret Santa seulement (seulement pour l'organisateur) */}
+        {isOrganizer && !event.event_participants[0].assignedBy && (
+          <Text style={styles.warningText}>
+            Attention : Une fois le tirage effectué, il ne sera plus possible de
+            modifier la liste des participants.
+          </Text>
+        )}
+      </View>
+      {/* Bouton de tirage au sort - Secret Santa seulement (seulement pour l'organisateur) */}
+      {isOrganizer && !event.drawnAt ? (
+        <TouchableOpacity
+          style={styles.drawButton}
+          onPress={() => {
+            setModalVisible(true);
+          }}
+        >
+          <Text style={styles.drawButtonText}>Effectuer le tirage au sort</Text>
+        </TouchableOpacity>
+      ) : (
+        <View
+          style={{
+            backgroundColor: theme.components.tabBar.inactiveTintColor,
+            paddingVertical: 15,
+            paddingHorizontal: 20,
+            borderRadius: 8,
+            alignItems: 'center',
+            marginTop: 20,
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            style={{
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: theme.typography.fontSize.md,
+            }}
+          >
+            Tirage au sort effectué
+          </Text>
+        </View>
+      )}
+      {/*  Modal pour faire le tirage au sort */}
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalOverlay}>
+
           )}
           {/* Avertissement - Secret Santa seulement (seulement pour l'organisateur) */}
           {isOrganizer && !draw && (
@@ -418,6 +719,7 @@ export default function Santa({ event, user }) {
 
         {/*  Modal pour révéler le tirage au sort */}
         <Modal visible={modalVisible} transparent={true}>
+
           <View style={styles.modal}>
             <View
               style={{
@@ -472,9 +774,10 @@ export default function Santa({ event, user }) {
                   borderRadius: 5,
                 }}
                 onPress={() => {
-                  const updatedEvent = handleDrawParticipant(localEvent._id);
-                  setLocalEvent(updatedEvent);
-                  setDraw(true);
+
+                  const updatedEvent = handleDrawParticipant(event._id);
+                  setEvent(updatedEvent);
+
                   setModalVisible(!modalVisible);
                 }}
               >
@@ -482,21 +785,24 @@ export default function Santa({ event, user }) {
               </TouchableOpacity>
             </View>
           </View>
-        </Modal>
 
-        {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
-        {isOrganizer && (
-          <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
-            <FontAwesome5
-              name='trash'
-              size={16}
-              color={theme.colors.text.white}
-            />
-            <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </KeyboardAwareScrollView>
+        </View>
+      </Modal>
+
+      {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
+      {isOrganizer && (
+        <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
+          <FontAwesome5
+            name='trash'
+            size={16}
+            color={theme.colors.text.white}
+          />
+          <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
+  ) : (
+    <Text>Loading</Text>
   );
 }
 
@@ -733,6 +1039,12 @@ const styles = StyleSheet.create({
   },
 
   //style de modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   modal: {
     margin: 'auto',
     backgroundColor: 'white',
