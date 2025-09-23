@@ -80,6 +80,7 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 marginBottom: 8,
               }}
@@ -104,6 +105,7 @@ export default function LoginScreen() {
             <Text
               style={{
                 fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 marginBottom: 8,
               }}

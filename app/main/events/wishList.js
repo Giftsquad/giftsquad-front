@@ -220,7 +220,7 @@ export default function WishListScreen({ navigation }) {
           <TouchableOpacity
             style={[
               theme.components.button.primary,
-              { alignSelf: 'center', paddingHorizontal: 20 },
+              { alignSelf: 'center', paddingHorizontal: 20, width: "90%", marginBottom: 50},
             ]}
             onPress={() => {
               navigation.navigate('addWish', {
@@ -423,7 +423,7 @@ export default function WishListScreen({ navigation }) {
         <TouchableOpacity
           style={[
             theme.components.button.primary,
-            { margin: 20, alignSelf: 'center', paddingHorizontal: 20 },
+            { margin: 20, alignSelf: 'center', paddingHorizontal: 20, width: "90%", marginBottom: 50 },
           ]}
           onPress={() => {
             navigation.navigate('addWish', {

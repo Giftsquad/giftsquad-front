@@ -284,7 +284,7 @@ export default function SignupScreen() {
           <TouchableOpacity
             style={[
               theme.components.button.primary,
-              { marginVertical: 20, alignSelf: 'center', width: '90%' },
+              { marginVertical: 20, alignSelf: 'center', width: '100%' },
             ]}
             onPress={handleSubmit}
             disabled={loading}
