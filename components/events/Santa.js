@@ -17,7 +17,7 @@ import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
 
-export default function Santa({ event, user }) {
+export default function Santa({ event, setEvent }) {
   const navigation = useNavigation();
   const {
     handleAddParticipant,
@@ -26,18 +26,18 @@ export default function Santa({ event, user }) {
     events,
     refreshEvents,
     handleDrawParticipant,
+    user,
   } = useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
-  const [localEvent, setLocalEvent] = useState(event);
+  // const [localEvent, setLocalEvent] = useState(event);
   const [modalVisible, setModalVisible] = useState(false);
-  const [draw, setDraw] = useState(false);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
     const updatedEvent = events.find(e => e._id === event._id) || event;
-    setLocalEvent(updatedEvent);
-  }, [event, events]); // events est dans les dépendances pour se mettre à jour automatiquement
+    setEvent(updatedEvent);
+  }, [events]); // events est dans les dépendances pour se mettre à jour automatiquement
 
   // Recharger les événements quand on revient de l'ajout d'un gift
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Santa({ event, user }) {
   }, [navigation, refreshEvents]);
 
   // Vérifier si l'utilisateur connecté est l'organisateur
-  const isOrganizer = localEvent.event_participants?.some(
+  const isOrganizer = event.event_participants?.some(
     participant =>
       participant.user?._id === user?._id && participant.role === 'organizer'
   );
@@ -62,10 +62,7 @@ export default function Santa({ event, user }) {
 
     try {
       setAddingParticipant(true);
-      const result = await handleAddParticipant(
-        localEvent._id,
-        participantEmail
-      );
+      const result = await handleAddParticipant(event._id, participantEmail);
 
       // Gérer la réponse selon si l'utilisateur a un compte ou non
       if (result.userExists === false) {
@@ -95,7 +92,7 @@ export default function Santa({ event, user }) {
   // Fonction pour retirer un participant
   const removeParticipant = async email => {
     try {
-      await handleRemoveParticipant(localEvent._id, email);
+      await handleRemoveParticipant(event._id, email);
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
       handleApiError(error);
@@ -117,7 +114,7 @@ export default function Santa({ event, user }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await handleDeleteEvent(localEvent._id);
+              await handleDeleteEvent(event._id);
               // Rediriger vers la liste des événements
               navigation.goBack();
             } catch (error) {
@@ -133,7 +130,38 @@ export default function Santa({ event, user }) {
     );
   };
 
-  return (
+  // console.log(localEvent);
+  // {"__v": 2, "_id": "68d25ba14d0acd2371bd4bbc", "createdAt": "2025-09-23T08:34:41.511Z", "event_budget": 20, "event_date": "2025-12-22T00:00:00.000Z", "event_name": "Secret   Santa bureau", "event_organizer": {"_id": "68d11372a7b4f0f853ad6b92", "email": "iseline.voison@gmail.com", "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline"}, "event_participants": [{"_id": "68d25ba14d0acd2371bd4bbd", "email": "iseline.voison@gmail.com", "joinedAt": "2025-09-23T08:34:41.509Z", "role": "organizer", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25baf4d0acd2371bd4bd0", "email": "louise@gmail.com", "joinedAt": "2025-09-23T08:34:55.325Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25bbb4d0acd2371bd4bfb", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}], "event_type": "secret_santa", "giftList": [], "updatedAt": "2025-09-23T08:36:40.539Z"}
+
+  //après tirage au sort
+  // {"__v": 2, "_id": "68d25ba14d0acd2371bd4bbc", "createdAt": "2025-09-23T08:34:41.511Z", "drawnAt": "2025-09-23T08:40:32.435Z", "event_budget": 20, "event_date": "2025-12-22T00:00:00.000Z", "event_name": "Secret   Santa bureau", "event_organizer": {"_id": "68d11372a7b4f0f853ad6b92", "email": "iseline.voison@gmail.com", "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline"}, "event_participants": [{"_id": "68d25ba14d0acd2371bd4bbd", "assignedBy": "68d25c0a4d0acd2371bd4c41", "assignedTo": "68d170f84d0acd2371bd4ab1", "email": "iseline.voison@gmail.com", "joinedAt": "2025-09-23T08:34:41.509Z", "role": "organizer", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25baf4d0acd2371bd4bd0", "assignedBy": "68d11372a7b4f0f853ad6b92", "assignedTo": "68d25c0a4d0acd2371bd4c41", "email": "louise@gmail.com", "joinedAt": "2025-09-23T08:34:55.325Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25bbb4d0acd2371bd4bfb", "assignedBy": "68d170f84d0acd2371bd4ab1", "assignedTo": "68d11372a7b4f0f853ad6b92", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}], "event_type": "secret_santa", "giftList": [], "updatedAt": "2025-09-23T08:40:32.436Z"}
+
+  // console.log(localEvent.event_participants);
+  // [{"_id": "68d25ba14d0acd2371bd4bbd", "assignedBy": "68d25c0a4d0acd2371bd4c41", "assignedTo": "68d170f84d0acd2371bd4ab1", "email": "iseline.voison@gmail.com", "joinedAt": "2025-09-23T08:34:41.509Z", "role": "organizer", "status": "accepted", "user": {"_id": "68d11372a7b4f0f853ad6b92", "email": "iseline.voison@gmail.com", "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline"}, "wishList": []},
+
+  // {"_id": "68d25baf4d0acd2371bd4bd0", "assignedBy": "68d11372a7b4f0f853ad6b92", "assignedTo": "68d25c0a4d0acd2371bd4c41", "email": "louise@gmail.com", "joinedAt": "2025-09-23T08:34:55.325Z", "role": "participant", "status": "accepted", "user": {"_id": "68d170f84d0acd2371bd4ab1", "email": "louise@gmail.com", "firstname": "Louise", "lastname": "Rocher", "nickname": "Louise"}, "wishList": []},
+
+  // {"_id": "68d25bbb4d0acd2371bd4bfb", "assignedBy": "68d170f84d0acd2371bd4ab1", "assignedTo": "68d11372a7b4f0f853ad6b92", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": {"_id": "68d25c0a4d0acd2371bd4c41", "email": "romain@gmail.com", "firstname": "Romain", "lastname": "Loiseau", "nickname": "romain"}, "wishList": []}]
+
+  console.log(event.event_participants);
+
+  const findOwner = event => {
+    const owner = event.event_participants.find(
+      participant => participant.user._id === user._id
+    );
+    console.log(owner);
+    return owner;
+  };
+
+  const findAssignedBy = (event, owner) => {
+    const assignedBy = event.event_participants.find(
+      participant => participant.user._id === owner.assignedBy
+    );
+    console.log('ici =>', assignedBy);
+    return assignedBy.user.firstname;
+  };
+
+  return event ? (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
       {/* Informations principales - Date et Budget */}
       <View style={styles.infoContainer}>
@@ -145,18 +173,17 @@ export default function Santa({ event, user }) {
           />
           <Text style={styles.infoText}>
             le{' '}
-            {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
+            {new Date(event.event_date).toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
               year: 'numeric',
             })}
-            ;
           </Text>
         </View>
 
         {/* Budget conseillé - Secret Santa seulement */}
-        {localEvent.event_budget && (
+        {event.event_budget && (
           <View style={[styles.infoCard, styles.budgetCard]}>
             <FontAwesome5
               name='euro-sign'
@@ -164,24 +191,27 @@ export default function Santa({ event, user }) {
               color={theme.colors.text.white}
             />
             <Text style={styles.infoText}>
-              BUDGET CONSEILLÉ : {localEvent.event_budget}€
+              BUDGET CONSEILLÉ : {event.event_budget}€
             </Text>
           </View>
         )}
         {/* Résultat du tirage au sort*/}
-        {draw === true && (
+
+        {event.event_participants[0].assignedBy && (
           <View style={styles.drawButton}>
             <Text style={styles.drawButtonText}>
-              VOUS AVEZ TIRÉ <Text style={{ color: 'black' }}>PRENOM</Text>
+              VOUS AVEZ TIRÉ{' '}
+              <Text style={{ color: 'black' }}>
+                {findAssignedBy(event, findOwner(event))}
+              </Text>
             </Text>
           </View>
         )}
       </View>
-
       {/* Section Participants */}
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
-        {localEvent.event_participants?.map((participant, index) => {
+        {event.event_participants?.map((participant, index) => {
           // Déterminer le style de l'email selon le statut
           const getEmailStyle = () => {
             if (participant.role === 'organizer') {
@@ -303,7 +333,7 @@ export default function Santa({ event, user }) {
                   ]}
                   onPress={() => {
                     navigation.navigate('WishList', {
-                      event: localEvent,
+                      event: event,
                       participant: participant,
                     });
                   }}
@@ -328,8 +358,8 @@ export default function Santa({ event, user }) {
             </View>
           );
         })}
-        {/* Ajouter un participant (seulement pour l'organisateur) */}
-        {isOrganizer && !draw && (
+        {/* Ajouter un participant (seulement pour l'organisateur et si le tirage au sort n'a pas été effectué) */}
+        {isOrganizer && !event.event_participants[0].assignedBy && (
           <View style={styles.addParticipantSection}>
             <Text style={styles.addParticipantLabel}>
               Ajouter un participant
@@ -370,16 +400,15 @@ export default function Santa({ event, user }) {
           </View>
         )}
         {/* Avertissement - Secret Santa seulement (seulement pour l'organisateur) */}
-        {isOrganizer && !draw && (
+        {isOrganizer && !event.event_participants[0].assignedBy && (
           <Text style={styles.warningText}>
             Attention : Une fois le tirage effectué, il ne sera plus possible de
             modifier la liste des participants.
           </Text>
         )}
       </View>
-
       {/* Bouton de tirage au sort - Secret Santa seulement (seulement pour l'organisateur) */}
-      {isOrganizer && !localEvent.drawnAt && !draw ? (
+      {isOrganizer && !event.drawnAt ? (
         <TouchableOpacity
           style={styles.drawButton}
           onPress={() => {
@@ -412,9 +441,8 @@ export default function Santa({ event, user }) {
           </Text>
         </View>
       )}
-
       {/*  Modal pour révéler le tirage au sort */}
-      <Modal visible={modalVisible} transparent={true}>
+      <Modal visible={modalVisible} backdropColor={'#00000055'}>
         <View style={styles.modal}>
           <View
             style={{
@@ -469,9 +497,8 @@ export default function Santa({ event, user }) {
                 borderRadius: 5,
               }}
               onPress={() => {
-                const updatedEvent = handleDrawParticipant(localEvent._id);
-                setLocalEvent(updatedEvent);
-                setDraw(true);
+                const updatedEvent = handleDrawParticipant(event._id);
+                setEvent(updatedEvent);
                 setModalVisible(!modalVisible);
               }}
             >
@@ -493,6 +520,8 @@ export default function Santa({ event, user }) {
         </TouchableOpacity>
       )}
     </ScrollView>
+  ) : (
+    <Text>Loading</Text>
   );
 }
 

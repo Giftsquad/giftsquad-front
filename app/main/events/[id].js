@@ -111,7 +111,7 @@ export default function EventDetailsScreen() {
   const renderEventComponent = () => {
     switch (event.event_type) {
       case 'secret_santa':
-        return <Santa event={event} user={user} />;
+        return <Santa event={event} user={user} setEvent={setEvent} />;
       case 'birthday':
         return <Birthday event={event} user={user} />;
       case 'christmas_list':
