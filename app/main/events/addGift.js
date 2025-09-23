@@ -158,7 +158,7 @@ export default function AddGiftScreen({ route, navigation }) {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Ex: Livre - Le Seigneur des Anneaux'
+              placeholder="Ex : Livre - L'Alchimiste"
               value={name}
               onChangeText={setName}
             />
@@ -178,7 +178,7 @@ export default function AddGiftScreen({ route, navigation }) {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Ex: 25'
+              placeholder='Ex : 25'
               value={price}
               onChangeText={setPrice}
               keyboardType='numeric'

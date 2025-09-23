@@ -14,6 +14,7 @@ import {
 import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function Birthday({ event, user }) {
   const navigation = useNavigation();
@@ -149,228 +150,235 @@ export default function Birthday({ event, user }) {
   };
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
-      {/* Informations principales - Date */}
-      <View style={styles.infoContainer}>
-        <View style={styles.infoCard}>
-          <FontAwesome5
-            name='calendar'
-            size={20}
-            color={theme.colors.text.white}
-          />
-          <Text style={styles.infoText}>
-            le{' '}
-            {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </Text>
-        </View>
-
-        {/* Somme collectée - Anniversaire seulement */}
-        <View style={[styles.infoCard, styles.collectedCard]}>
-          <FontAwesome5
-            name='euro-sign'
-            size={20}
-            color={theme.colors.text.white}
-          />
-          <View style={styles.collectedInfo}>
-            <Text style={styles.collectedAmount}>
-              {calculateCollectedAmount()}€ COLLECTÉS
-            </Text>
-            <Text style={styles.participantsCount}>
-              ({getParticipatingCount()} participants)
+    <KeyboardAwareScrollView
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps='handled'
+      enableOnAndroid={true}
+      extraScrollHeight={20}
+    >
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+        {/* Informations principales - Date */}
+        <View style={styles.infoContainer}>
+          <View style={styles.infoCard}>
+            <FontAwesome5
+              name='calendar'
+              size={20}
+              color={theme.colors.text.white}
+            />
+            <Text style={styles.infoText}>
+              le{' '}
+              {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
             </Text>
           </View>
-        </View>
-      </View>
 
-      {/* Bouton Liste de cadeaux - Anniversaire seulement */}
-      <TouchableOpacity
-        style={styles.giftListButton}
-        onPress={() => {
-          navigation.navigate('GiftList', { event: localEvent });
-        }}
-      >
-        <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
-        <Text style={styles.giftListButtonText}>Liste de cadeaux</Text>
-      </TouchableOpacity>
-
-      {/* Section Participants */}
-      <View style={styles.participantsSection}>
-        <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
-
-        {localEvent.event_participants?.map((participant, index) => {
-          // Déterminer le style de l'email selon le statut
-          const getEmailStyle = () => {
-            if (participant.role === 'organizer') {
-              return styles.participantName; // Style normal pour l'organisateur
-            }
-            if (participant.status === 'accepted') {
-              return styles.participantName; // Style normal pour accepté
-            }
-            if (participant.status === 'declined') {
-              return styles.participantNameGreyed; // Style grisé pour refusé
-            }
-            return styles.participantNameGreyed; // Style grisé pour en attente
-          };
-
-          // Logique d'affichage du nom selon le statut
-          const getParticipantName = () => {
-            // Si le participant a accepté et a des infos utilisateur complètes
-            if (
-              participant.status === 'accepted' &&
-              participant.user?.firstname &&
-              participant.user?.lastname
-            ) {
-              return `${participant.user.firstname} ${participant.user.lastname}`;
-            }
-            // Si le participant a accepté mais n'a que le prénom
-            if (
-              participant.status === 'accepted' &&
-              participant.user?.firstname
-            ) {
-              return participant.user.firstname;
-            }
-            // Pour l'organisateur, toujours afficher prénom + nom si disponibles
-            if (
-              participant.role === 'organizer' &&
-              participant.user?.firstname &&
-              participant.user?.lastname
-            ) {
-              return `${participant.user.firstname} ${participant.user.lastname}`;
-            }
-            if (
-              participant.role === 'organizer' &&
-              participant.user?.firstname
-            ) {
-              return participant.user.firstname;
-            }
-            // Sinon, afficher l'email (en attente, refusé, ou pas d'infos utilisateur)
-            return participant.email;
-          };
-
-          const participantName = getParticipantName();
-
-          return (
-            <View key={index} style={styles.participantRow}>
-              <Text style={[getEmailStyle(), { flex: 1 }]}>
-                {participantName}
+          {/* Somme collectée - Anniversaire seulement */}
+          <View style={[styles.infoCard, styles.collectedCard]}>
+            <FontAwesome5
+              name='euro-sign'
+              size={20}
+              color={theme.colors.text.white}
+            />
+            <View style={styles.collectedInfo}>
+              <Text style={styles.collectedAmount}>
+                {calculateCollectedAmount()}€ COLLECTÉS
               </Text>
+              <Text style={styles.participantsCount}>
+                ({getParticipatingCount()} participants)
+              </Text>
+            </View>
+          </View>
+        </View>
 
-              <View style={styles.participantActions}>
-                <View style={styles.participantStatus}>
-                  {participant.role === 'organizer' ? (
-                    // Icône de couronne pour l'organisateur
-                    <FontAwesome5 name='crown' size={16} color='#FFD700' />
-                  ) : // Pour les anniversaires : statut d'invitation puis montant ou bouton participer
-                  participant.status === 'accepted' ? (
-                    participant.participationAmount ? (
-                      <View style={styles.amountTag}>
-                        <Text style={styles.amountText}>
-                          {participant.participationAmount}€
-                        </Text>
-                      </View>
-                    ) : participant.user?._id === user?._id ? (
-                      <TouchableOpacity style={styles.participateButton}>
-                        <Text style={styles.participateButtonText}>
-                          Participer
-                        </Text>
-                      </TouchableOpacity>
-                    ) : null
-                  ) : participant.status === 'declined' ? (
-                    <FontAwesome5
-                      name='times-circle'
-                      size={16}
-                      color={theme.colors.text.error}
-                    />
-                  ) : (
-                    // Icône de sablier pour les participants en attente
-                    <FontAwesome5
-                      name='hourglass-half'
-                      size={16}
-                      color={theme.colors.text.secondary}
-                    />
+        {/* Bouton Liste de cadeaux - Anniversaire seulement */}
+        <TouchableOpacity
+          style={styles.giftListButton}
+          onPress={() => {
+            navigation.navigate('GiftList', { event: localEvent });
+          }}
+        >
+          <FontAwesome5 name='gift' size={20} color={theme.colors.text.white} />
+          <Text style={styles.giftListButtonText}>Liste de cadeaux</Text>
+        </TouchableOpacity>
+
+        {/* Section Participants */}
+        <View style={styles.participantsSection}>
+          <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
+
+          {localEvent.event_participants?.map((participant, index) => {
+            // Déterminer le style de l'email selon le statut
+            const getEmailStyle = () => {
+              if (participant.role === 'organizer') {
+                return styles.participantName; // Style normal pour l'organisateur
+              }
+              if (participant.status === 'accepted') {
+                return styles.participantName; // Style normal pour accepté
+              }
+              if (participant.status === 'declined') {
+                return styles.participantNameGreyed; // Style grisé pour refusé
+              }
+              return styles.participantNameGreyed; // Style grisé pour en attente
+            };
+
+            // Logique d'affichage du nom selon le statut
+            const getParticipantName = () => {
+              // Si le participant a accepté et a des infos utilisateur complètes
+              if (
+                participant.status === 'accepted' &&
+                participant.user?.firstname &&
+                participant.user?.lastname
+              ) {
+                return `${participant.user.firstname} ${participant.user.lastname}`;
+              }
+              // Si le participant a accepté mais n'a que le prénom
+              if (
+                participant.status === 'accepted' &&
+                participant.user?.firstname
+              ) {
+                return participant.user.firstname;
+              }
+              // Pour l'organisateur, toujours afficher prénom + nom si disponibles
+              if (
+                participant.role === 'organizer' &&
+                participant.user?.firstname &&
+                participant.user?.lastname
+              ) {
+                return `${participant.user.firstname} ${participant.user.lastname}`;
+              }
+              if (
+                participant.role === 'organizer' &&
+                participant.user?.firstname
+              ) {
+                return participant.user.firstname;
+              }
+              // Sinon, afficher l'email (en attente, refusé, ou pas d'infos utilisateur)
+              return participant.email;
+            };
+
+            const participantName = getParticipantName();
+
+            return (
+              <View key={index} style={styles.participantRow}>
+                <Text style={[getEmailStyle(), { flex: 1 }]}>
+                  {participantName}
+                </Text>
+
+                <View style={styles.participantActions}>
+                  <View style={styles.participantStatus}>
+                    {participant.role === 'organizer' ? (
+                      // Icône de couronne pour l'organisateur
+                      <FontAwesome5 name='crown' size={16} color='#FFD700' />
+                    ) : // Pour les anniversaires : statut d'invitation puis montant ou bouton participer
+                    participant.status === 'accepted' ? (
+                      participant.participationAmount ? (
+                        <View style={styles.amountTag}>
+                          <Text style={styles.amountText}>
+                            {participant.participationAmount}€
+                          </Text>
+                        </View>
+                      ) : participant.user?._id === user?._id ? (
+                        <TouchableOpacity style={styles.participateButton}>
+                          <Text style={styles.participateButtonText}>
+                            Participer
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null
+                    ) : participant.status === 'declined' ? (
+                      <FontAwesome5
+                        name='times-circle'
+                        size={16}
+                        color={theme.colors.text.error}
+                      />
+                    ) : (
+                      // Icône de sablier pour les participants en attente
+                      <FontAwesome5
+                        name='hourglass-half'
+                        size={16}
+                        color={theme.colors.text.secondary}
+                      />
+                    )}
+                  </View>
+
+                  {/* Bouton de suppression pour les participants non-organisateurs (seulement pour l'organisateur) */}
+                  {isOrganizer && participant.role !== 'organizer' && (
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeParticipant(participant.email)}
+                    >
+                      <FontAwesome5
+                        name='trash'
+                        size={14}
+                        color={theme.colors.accent}
+                      />
+                    </TouchableOpacity>
                   )}
                 </View>
 
-                {/* Bouton de suppression pour les participants non-organisateurs (seulement pour l'organisateur) */}
-                {isOrganizer && participant.role !== 'organizer' && (
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => removeParticipant(participant.email)}
-                  >
-                    <FontAwesome5
-                      name='trash'
-                      size={14}
-                      color={theme.colors.accent}
-                    />
-                  </TouchableOpacity>
-                )}
+                <View style={styles.participantSeparator} />
               </View>
+            );
+          })}
 
-              <View style={styles.participantSeparator} />
+          {/* Ajouter un participant (seulement pour l'organisateur) */}
+          {isOrganizer && (
+            <View style={styles.addParticipantSection}>
+              <Text style={styles.addParticipantLabel}>
+                Ajouter un participant
+              </Text>
+              <View style={styles.addParticipantInput}>
+                <TextInput
+                  style={styles.emailInput}
+                  placeholder='Email du participant'
+                  placeholderTextColor={theme.colors.text.secondary}
+                  value={participantEmail}
+                  onChangeText={setParticipantEmail}
+                  autoCapitalize='none'
+                  keyboardType='email-address'
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.addButton,
+                    (addingParticipant || !participantEmail.trim()) &&
+                      styles.addButtonDisabled,
+                  ]}
+                  onPress={addParticipant}
+                  disabled={addingParticipant || !participantEmail.trim()}
+                >
+                  {addingParticipant ? (
+                    <ActivityIndicator
+                      size='small'
+                      color={theme.colors.text.white}
+                    />
+                  ) : (
+                    <FontAwesome5
+                      name='plus'
+                      size={16}
+                      color={theme.colors.text.white}
+                    />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          );
-        })}
+          )}
+        </View>
 
-        {/* Ajouter un participant (seulement pour l'organisateur) */}
+        {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
         {isOrganizer && (
-          <View style={styles.addParticipantSection}>
-            <Text style={styles.addParticipantLabel}>
-              Ajouter un participant
-            </Text>
-            <View style={styles.addParticipantInput}>
-              <TextInput
-                style={styles.emailInput}
-                placeholder='Email du participant'
-                placeholderTextColor={theme.colors.text.secondary}
-                value={participantEmail}
-                onChangeText={setParticipantEmail}
-                autoCapitalize='none'
-                keyboardType='email-address'
-              />
-              <TouchableOpacity
-                style={[
-                  styles.addButton,
-                  (addingParticipant || !participantEmail.trim()) &&
-                    styles.addButtonDisabled,
-                ]}
-                onPress={addParticipant}
-                disabled={addingParticipant || !participantEmail.trim()}
-              >
-                {addingParticipant ? (
-                  <ActivityIndicator
-                    size='small'
-                    color={theme.colors.text.white}
-                  />
-                ) : (
-                  <FontAwesome5
-                    name='plus'
-                    size={16}
-                    color={theme.colors.text.white}
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
+          <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
+            <FontAwesome5
+              name='trash'
+              size={16}
+              color={theme.colors.text.white}
+            />
+            <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
+          </TouchableOpacity>
         )}
-      </View>
-
-      {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
-      {isOrganizer && (
-        <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
-          <FontAwesome5
-            name='trash'
-            size={16}
-            color={theme.colors.text.white}
-          />
-          <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
-        </TouchableOpacity>
-      )}
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

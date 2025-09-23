@@ -102,26 +102,62 @@ const Profil = () => {
           <View style={styles.card}>
             <Text>INFORMATIONS PERSONNELLES</Text>
             <View style={styles.containerInput}>
-              <Text>Prénom</Text>
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                  marginBottom: 8,
+                }}
+              >
+                Prénom
+              </Text>
               <TextInput
                 style={styles.input}
                 value={firstname}
                 onChangeText={setFirstname}
               />
-              <Text>Nom</Text>
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                  marginBottom: 8,
+                }}
+              >
+                Nom
+              </Text>
               <TextInput
                 style={styles.input}
                 value={lastname}
                 onChangeText={setLastname}
               />
-              <Text>Pseudo</Text>
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                  marginBottom: 8,
+                }}
+              >
+                Pseudo
+              </Text>
               <TextInput
                 style={styles.input}
                 value={nickname}
                 onChangeText={setNickname}
                 autoCapitalize='none'
               />
-              <Text>Email</Text>
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                  marginBottom: 8,
+                }}
+              >
+                Email
+              </Text>
               <TextInput
                 style={styles.input}
                 value={email}
@@ -158,19 +194,19 @@ const styles = StyleSheet.create({
   main: { backgroundColor: theme.colors.background.primary, height: '100%' },
   container: {
     margin: 10,
-    gap: 20,
+    gap: 5,
     justifyContent: 'center',
     alignItems: 'center',
   },
   logoProfil: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 50,
+    borderRadius: '50%',
     width: 100,
     height: 100,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  section: { gap: 15 },
+  section: { gap: 15, width: '100%' },
   containerInput: {
     gap: 8,
   },
@@ -188,7 +224,9 @@ const styles = StyleSheet.create({
     padding: 10,
     gap: 5,
     justifyContent: 'center',
+    alignSelf: 'center',
     alignItems: 'center',
+    width: '90%',
   },
   logoutButton: {
     backgroundColor: theme.colors.accent,
@@ -197,7 +235,10 @@ const styles = StyleSheet.create({
     padding: 10,
     gap: 5,
     justifyContent: 'center',
+    alignSelf: 'center',
     alignItems: 'center',
+    width: '90%',
+    marginBottom: '40',
   },
   text: {
     color: theme.colors.text.white,

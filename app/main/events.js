@@ -13,11 +13,13 @@ import HamburgerMenu from '../../components/HamburgerMenu';
 import Header from '../../components/Header';
 import AuthContext from '../../contexts/AuthContext';
 import { theme } from '../../styles/theme';
+import { router } from 'expo-router';
 
 // Import des icônes
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function EventsScreen() {
   // on récupère l'utilisateur connecté et les événements depuis le contexte
@@ -142,7 +144,32 @@ export default function EventsScreen() {
                   Aucun évènement pour l'instant. Tu peux créer un évènement.
                 </Text>
               )}
+              contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
             />
+
+            {/* Bouton "Ajouter un évènement", toujours visible */}
+            <TouchableOpacity
+              style={[theme.components.button.primary, { marginVertical: 30, width: "90%", alignSelf: "center" }]}
+              disabled={loading}
+              onPress={() => router.push('/main/createEvent')}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {loading ? (
+                  <ActivityIndicator color={theme.colors.text.white} />
+                ) : (
+                  <Ionicons name='add' size={24} color='white' />
+                )}
+                <Text
+                  style={[
+                    theme.components.button.text.primary,
+                    { marginLeft: 10 },
+                  ]}
+                >
+                  {loading ? 'Création...' : 'Ajouter un évènement'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            
           </>
         )}
       </View>

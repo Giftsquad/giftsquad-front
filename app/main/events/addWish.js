@@ -31,6 +31,7 @@ export default function AddWishScreen({ route, navigation }) {
 
   // États pour stocker les valeurs saisies par l'utilisateur
   const [name, setName] = useState(''); // Nom du souhait
+  const [price, setPrice] = useState(''); // Nom du souhait
   const [description, setDescription] = useState(''); // Description du souhait
   const [url, setUrl] = useState(''); // lien vers le souhait (optionnel)
   const [images, setImages] = useState([]); // images sélectionnées dans la galerie (optionnel)
@@ -108,6 +109,7 @@ export default function AddWishScreen({ route, navigation }) {
       // Création d'un FormData (format nécessaire pour envoyer fichiers + données)
       let formData = new FormData();
       formData.append('name', name);
+      formData.append('price', Number(price) || 0);
       formData.append('description', description); // transforme le string en nombre
 
       // Ajouter les images seulement si elles sont sélectionnées
@@ -166,8 +168,7 @@ export default function AddWishScreen({ route, navigation }) {
         enableOnAndroid={true}
         extraScrollHeight={20}
       >
-
-        <View style={theme.components.card.container}>
+        <View style={{ marginVertical: 20 }}>
           {/* Nom du cadeau */}
           <View style={{ marginBottom: 20 }}>
             <Text
@@ -182,7 +183,7 @@ export default function AddWishScreen({ route, navigation }) {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Ex: Livre - Le Seigneur des Anneaux'
+              placeholder="Ex : Livre - L'Alchimiste"
               value={name}
               onChangeText={setName}
             />
@@ -202,7 +203,7 @@ export default function AddWishScreen({ route, navigation }) {
             </Text>
             <TextInput
               style={theme.components.input.container}
-              placeholder='Ex: 25'
+              placeholder='Ex : 25'
               value={price}
               onChangeText={setPrice}
               keyboardType='numeric'
@@ -256,7 +257,7 @@ export default function AddWishScreen({ route, navigation }) {
                 { flexDirection: 'row', gap: 10, justifyContent: 'center' },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
-              onPress={pickImages}
+              onPress={() => pickImages('gallery')}
             >
               <AntDesign name='picture' size={24} color='black' />
               <Text
@@ -264,7 +265,7 @@ export default function AddWishScreen({ route, navigation }) {
                   fontSize: theme.typography.fontSize.md,
                   fontWeight: theme.typography.fontWeight.bold,
                   color: theme.colors.text.primary,
-                  
+
                   textAlign: 'center',
                 }}
               >
@@ -323,10 +324,8 @@ export default function AddWishScreen({ route, navigation }) {
                   </View>
                 ))}
               </View>
-
             </View>
           )}
-
 
           {/* Lien du cadeau (optionnel) */}
           <View style={{ marginBottom: 20 }}>
@@ -352,7 +351,7 @@ export default function AddWishScreen({ route, navigation }) {
           <TouchableOpacity
             style={[
               theme.components.button.primary,
-              { justifyContent: 'center', marginTop: 20 },
+              { justifyContent: 'center', marginVertical: 20 },
               errors.date && { borderColor: theme.colors.text.error },
             ]}
             onPress={handleSubmit}
@@ -368,7 +367,6 @@ export default function AddWishScreen({ route, navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
-
       </KeyboardAwareScrollView>
     </View>
   );
