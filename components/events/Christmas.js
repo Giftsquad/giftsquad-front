@@ -15,7 +15,7 @@ import AuthContext from '../../contexts/AuthContext';
 import { handleApiError } from '../../services/errorService';
 import { theme } from '../../styles/theme';
 
-export default function Christmas({ event, user }) {
+export default function Christmas({ event, user, setEvent }) {
   const navigation = useNavigation();
   const {
     handleAddParticipant,
@@ -26,25 +26,18 @@ export default function Christmas({ event, user }) {
   } = useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
-  const [localEvent, setLocalEvent] = useState(event);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
     const updatedEvent = events.find(e => e._id === event._id) || event;
-    setLocalEvent(updatedEvent);
-  }, [event._id, events]);
-
-  // Recharger les événements quand on revient de l'ajout d'un gift
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      refreshEvents();
-    });
-
-    return unsubscribe;
-  }, [navigation, refreshEvents]);
+    // Éviter la boucle infinie en vérifiant si l'événement a vraiment changé
+    if (JSON.stringify(updatedEvent) !== JSON.stringify(event)) {
+      setEvent(updatedEvent);
+    }
+  }, [events, event._id]);
 
   // Vérifier si l'utilisateur connecté est l'organisateur
-  const isOrganizer = localEvent.event_participants?.some(
+  const isOrganizer = event.event_participants?.some(
     participant =>
       participant.user?._id === user?._id && participant.role === 'organizer'
   );
@@ -57,10 +50,7 @@ export default function Christmas({ event, user }) {
 
     try {
       setAddingParticipant(true);
-      const result = await handleAddParticipant(
-        localEvent._id,
-        participantEmail
-      );
+      const result = await handleAddParticipant(event._id, participantEmail);
 
       // Gérer la réponse selon si l'utilisateur a un compte ou non
       if (result.userExists === false) {
@@ -90,7 +80,7 @@ export default function Christmas({ event, user }) {
   // Fonction pour retirer un participant
   const removeParticipant = async email => {
     try {
-      await handleRemoveParticipant(localEvent._id, email);
+      await handleRemoveParticipant(event._id, email);
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
       handleApiError(error);
@@ -112,7 +102,7 @@ export default function Christmas({ event, user }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await handleDeleteEvent(localEvent._id);
+              await handleDeleteEvent(event._id);
               // Rediriger vers la liste des événements
               navigation.goBack();
             } catch (error) {
@@ -140,7 +130,7 @@ export default function Christmas({ event, user }) {
           />
           <Text style={styles.infoText}>
             le{' '}
-            {new Date(localEvent.event_date).toLocaleDateString('fr-FR', {
+            {new Date(event.event_date).toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
@@ -154,7 +144,7 @@ export default function Christmas({ event, user }) {
       <View style={styles.participantsSection}>
         <Text style={styles.sectionTitle}>PARTICIPANTS</Text>
 
-        {localEvent.event_participants?.map((participant, index) => {
+        {event.event_participants?.map((participant, index) => {
           // Déterminer le style de l'email selon le statut
           const getEmailStyle = () => {
             if (participant.role === 'organizer') {
@@ -276,7 +266,7 @@ export default function Christmas({ event, user }) {
                   ]}
                   onPress={() => {
                     navigation.navigate('WishList', {
-                      event: localEvent,
+                      event: event,
                       participant: participant,
                     });
                   }}

@@ -38,17 +38,11 @@ export default function Santa({ event, setEvent }) {
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
     const updatedEvent = events.find(e => e._id === event._id) || event;
-    setEvent(updatedEvent);
-  }, [events]); // events est dans les dépendances pour se mettre à jour automatiquement
-
-  // Recharger les événements quand on revient de l'ajout d'un gift
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      refreshEvents();
-    });
-
-    return unsubscribe;
-  }, [navigation, refreshEvents]);
+    // Éviter la boucle infinie en vérifiant si l'événement a vraiment changé
+    if (JSON.stringify(updatedEvent) !== JSON.stringify(event)) {
+      setEvent(updatedEvent);
+    }
+  }, [events, event._id]); // Ajouter event._id pour éviter les dépendances circulaires
 
   // Vérifier si l'utilisateur connecté est l'organisateur
   const isOrganizer = event.event_participants?.some(

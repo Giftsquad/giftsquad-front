@@ -16,7 +16,8 @@ import { handleApiError } from '../../../services/errorService';
 import { theme } from '../../../styles/theme';
 
 export default function EventDetailsScreen() {
-  const { user, events, fetchEvent } = useContext(AuthContext);
+  const { user, events, fetchEventWithGifts, refreshEvents } =
+    useContext(AuthContext);
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params;
@@ -30,8 +31,17 @@ export default function EventDetailsScreen() {
         setLoading(true);
         setError(null);
 
-        // Récupérer l'événement depuis user.events
-        const eventData = await fetchEvent(id);
+        // Recharger les événements pour avoir les données les plus récentes
+        await refreshEvents();
+
+        // Récupérer l'événement complet avec ses cadeaux depuis l'API
+        const response = await fetchEventWithGifts(id);
+        console.log('Données reçues de fetchEventWithGifts:', response);
+
+        // L'API retourne { event: {...}, gifts: [...] }
+        const eventData = response.event || response;
+        console.log("Données de l'événement:", eventData);
+
         setEvent(eventData);
       } catch (error) {
         console.error("Erreur lors du chargement de l'événement:", error);
@@ -109,17 +119,21 @@ export default function EventDetailsScreen() {
 
   // Fonction pour rendre le composant approprié selon le type d'événement
   const renderEventComponent = () => {
-    switch (event.event_type) {
+    // Essayer différentes propriétés pour le type d'événement
+    const eventType = event.event_type;
+    switch (eventType) {
       case 'secret_santa':
         return <Santa event={event} user={user} setEvent={setEvent} />;
       case 'birthday':
-        return <Birthday event={event} user={user} />;
+        return <Birthday event={event} user={user} setEvent={setEvent} />;
       case 'christmas_list':
-        return <Christmas event={event} user={user} />;
+        return <Christmas event={event} user={user} setEvent={setEvent} />;
       default:
         return (
           <View style={theme.components.screen.centerContent}>
-            <Text style={styles.errorText}>Type d'événement non supporté</Text>
+            <Text style={styles.errorText}>
+              Type d'événement non supporté: {eventType || 'undefined'}
+            </Text>
           </View>
         );
     }
