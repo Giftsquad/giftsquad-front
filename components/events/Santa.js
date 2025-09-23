@@ -32,6 +32,9 @@ export default function Santa({ event, setEvent }) {
   const [addingParticipant, setAddingParticipant] = useState(false);
   // const [localEvent, setLocalEvent] = useState(event);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modal2Visible, setModal2Visible] = useState(false);
+  const [currentParticipant, setCurrentParticipant] = useState(null);
+  const [showDraw, setShowdraw] = useState(false);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
@@ -143,8 +146,11 @@ export default function Santa({ event, setEvent }) {
 
   // {"_id": "68d25bbb4d0acd2371bd4bfb", "assignedBy": "68d170f84d0acd2371bd4ab1", "assignedTo": "68d11372a7b4f0f853ad6b92", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": {"_id": "68d25c0a4d0acd2371bd4c41", "email": "romain@gmail.com", "firstname": "Romain", "lastname": "Loiseau", "nickname": "romain"}, "wishList": []}]
 
-  console.log(event.event_participants);
+  // console.log(event.event_participants);
+  // let currentParticipant = null;
+  console.log('là =>', currentParticipant);
 
+  //fonction pour comparer l'id du user connecté et de son id participant
   const findOwner = event => {
     const owner = event.event_participants.find(
       participant => participant.user._id === user._id
@@ -152,13 +158,21 @@ export default function Santa({ event, setEvent }) {
     console.log(owner);
     return owner;
   };
-
-  const findAssignedBy = (event, owner) => {
-    const assignedBy = event.event_participants.find(
-      participant => participant.user._id === owner.assignedBy
-    );
-    console.log('ici =>', assignedBy);
-    return assignedBy.user.firstname;
+  // fonction pour afficher la personne qu'il a tiré au sort
+  const findAssigned = (event, owner, type) => {
+    if (type === 'assignedBy') {
+      const assignedBy = event.event_participants.find(
+        participant => participant.user._id === owner.assignedBy
+      );
+      console.log('ici =>', assignedBy);
+      return assignedBy.user.firstname;
+    } else if (type === 'assignedTo') {
+      // fonction pour révéler le prénom de la personne qu'un autre participant a tiré au sort
+      const assignedTo = event.event_participants.find(
+        participant => participant.user._id === owner.assignedTo
+      );
+      return assignedTo.user.firstname;
+    }
   };
 
   return event ? (
@@ -196,13 +210,16 @@ export default function Santa({ event, setEvent }) {
           </View>
         )}
         {/* Résultat du tirage au sort*/}
-
         {event.event_participants[0].assignedBy && (
           <View style={styles.drawButton}>
             <Text style={styles.drawButtonText}>
               VOUS AVEZ TIRÉ{' '}
               <Text style={{ color: 'black' }}>
-                {findAssignedBy(event, findOwner(event))}
+                {findAssigned(
+                  event,
+                  findOwner(event),
+                  'assignedBy'
+                ).toUpperCase()}
               </Text>
             </Text>
           </View>
@@ -352,12 +369,98 @@ export default function Santa({ event, setEvent }) {
                     <Text style={styles.wishListButtonText}>{wishCount}</Text>
                   )}
                 </TouchableOpacity>
+
+                {/* Bouton pour voir le tirage au sort des participants si la personne est l'organisatrice de l'event */}
+                {isOrganizer && event.event_participants[0].assignedBy && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setCurrentParticipant(participant);
+                      setModal2Visible(true);
+                    }}
+                  >
+                    <Ionicons name='eye-outline' size={24} color='green' />
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.participantSeparator} />
             </View>
           );
         })}
+        {/* Modal 2 pour révéler le tirage au sort de chacun  */}
+        <Modal visible={modal2Visible} transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <View
+                style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text>{`TIRAGE DE ${currentParticipant?.user.firstname.toUpperCase()}`}</Text>
+                <Pressable
+                  onPress={() => {
+                    setModal2Visible(!modal2Visible), setShowdraw(false);
+                  }}
+                >
+                  <Entypo name='cross' size={24} color='grey' />
+                </Pressable>
+              </View>
+              <Text>{`Voulez vous voir qui ${currentParticipant?.user.firstname} a tiré ?`}</Text>
+              {!showDraw ? (
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      height: 40,
+                      backgroundColor: theme.colors.accent,
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      borderRadius: 5,
+                    }}
+                    onPress={() => setModal2Visible(!modal2Visible)}
+                  >
+                    <Text style={styles.deleteButtonText}>Annuler</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      width: '50%',
+                      height: 40,
+                      backgroundColor: theme.colors.primary,
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      borderRadius: 5,
+                    }}
+                    onPress={() => {
+                      setShowdraw(true);
+                    }}
+                  >
+                    <Text style={styles.drawButtonText}>Voir le tirage</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <Text>
+                  {`${currentParticipant?.user.firstname} a tiré ${
+                    currentParticipant &&
+                    showDraw &&
+                    findAssigned(
+                      event,
+                      event.event_participants.find(
+                        participant =>
+                          participant.user._id ===
+                          currentParticipant?.assignedTo
+                      ),
+                      'assignedTo'
+                    ).toUpperCase()
+                  }`}
+                </Text>
+              )}
+            </View>
+          </View>
+        </Modal>
         {/* Ajouter un participant (seulement pour l'organisateur et si le tirage au sort n'a pas été effectué) */}
         {isOrganizer && !event.event_participants[0].assignedBy && (
           <View style={styles.addParticipantSection}>
@@ -441,69 +544,71 @@ export default function Santa({ event, setEvent }) {
           </Text>
         </View>
       )}
-      {/*  Modal pour révéler le tirage au sort */}
-      <Modal visible={modalVisible} backdropColor={'#00000055'}>
-        <View style={styles.modal}>
-          <View
-            style={{
-              width: '100%',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text>CONFIRMATION DU TIRAGE</Text>
-            <Pressable onPress={() => setModalVisible(!modalVisible)}>
-              <Entypo name='cross' size={24} color='grey' />
-            </Pressable>
-          </View>
-          <View style={{ width: '100%', alignItems: 'center' }}>
-            <Ionicons name='warning' size={36} color='orange' />
-          </View>
-          <Text>Etes-vous sûr de vouloir effectuer le tirage au sort ?</Text>
-          <Text>
-            <Text style={{ fontWeight: 'bold' }}>Attention :</Text> Cette action
-            est irréversible.
-          </Text>
-          <View style={{ gap: 10 }}>
-            <Text>• Tous les participants seront notifiés par email</Text>
+      {/*  Modal pour faire le tirage au sort */}
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modal}>
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text>CONFIRMATION DU TIRAGE</Text>
+              <Pressable onPress={() => setModalVisible(!modalVisible)}>
+                <Entypo name='cross' size={24} color='grey' />
+              </Pressable>
+            </View>
+            <View style={{ width: '100%', alignItems: 'center' }}>
+              <Ionicons name='warning' size={36} color='orange' />
+            </View>
+            <Text>Etes-vous sûr de vouloir effectuer le tirage au sort ?</Text>
             <Text>
-              • Il ne sera plus possible d'ajouter de nouveaux participants
+              <Text style={{ fontWeight: 'bold' }}>Attention :</Text> Cette
+              action est irréversible.
             </Text>
-            <Text>• Le résultat du tirage sera définitif</Text>
-          </View>
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={{
-                width: '50%',
-                height: 40,
-                backgroundColor: theme.colors.accent,
-                alignItems: 'center',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                borderRadius: 5,
-              }}
-              onPress={() => setModalVisible(!modalVisible)}
-            >
-              <Text style={styles.deleteButtonText}>Annuler</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                width: '50%',
-                height: 40,
-                backgroundColor: theme.colors.primary,
-                alignItems: 'center',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                borderRadius: 5,
-              }}
-              onPress={() => {
-                const updatedEvent = handleDrawParticipant(event._id);
-                setEvent(updatedEvent);
-                setModalVisible(!modalVisible);
-              }}
-            >
-              <Text style={styles.drawButtonText}>Confirmer le tirage</Text>
-            </TouchableOpacity>
+            <View style={{ gap: 10 }}>
+              <Text>• Tous les participants seront notifiés par email</Text>
+              <Text>
+                • Il ne sera plus possible d'ajouter de nouveaux participants
+              </Text>
+              <Text>• Le résultat du tirage sera définitif</Text>
+            </View>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={{
+                  width: '50%',
+                  height: 40,
+                  backgroundColor: theme.colors.accent,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  borderRadius: 5,
+                }}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.deleteButtonText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  width: '50%',
+                  height: 40,
+                  backgroundColor: theme.colors.primary,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  borderRadius: 5,
+                }}
+                onPress={() => {
+                  const updatedEvent = handleDrawParticipant(event._id);
+                  setEvent(updatedEvent);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.drawButtonText}>Confirmer le tirage</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -756,6 +861,12 @@ const styles = StyleSheet.create({
   },
 
   //style de modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   modal: {
     margin: 'auto',
     backgroundColor: 'white',
