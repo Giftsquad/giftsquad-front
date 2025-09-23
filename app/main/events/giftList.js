@@ -13,6 +13,7 @@ import {
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
+import Header from '../../../components/Header';
 
 export default function GiftListScreen({ navigation }) {
   const route = useRoute();
@@ -158,12 +159,15 @@ export default function GiftListScreen({ navigation }) {
 
   if (allGifts.length === 0) {
     return (
+      
       <View
         style={[
           theme.components.screen.container,
           { backgroundColor: theme.colors.background.primary },
         ]}
       >
+        <Header arrowShow={true} title="Liste de cadeaux" />
+
         <Text
           style={{
             fontSize: theme.typography.fontSize.md,
@@ -201,7 +205,7 @@ export default function GiftListScreen({ navigation }) {
             <Text
               style={[theme.components.button.text.primary, { marginLeft: 10 }]}
             >
-              + Ajouter un cadeau
+              Ajouter un cadeau
             </Text>
           </View>
         </TouchableOpacity>
@@ -361,7 +365,7 @@ export default function GiftListScreen({ navigation }) {
       <TouchableOpacity
         style={[
           theme.components.button.primary,
-          { marginVertical: 30, width: '90%', alignSelf: 'center' },
+          { marginBottom: 50, width: '90%', alignSelf: 'center' },
         ]}
         onPress={() => {
           navigation.navigate('addGift', {

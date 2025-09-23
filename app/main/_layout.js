@@ -75,18 +75,9 @@ export default function EventLayout() {
       <Stack.Screen
         name='GiftList'
         component={GiftListScreen}
-        options={({ navigation }) => ({
+        options={{
           title: 'Liste de cadeaux',
-          headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={{ marginLeft: 10 }}
-            >
-              <Text style={{ fontSize: 18 }}>←</Text>
-            </TouchableOpacity>
-          ),
-        })}
+        }}
       />
       <Stack.Screen
         name='addGift'
