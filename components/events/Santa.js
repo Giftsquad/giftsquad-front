@@ -133,23 +133,6 @@ export default function Santa({ event, setEvent }) {
     );
   };
 
-  // console.log(localEvent);
-  // {"__v": 2, "_id": "68d25ba14d0acd2371bd4bbc", "createdAt": "2025-09-23T08:34:41.511Z", "event_budget": 20, "event_date": "2025-12-22T00:00:00.000Z", "event_name": "Secret   Santa bureau", "event_organizer": {"_id": "68d11372a7b4f0f853ad6b92", "email": "iseline.voison@gmail.com", "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline"}, "event_participants": [{"_id": "68d25ba14d0acd2371bd4bbd", "email": "iseline.voison@gmail.com", "joinedAt": "2025-09-23T08:34:41.509Z", "role": "organizer", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25baf4d0acd2371bd4bd0", "email": "louise@gmail.com", "joinedAt": "2025-09-23T08:34:55.325Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25bbb4d0acd2371bd4bfb", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}], "event_type": "secret_santa", "giftList": [], "updatedAt": "2025-09-23T08:36:40.539Z"}
-
-  //après tirage au sort
-  // {"__v": 2, "_id": "68d25ba14d0acd2371bd4bbc", "createdAt": "2025-09-23T08:34:41.511Z", "drawnAt": "2025-09-23T08:40:32.435Z", "event_budget": 20, "event_date": "2025-12-22T00:00:00.000Z", "event_name": "Secret   Santa bureau", "event_organizer": {"_id": "68d11372a7b4f0f853ad6b92", "email": "iseline.voison@gmail.com", "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline"}, "event_participants": [{"_id": "68d25ba14d0acd2371bd4bbd", "assignedBy": "68d25c0a4d0acd2371bd4c41", "assignedTo": "68d170f84d0acd2371bd4ab1", "email": "iseline.voison@gmail.com", "joinedAt": "2025-09-23T08:34:41.509Z", "role": "organizer", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25baf4d0acd2371bd4bd0", "assignedBy": "68d11372a7b4f0f853ad6b92", "assignedTo": "68d25c0a4d0acd2371bd4c41", "email": "louise@gmail.com", "joinedAt": "2025-09-23T08:34:55.325Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}, {"_id": "68d25bbb4d0acd2371bd4bfb", "assignedBy": "68d170f84d0acd2371bd4ab1", "assignedTo": "68d11372a7b4f0f853ad6b92", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": [Object], "wishList": [Array]}], "event_type": "secret_santa", "giftList": [], "updatedAt": "2025-09-23T08:40:32.436Z"}
-
-  // console.log(localEvent.event_participants);
-  // [{"_id": "68d25ba14d0acd2371bd4bbd", "assignedBy": "68d25c0a4d0acd2371bd4c41", "assignedTo": "68d170f84d0acd2371bd4ab1", "email": "iseline.voison@gmail.com", "joinedAt": "2025-09-23T08:34:41.509Z", "role": "organizer", "status": "accepted", "user": {"_id": "68d11372a7b4f0f853ad6b92", "email": "iseline.voison@gmail.com", "firstname": "Iseline", "lastname": "Voison", "nickname": "Iseline"}, "wishList": []},
-
-  // {"_id": "68d25baf4d0acd2371bd4bd0", "assignedBy": "68d11372a7b4f0f853ad6b92", "assignedTo": "68d25c0a4d0acd2371bd4c41", "email": "louise@gmail.com", "joinedAt": "2025-09-23T08:34:55.325Z", "role": "participant", "status": "accepted", "user": {"_id": "68d170f84d0acd2371bd4ab1", "email": "louise@gmail.com", "firstname": "Louise", "lastname": "Rocher", "nickname": "Louise"}, "wishList": []},
-
-  // {"_id": "68d25bbb4d0acd2371bd4bfb", "assignedBy": "68d170f84d0acd2371bd4ab1", "assignedTo": "68d11372a7b4f0f853ad6b92", "email": "romain@gmail.com", "joinedAt": "2025-09-23T08:35:07.460Z", "role": "participant", "status": "accepted", "user": {"_id": "68d25c0a4d0acd2371bd4c41", "email": "romain@gmail.com", "firstname": "Romain", "lastname": "Loiseau", "nickname": "romain"}, "wishList": []}]
-
-  // console.log(event.event_participants);
-  // let currentParticipant = null;
-  console.log('là =>', currentParticipant);
-
   //fonction pour comparer l'id du user connecté et de son id participant
   const findOwner = event => {
     const owner = event.event_participants.find(
