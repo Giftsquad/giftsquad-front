@@ -11,9 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
-import Header from '../../../components/Header';
 
 export default function GiftDetailScreen() {
   const route = useRoute();
@@ -159,11 +159,8 @@ export default function GiftDetailScreen() {
       <Header title='Détail du cadeau' arrowShow={true} />
       {/* Images du cadeau */}
       {gift.images && gift.images.length > 0 && (
-
-        <View style={{ marginBottom: 20, alignItems: "center", }}>
+        <View style={{ marginBottom: 20, alignItems: 'center' }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-
-
             {gift.images.map((image, index) => (
               <Image
                 key={index}
@@ -195,16 +192,26 @@ export default function GiftDetailScreen() {
         </Text>
 
         {gift.description && (
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.primary.main,
-              marginBottom: 15,
-            }}
-          >
-            {gift.description}
-          </Text>
+          <View style={{ marginBottom: 15 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary,
+                marginBottom: 5,
+              }}
+            >
+              Description :
+            </Text>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                color: theme.colors.text.primary,
+                lineHeight: 20,
+              }}
+            >
+              {gift.description}
+            </Text>
+          </View>
         )}
 
         {gift.price && (
@@ -220,8 +227,8 @@ export default function GiftDetailScreen() {
           </Text>
         )}
 
-        {/* Qui a ajouté le cadeau */}
-        {gift.addedBy && (
+        {/* Date de création et créateur */}
+        {gift.createdAt && (
           <View style={{ marginBottom: 15 }}>
             <Text
               style={{
@@ -230,7 +237,8 @@ export default function GiftDetailScreen() {
                 marginBottom: 5,
               }}
             >
-              Ajouté par :
+              Ajouté le {new Date(gift.createdAt).toLocaleDateString('fr-FR')}{' '}
+              par :
             </Text>
             <Text
               style={{
@@ -239,12 +247,31 @@ export default function GiftDetailScreen() {
                 color: theme.colors.text.primary,
               }}
             >
-              {gift.addedBy.firstname ||
-                gift.addedBy.nickname ||
-                'Utilisateur inconnu'}
+              {gift.addedBy?.firstname && gift.addedBy?.lastname
+                ? `${gift.addedBy.firstname} ${gift.addedBy.lastname}`
+                : gift.addedBy?.firstname ||
+                  gift.addedBy?.nickname ||
+                  'Utilisateur inconnu'}
             </Text>
           </View>
         )}
+
+        {/* Qui s'occupe du cadeau */}
+        <View style={{ marginBottom: 15 }}>
+          <Text
+            style={{
+              fontSize: theme.typography.fontSize.md,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text.primary,
+            }}
+          >
+            {gift.purchasedBy
+              ? `${gift.purchasedBy.firstname || ''} ${
+                  gift.purchasedBy.lastname || ''
+                }`.trim() || "Quelqu'un s'en occupe"
+              : "Personne ne s'en occupe"}
+          </Text>
+        </View>
 
         {/* Nom du participant si c'est un souhait */}
         {participantName && (

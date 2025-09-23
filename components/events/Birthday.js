@@ -1,9 +1,11 @@
-import { FontAwesome5 } from '@expo/vector-icons';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,9 +26,13 @@ export default function Birthday({ event, user, setEvent }) {
     handleDeleteEvent,
     events,
     refreshEvents,
+    updateParticipationAmount,
   } = useContext(AuthContext);
   const [participantEmail, setParticipantEmail] = useState('');
   const [addingParticipant, setAddingParticipant] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [participationAmount, setParticipationAmount] = useState('');
+  const [updatingParticipation, setUpdatingParticipation] = useState(false);
 
   // Utiliser useEffect pour se mettre à jour quand les données changent
   useEffect(() => {
@@ -104,6 +110,54 @@ export default function Birthday({ event, user, setEvent }) {
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
       handleApiError(error);
+    }
+  };
+
+  // Fonction pour gérer la participation
+  const handleParticipation = () => {
+    setModalVisible(true);
+  };
+
+  // Fonction pour valider le montant de participation
+  const validateParticipation = async () => {
+    if (
+      !participationAmount ||
+      isNaN(participationAmount) ||
+      parseFloat(participationAmount) <= 0
+    ) {
+      Alert.alert('Erreur', 'Veuillez entrer un montant valide');
+      return;
+    }
+
+    try {
+      setUpdatingParticipation(true);
+
+      // Appeler l'API pour mettre à jour le montant de participation
+      await updateParticipationAmount(
+        event._id,
+        parseFloat(participationAmount)
+      );
+
+      Alert.alert(
+        'Succès',
+        `Participation de ${participationAmount}€ enregistrée !`
+      );
+      setModalVisible(false);
+      setParticipationAmount('');
+
+      // Recharger les événements pour mettre à jour l'affichage
+      await refreshEvents();
+    } catch (error) {
+      console.error(
+        'Erreur lors de la mise à jour de la participation:',
+        error
+      );
+      const errorMessage =
+        handleApiError(error).general ||
+        'Impossible de mettre à jour la participation';
+      Alert.alert('Erreur', errorMessage);
+    } finally {
+      setUpdatingParticipation(false);
     }
   };
 
@@ -270,7 +324,10 @@ export default function Birthday({ event, user, setEvent }) {
                           </Text>
                         </View>
                       ) : participant.user?._id === user?._id ? (
-                        <TouchableOpacity style={styles.participateButton}>
+                        <TouchableOpacity
+                          style={styles.participateButton}
+                          onPress={handleParticipation}
+                        >
                           <Text style={styles.participateButtonText}>
                             Participer
                           </Text>
@@ -366,6 +423,65 @@ export default function Birthday({ event, user, setEvent }) {
             <Text style={styles.deleteButtonText}>Supprimer l'événement</Text>
           </TouchableOpacity>
         )}
+
+        {/* Modal pour la participation */}
+        <Modal visible={modalVisible} transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <View
+                style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={styles.modalTitle}>PARTICIPATION</Text>
+                <Pressable onPress={() => setModalVisible(false)}>
+                  <Entypo name='cross' size={24} color='grey' />
+                </Pressable>
+              </View>
+
+              <Text style={styles.modalText}>
+                Indiquez le montant de votre participation pour cet anniversaire
+                :
+              </Text>
+
+              <TextInput
+                style={styles.amountInput}
+                placeholder='Montant en euros'
+                placeholderTextColor={theme.colors.text.secondary}
+                value={participationAmount}
+                onChangeText={setParticipationAmount}
+                keyboardType='numeric'
+                autoFocus={true}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    setParticipationAmount('');
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Annuler</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.confirmButton]}
+                  onPress={validateParticipation}
+                  disabled={updatingParticipation}
+                >
+                  {updatingParticipation ? (
+                    <ActivityIndicator size='small' color='white' />
+                  ) : (
+                    <Text style={styles.confirmButtonText}>Valider</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </KeyboardAwareScrollView>
   );
@@ -571,5 +687,80 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.bold,
     marginLeft: 8,
+  },
+
+  // Styles du modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modal: {
+    margin: 'auto',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: '90%',
+    padding: 22,
+    alignItems: 'flex-start',
+    gap: 20,
+    shadowColor: '#020202ff',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+  },
+  modalText: {
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    width: '100%',
+  },
+  amountInput: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: theme.colors.background.primary,
+    fontSize: theme.typography.fontSize.md,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    height: 40,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: theme.colors.accent,
+  },
+  confirmButton: {
+    backgroundColor: theme.colors.primary,
+  },
+  cancelButtonText: {
+    color: theme.colors.text.white,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+  confirmButtonText: {
+    color: theme.colors.text.white,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
   },
 });

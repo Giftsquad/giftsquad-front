@@ -10,9 +10,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
-import Header from '../../../components/Header';
 
 export default function WishListScreen({ navigation }) {
   const route = useRoute();
@@ -220,7 +220,12 @@ export default function WishListScreen({ navigation }) {
           <TouchableOpacity
             style={[
               theme.components.button.primary,
-              { alignSelf: 'center', paddingHorizontal: 20, width: "90%", marginBottom: 50},
+              {
+                alignSelf: 'center',
+                paddingHorizontal: 20,
+                width: '90%',
+                marginBottom: 50,
+              },
             ]}
             onPress={() => {
               navigation.navigate('addWish', {
@@ -409,7 +414,15 @@ export default function WishListScreen({ navigation }) {
                         ...styles.button,
                       }}
                     >
-                      Quelqu'un s'occupe de ce cadeau
+                      {item.purchasedBy.firstname && item.purchasedBy.lastname
+                        ? `${item.purchasedBy.firstname} ${item.purchasedBy.lastname} s'en occupe`
+                        : item.purchasedBy.firstname ||
+                          item.purchasedBy.nickname
+                        ? `${
+                            item.purchasedBy.firstname ||
+                            item.purchasedBy.nickname
+                          } s'en occupe`
+                        : "Quelqu'un s'occupe de ce cadeau"}
                     </Text>
                   )}
               </View>
@@ -423,7 +436,13 @@ export default function WishListScreen({ navigation }) {
         <TouchableOpacity
           style={[
             theme.components.button.primary,
-            { margin: 20, alignSelf: 'center', paddingHorizontal: 20, width: "90%", marginBottom: 50 },
+            {
+              margin: 20,
+              alignSelf: 'center',
+              paddingHorizontal: 20,
+              width: '90%',
+              marginBottom: 50,
+            },
           ]}
           onPress={() => {
             navigation.navigate('addWish', {

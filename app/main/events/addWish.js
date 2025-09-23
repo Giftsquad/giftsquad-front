@@ -1,10 +1,8 @@
-import Constants from 'expo-constants';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { useContext, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   StyleSheet,
@@ -16,10 +14,9 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import * as ImagePicker from 'expo-image-picker';
+import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
-import Header from '../../../components/Header';
-import { FontAwesome5 } from '@expo/vector-icons';
 
 const IMAGES_LIMIT = 5;
 

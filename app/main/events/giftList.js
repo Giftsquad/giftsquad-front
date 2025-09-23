@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import {
@@ -5,21 +6,26 @@ import {
   FlatList,
   Image,
   Linking,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
   View,
 } from 'react-native';
+import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
-import { Ionicons } from '@expo/vector-icons';
-import Header from '../../../components/Header';
 
 export default function GiftListScreen({ navigation }) {
   const route = useRoute();
   const { event } = route.params;
-  const { user, events, refreshEvents, loading, handleDeleteGift } =
-    useContext(AuthContext);
+  const {
+    user,
+    events,
+    refreshEvents,
+    loading,
+    handleDeleteGift,
+    handlePurchaseGiftListGift,
+  } = useContext(AuthContext);
   const [allGifts, setAllGifts] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [localEvent, setLocalEvent] = useState(event);
@@ -118,6 +124,15 @@ export default function GiftListScreen({ navigation }) {
     }
   };
 
+  // Fonction pour acheter un cadeau
+  const handlePurchaseGift = async giftId => {
+    try {
+      await handlePurchaseGiftListGift(currentEvent._id, giftId);
+    } catch (error) {
+      console.error("Erreur lors de l'achat du cadeau:", error);
+    }
+  };
+
   // Afficher un loader pendant le chargement
   if (loading) {
     return (
@@ -159,14 +174,13 @@ export default function GiftListScreen({ navigation }) {
 
   if (allGifts.length === 0) {
     return (
-      
       <View
         style={[
           theme.components.screen.container,
           { backgroundColor: theme.colors.background.primary },
         ]}
       >
-        <Header arrowShow={true} title="Liste de cadeaux" />
+        <Header arrowShow={true} title='Liste de cadeaux' />
 
         <Text
           style={{
@@ -229,136 +243,214 @@ export default function GiftListScreen({ navigation }) {
         style={{ flex: 1, padding: 20 }}
         data={allGifts}
         keyExtractor={(item, index) => item._id || index.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={{
-              marginBottom: 20,
-              padding: 15,
-              backgroundColor: '#f5f5f5',
-              borderRadius: 8,
-            }}
-            onPress={() => {
-              navigation.navigate('gift', {
-                gift: item,
-                event: currentEvent,
-              });
-            }}
-          >
-            {/* Affichage des images */}
-            {item.images && item.images.length > 0 && (
-              <View style={{ marginBottom: 10 }}>
-                <View
-                  style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}
-                >
-                  {item.images.map((image, index) => (
-                    <Image
-                      key={index}
-                      source={{ uri: image.secure_url || image.url }}
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 4,
-                        resizeMode: 'cover',
-                      }}
-                    />
-                  ))}
+        renderItem={({ item }) => {
+          console.log('Item complet:', item);
+          return (
+            <TouchableOpacity
+              style={{
+                marginBottom: 20,
+                padding: 15,
+                backgroundColor: '#f5f5f5',
+                borderRadius: 8,
+              }}
+              onPress={() => {
+                navigation.navigate('gift', {
+                  gift: item,
+                  event: currentEvent,
+                });
+              }}
+            >
+              {/* Miniatures des images */}
+              {item.images && item.images.length > 0 && (
+                <View style={{ marginBottom: 10 }}>
+                  <View
+                    style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}
+                  >
+                    {item.images.slice(0, 3).map((image, index) => (
+                      <Image
+                        key={index}
+                        source={{ uri: image.secure_url || image.url }}
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: 4,
+                          resizeMode: 'cover',
+                        }}
+                      />
+                    ))}
+                    {item.images.length > 3 && (
+                      <View
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: 4,
+                          backgroundColor: theme.colors.text.secondary,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: 'white',
+                            fontSize: 12,
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          +{item.images.length - 3}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-              </View>
-            )}
-
-            <View>
-              <Text
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  marginBottom: 5,
-                }}
-              >
-                {item.name}
-              </Text>
-
-              {/* Afficher le nom de l'événement */}
-              {item.eventName && (
-                <Text
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
-                    marginBottom: 5,
-                    fontStyle: 'italic',
-                  }}
-                >
-                  Événement: {item.eventName}
-                </Text>
               )}
-              <Text
-                style={{
-                  fontSize: theme.typography.fontSize.md,
-                  color: theme.colors.text.secondary,
-                  marginBottom: 5,
-                }}
-              >
-                {item.price} €
-              </Text>
 
-              {/* Afficher qui a ajouté le cadeau selon le type */}
-              {item.addedAt && (
+              <View>
+                {/* Titre du cadeau */}
                 <Text
                   style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
+                    fontSize: theme.typography.fontSize.lg,
+                    fontWeight: theme.typography.fontWeight.bold,
                     marginBottom: 5,
                   }}
                 >
-                  {`Ajouté le ${new Date(item.addedAt).toLocaleDateString(
-                    'fr-FR'
-                  )} par ${
-                    item.addedByUser?.firstname && item.addedByUser?.lastname
-                      ? `${item.addedByUser.firstname} ${item.addedByUser.lastname}`
-                      : item.addedByUser?.firstname ||
-                        item.addedByUser?.nickname ||
-                        'Inconnu'
-                  }`}
+                  {item.name}
                 </Text>
-              )}
-              {item.url ? (
-                <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
+
+                {/* Description tronquée */}
+                {item.description && (
                   <Text
                     style={{
-                      color: theme.colors.primary.main,
-                      textDecorationLine: 'underline',
-                    }}
-                  >
-                    Voir le produit
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
-              {/* Bouton de suppression pour l'utilisateur connecté */}
-              {item.addedBy?._id === user?._id && (
-                <TouchableOpacity
-                  onPress={() => handleDeleteGiftListGift(item._id)}
-                  style={{
-                    backgroundColor: theme.colors.text.error,
-                    paddingVertical: 8,
-                    paddingHorizontal: 16,
-                    borderRadius: 6,
-                    marginTop: 10,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: 'white',
                       fontSize: theme.typography.fontSize.sm,
-                      fontWeight: theme.typography.fontWeight.bold,
+                      color: theme.colors.text.secondary,
+                      marginBottom: 5,
+                    }}
+                    numberOfLines={2}
+                    ellipsizeMode='tail'
+                  >
+                    {item.description}
+                  </Text>
+                )}
+
+                {/* Prix */}
+                <Text
+                  style={{
+                    fontSize: theme.typography.fontSize.md,
+                    color: theme.colors.primary.main,
+                    fontWeight: theme.typography.fontWeight.bold,
+                    marginBottom: 5,
+                  }}
+                >
+                  {item.price} €
+                </Text>
+
+                {/* Ajouté le createdAt par nom prénom du créateur */}
+                {item.createdAt && (
+                  <Text
+                    style={{
+                      fontSize: theme.typography.fontSize.sm,
+                      color: theme.colors.text.secondary,
+                      marginBottom: 5,
                     }}
                   >
-                    Supprimer
+                    {`Ajouté le ${new Date(item.createdAt).toLocaleDateString(
+                      'fr-FR'
+                    )} par ${
+                      item.addedByUser?.firstname && item.addedByUser?.lastname
+                        ? `${item.addedByUser.firstname} ${item.addedByUser.lastname}`
+                        : item.addedByUser?.firstname ||
+                          item.addedByUser?.nickname ||
+                          'Inconnu'
+                    }`}
                   </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
+                )}
+
+                {/* Qui s'occupe du cadeau */}
+                <Text
+                  style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.text.secondary,
+                    marginBottom: 5,
+                  }}
+                >
+                  {item.purchasedBy
+                    ? (() => {
+                        console.log('purchasedBy data:', item.purchasedBy);
+                        // Si purchasedBy est un objet avec les données utilisateur
+                        const name =
+                          item.purchasedBy.firstname ||
+                          item.purchasedBy.nickname ||
+                          "Quelqu'un";
+                        const lastname = item.purchasedBy.lastname || '';
+                        return `${name} ${lastname}`.trim() + " s'en occupe";
+                      })()
+                    : "Personne ne s'en occupe"}
+                </Text>
+                {item.url ? (
+                  <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
+                    <Text
+                      style={{
+                        color: theme.colors.primary.main,
+                        textDecorationLine: 'underline',
+                      }}
+                    >
+                      Voir le produit
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                {/* Bouton pour acheter le cadeau - seulement si l'utilisateur n'est pas le créateur et que personne ne s'en occupe */}
+                {item.addedBy?._id !== user?._id && !item.purchasedBy && (
+                  <TouchableOpacity
+                    onPress={() => handlePurchaseGift(item._id)}
+                    style={{
+                      backgroundColor: 'black',
+                      paddingVertical: 8,
+                      paddingHorizontal: 16,
+                      borderRadius: 6,
+                      marginTop: 10,
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: theme.typography.fontSize.sm,
+                        fontWeight: theme.typography.fontWeight.bold,
+                      }}
+                    >
+                      Je m'occupe de ce cadeau
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Bouton de suppression pour l'utilisateur connecté */}
+                {item.addedBy?._id === user?._id && (
+                  <TouchableOpacity
+                    onPress={() => handleDeleteGiftListGift(item._id)}
+                    style={{
+                      backgroundColor: theme.colors.text.error,
+                      paddingVertical: 8,
+                      paddingHorizontal: 16,
+                      borderRadius: 6,
+                      marginTop: 10,
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: theme.typography.fontSize.sm,
+                        fontWeight: theme.typography.fontWeight.bold,
+                      }}
+                    >
+                      Supprimer
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </TouchableOpacity>
+          );
+        }}
       />
 
       {/* Bouton d'ajout */}
@@ -375,8 +467,8 @@ export default function GiftListScreen({ navigation }) {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text
-              style={[theme.components.button.text.primary, { marginLeft: 10 }]}
-            >
+            style={[theme.components.button.text.primary, { marginLeft: 10 }]}
+          >
             + Ajouter un cadeau
           </Text>
         </View>

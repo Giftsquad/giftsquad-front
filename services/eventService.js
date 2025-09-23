@@ -192,11 +192,53 @@ export const purchaseWishGift = async (eventId, giftId) => {
   }
 };
 
+// Fonction pour mettre une option sur un cadeau de la giftList
+export const purchaseGiftListGift = async (eventId, giftId) => {
+  try {
+    const response = await api.put(
+      `/gifts/${eventId}/gift-list/${giftId}/purchase`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de l'option sur le cadeau:", error);
+    throw error;
+  }
+};
+
 // Fonction pour mettre une option sur un cadeau avec mise à jour du contexte
 export const handlePurchaseWishGift = async (eventId, giftId, setEvents) => {
   try {
     const response = await purchaseWishGift(eventId, giftId);
     console.log("Réponse d'option:", response);
+
+    // Vérifier si la réponse contient l'événement mis à jour
+    const updatedEvent = response?.event || response;
+
+    if (setEvents && updatedEvent && updatedEvent._id) {
+      setEvents(prevEvents =>
+        prevEvents.map(event =>
+          event._id === updatedEvent._id ? updatedEvent : event
+        )
+      );
+    }
+
+    return updatedEvent;
+  } catch (error) {
+    console.error("Erreur lors de l'option sur le cadeau:", error);
+    throw error;
+  }
+};
+
+// Fonction pour mettre une option sur un cadeau de la giftList avec mise à jour du contexte
+export const handlePurchaseGiftListGift = async (
+  eventId,
+  giftId,
+  setEvents
+) => {
+  try {
+    const response = await purchaseGiftListGift(eventId, giftId);
+    console.log("Réponse d'option giftList:", response);
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
@@ -348,6 +390,17 @@ export const handleDrawParticipant = async eventId => {
     return response.data;
   } catch (error) {
     console.error('Erreur lors du tirage au sort:', error);
+    throw error;
+  }
+};
+
+// Fonction pour mettre à jour le montant de participation pour les anniversaires
+export const updateParticipationAmount = async (eventId, amount) => {
+  try {
+    const response = await api.put(`/event/${eventId}/participate`, { amount });
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la participation:', error);
     throw error;
   }
 };

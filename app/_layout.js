@@ -20,9 +20,11 @@ import {
   handleDeleteEvent,
   handleDeleteGift,
   handleDrawParticipant,
+  handlePurchaseGiftListGift,
   handlePurchaseWishGift,
   handleRemoveParticipant,
   handleUpdateEvent,
+  updateParticipationAmount,
 } from '../services/eventService';
 import { theme } from '../styles/theme';
 
@@ -148,6 +150,20 @@ const RootLayout = () => {
     return result;
   };
 
+  // Fonction pour mettre une option sur un cadeau de la giftList
+  const purchaseGiftListGiftById = async (eventId, giftId) => {
+    const result = await handlePurchaseGiftListGift(eventId, giftId);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
+  };
+
+  // Fonction pour mettre à jour le montant de participation
+  const updateParticipationAmountById = async (eventId, amount) => {
+    const result = await updateParticipationAmount(eventId, amount);
+    await refreshEvents(); // Recharger les données après modification
+    return result;
+  };
+
   useEffect(() => {
     // Fonction lancée au démarrage pour initialiser l'app
     const fetchAsyncItem = async () => {
@@ -219,6 +235,8 @@ const RootLayout = () => {
           handleDeleteGift: deleteGiftById,
           handleDrawParticipant: drawParticipant,
           handlePurchaseWishGift: purchaseWishGiftById,
+          handlePurchaseGiftListGift: purchaseGiftListGiftById,
+          updateParticipationAmount: updateParticipationAmountById,
         }}
       >
         <Slot />
