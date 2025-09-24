@@ -539,7 +539,6 @@ export default function Santa({ event, setEvent }) {
               <TouchableOpacity
                 style={{
                   width: '50%',
-                  height: 40,
                   backgroundColor: theme.colors.primary,
                   alignItems: 'center',
                   flexDirection: 'row',
@@ -827,7 +826,7 @@ const styles = StyleSheet.create({
     height: 380,
     padding: 22,
     alignItems: 'flex-start',
-    gap: 20,
+    gap: 15,
     shadowColor: '#020202ff',
     shadowOffset: {
       width: 0,
@@ -839,7 +838,6 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     gap: 10,
-    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',

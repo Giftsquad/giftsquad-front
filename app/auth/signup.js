@@ -72,7 +72,6 @@ export default function SignupScreen() {
 
       // Connecter l'utilisateur automatiquement après l'inscription
       // console.log('Données utilisateur reçues:', userData);
-
       if (userData._id && userData.token) {
         // console.log('Connexion automatique après inscription');
         await login(userData);
@@ -241,6 +240,8 @@ export default function SignupScreen() {
               secureTextEntry
               autoCapitalize='none'
               placeholderTextColor={theme.colors.text.secondary}
+              textContentType="none" // évite la détection automatique iOS
+              autoComplete="off" // évite la suggestion
             />
             {errors.password && (
               <Text style={theme.errorText}>{errors.password}</Text>
@@ -269,6 +270,8 @@ export default function SignupScreen() {
               secureTextEntry
               autoCapitalize='none'
               placeholderTextColor={theme.colors.text.secondary}
+              autoComplete="off"
+              textContentType="none"
             />
             {errors.confirmPassword && (
               <Text style={theme.errorText}>{errors.confirmPassword}</Text>
