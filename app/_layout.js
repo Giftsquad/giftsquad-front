@@ -144,8 +144,12 @@ const RootLayout = () => {
   };
 
   // Fonction pour mettre une option sur un cadeau
-  const purchaseWishGiftById = async (eventId, giftId) => {
-    const result = await handlePurchaseWishGift(eventId, giftId);
+  const purchaseWishGiftById = async (eventId, participantUserId, giftId) => {
+    const result = await handlePurchaseWishGift(
+      eventId,
+      participantUserId,
+      giftId
+    );
     await refreshEvents(); // Recharger les données après modification
     return result;
   };
