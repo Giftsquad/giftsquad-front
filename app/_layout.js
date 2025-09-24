@@ -175,12 +175,12 @@ const RootLayout = () => {
           const userData = await getUserWithEvents();
           setUser(userData);
         } catch (error) {
-          console.log('Erreur lors de la récupération des données utilisateur');
+          // console.log('Erreur lors de la récupération des données utilisateur');
           await AsyncStorage.removeItem('token');
           setUser(null);
         }
       } else {
-        console.log('Aucun token trouvé');
+        // console.log('Aucun token trouvé');
         setUser(null);
       }
 

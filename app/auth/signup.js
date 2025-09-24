@@ -39,7 +39,6 @@ export default function SignupScreen() {
   };
 
   const handleSubmit = async () => {
-    console.log('Données du formulaire:', formData);
     setErrors({}); // Reset des erreurs
 
     // Validation basique frontend
@@ -72,14 +71,14 @@ export default function SignupScreen() {
       });
 
       // Connecter l'utilisateur automatiquement après l'inscription
-      console.log('Données utilisateur reçues:', userData);
+      // console.log('Données utilisateur reçues:', userData);
 
       if (userData._id && userData.token) {
-        console.log('Connexion automatique après inscription');
+        // console.log('Connexion automatique après inscription');
         await login(userData);
         router.replace('/main/events');
       } else {
-        console.log('Données utilisateur manquantes');
+        // console.log('Données utilisateur manquantes');
       }
     } catch (error) {
       const errors = handleApiError(error);

@@ -131,7 +131,7 @@ export default function Santa({ event, setEvent }) {
     const owner = event.event_participants.find(
       participant => participant.user._id === user._id
     );
-    console.log(owner);
+    // console.log(owner);
     return owner;
   };
   // fonction pour afficher la personne qu'il a tiré au sort
@@ -140,7 +140,7 @@ export default function Santa({ event, setEvent }) {
       const assignedBy = event.event_participants.find(
         participant => participant.user._id === owner.assignedBy
       );
-      console.log('ici =>', assignedBy);
+      // console.log('ici =>', assignedBy);
       return assignedBy.user.firstname;
     } else if (type === 'assignedTo') {
       // fonction pour révéler le prénom de la personne qu'un autre participant a tiré au sort

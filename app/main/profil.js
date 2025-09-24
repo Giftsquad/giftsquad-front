@@ -60,10 +60,10 @@ const Profil = () => {
         email: email.trim(),
       };
       const updateUser = await updateProfile(userData);
-      console.log('Profil mis à jour:', updateUser);
+      // console.log('Profil mis à jour:', updateUser);
       Alert.alert('Succès', 'Profil mis à jour avec succès !');
     } catch (error) {
-      console.log('Erreur mise à jour:', error);
+      // console.log('Erreur mise à jour:', error);
       const errors = handleApiError(error);
       // Afficher les erreurs spécifiques ou un message général
       if (errors.general) {

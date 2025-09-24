@@ -158,7 +158,7 @@ export const handleDeleteGift = async (
 ) => {
   try {
     const response = await deleteGift(eventId, giftId, isWish);
-    console.log('Réponse de suppression:', response);
+    // console.log('Réponse de suppression:', response);
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
@@ -210,7 +210,7 @@ export const purchaseGiftListGift = async (eventId, giftId) => {
 export const handlePurchaseWishGift = async (eventId, giftId, setEvents) => {
   try {
     const response = await purchaseWishGift(eventId, giftId);
-    console.log("Réponse d'option:", response);
+    // console.log("Réponse d'option:", response);
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
@@ -238,7 +238,7 @@ export const handlePurchaseGiftListGift = async (
 ) => {
   try {
     const response = await purchaseGiftListGift(eventId, giftId);
-    console.log("Réponse d'option giftList:", response);
+    // console.log("Réponse d'option giftList:", response);
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;

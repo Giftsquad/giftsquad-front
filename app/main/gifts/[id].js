@@ -124,7 +124,7 @@ export default function GiftDetailScreen() {
       <View
         style={[
           theme.components.screen.container,
-          { backgroundColor: theme.colors.background.primary },
+          { backgroundColor: theme.colors.background.primary},
         ]}
       >
         <Text
@@ -159,7 +159,7 @@ export default function GiftDetailScreen() {
       <Header title='Détail du cadeau' arrowShow={true} />
       {/* Images du cadeau */}
       {gift.images && gift.images.length > 0 && (
-        <View style={{ marginBottom: 20, alignItems: 'center' }}>
+        <View style={{ marginBottom: 20, alignItems: 'center', marginTop: 20 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {gift.images.map((image, index) => (
               <Image

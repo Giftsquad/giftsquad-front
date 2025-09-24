@@ -17,17 +17,16 @@ const Invitations = () => {
   const [invitations, setInvitations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, refreshEvents } = useContext(AuthContext);
-  console.log(invitations);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         const allInvitations = await getInvitations(); //récupération des toutes les invitations du user
-        console.log('Récupération de toutes les invitations');
+        // console.log('Récupération de toutes les invitations');
         setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       } catch (error) {
-        console.log('Erreur de récupération des invitations', error);
+        // console.log('Erreur de récupération des invitations', error);
       } finally {
         setIsLoading(false);
       }
@@ -42,10 +41,9 @@ const Invitations = () => {
   }, [user]);
 
   const handleDeclineButton = async id => {
-    console.log(id);
     try {
       const response = await actionInvitations(id, 'decline', user.email);
-      console.log('Invitation déclinée :', response);
+      // console.log('Invitation déclinée :', response);
       if (response) {
         setIsLoading(true);
 
@@ -53,13 +51,13 @@ const Invitations = () => {
         await refreshEvents();
 
         const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
-        console.log(
-          "Récupération de toutes les invitations sans l'événement qui a été décliné"
-        );
+        // console.log(
+        //   "Récupération de toutes les invitations sans l'événement qui a été décliné"
+        // );
         setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       }
     } catch (error) {
-      console.log("Impossible de décliner l'invitation :", error.response);
+      // console.log("Impossible de décliner l'invitation :", error.response);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +67,7 @@ const Invitations = () => {
     //lorsque j'accepte l'invitation je veux que l'événement apparaisse sur ma page mes events et disparaisse de ma page invitation
     try {
       const response = await actionInvitations(id, 'accept', user.email);
-      console.log('Invitation acceptée :', response);
+      // console.log('Invitation acceptée :', response);
       if (response) {
         setIsLoading(true);
 
@@ -77,13 +75,13 @@ const Invitations = () => {
         await refreshEvents();
 
         const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
-        console.log(
-          "Récupération de toutes les invitations sans l'événement qui a été accepté"
-        );
+        // console.log(
+        //   "Récupération de toutes les invitations sans l'événement qui a été accepté"
+        // );
         setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       }
     } catch (error) {
-      console.log("Impossible d'accepter l'invitation :", error.response);
+      // console.log("Impossible d'accepter l'invitation :", error.response);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +93,7 @@ const Invitations = () => {
     <View
       style={[
         theme.components.screen.container,
-        { backgroundColor: theme.colors.background.primary },
+        { backgroundColor: theme.colors.background.primary},
       ]}
     >
       <Header title='INVITATIONS' />
@@ -175,20 +173,22 @@ const Invitations = () => {
                   gap: 10,
                 }}
               >
-                <Pressable
-                  style={styles.declineButton}
-                  onPress={() => handleDeclineButton(item._id)}
-                >
-                  <Entypo name='cross' size={18} color='white' />
-                  <Text style={styles.text}>Refuser</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.acceptButton}
-                  onPress={() => handleAcceptButton(item._id)}
-                >
-                  <Entypo name='check' size={18} color='white' />
-                  <Text style={styles.text}>Accepter</Text>
-                </Pressable>
+                <View style={{flexDirection: "row", gap: 5, justifyContent: "center", }}>
+                  <Pressable
+                    style={styles.declineButton}
+                    onPress={() => handleDeclineButton(item._id)}
+                  >
+                    <Entypo name='cross' size={18} color='white' />
+                    <Text style={styles.text}>Refuser</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.acceptButton}
+                    onPress={() => handleAcceptButton(item._id)}
+                  >
+                    <Entypo name='check' size={18} color='white' />
+                    <Text style={styles.text}>Accepter</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
           );
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 135,
+    width: 120,
     height: 40,
     borderRadius: 5,
     backgroundColor: theme.colors.accent,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 135,
+    width: 120,
     height: 40,
     borderRadius: 5,
     backgroundColor: theme.colors.primary,
