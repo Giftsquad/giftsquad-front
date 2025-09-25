@@ -131,7 +131,7 @@ export default function Santa({ event, setEvent }) {
     const owner = event.event_participants.find(
       participant => participant.user?._id === user._id
     );
-    console.log(owner);
+    // console.log(owner);
     return owner;
   };
   // fonction pour afficher la personne qu'il a tiré au sort
@@ -140,8 +140,10 @@ export default function Santa({ event, setEvent }) {
       const assignedBy = event.event_participants.find(
         participant => participant.user?._id === owner.assignedBy
       );
-      console.log('ici =>', assignedBy);
+
+      // on garde prenom + nom (il peut y avoir plusieurs participant avec le meme prenom)
       return `${assignedBy?.user.firstname} ${assignedBy?.user.lastname}`;
+
     } else if (type === 'assignedTo') {
       // fonction pour révéler le prénom de la personne qu'un autre participant a tiré au sort
       const assignedTo = event.event_participants.find(
@@ -545,7 +547,6 @@ export default function Santa({ event, setEvent }) {
               <TouchableOpacity
                 style={{
                   width: '50%',
-                  height: 40,
                   backgroundColor: theme.colors.primary,
                   alignItems: 'center',
                   flexDirection: 'row',
@@ -833,7 +834,7 @@ const styles = StyleSheet.create({
     height: 380,
     padding: 22,
     alignItems: 'flex-start',
-    gap: 20,
+    gap: 15,
     shadowColor: '#020202ff',
     shadowOffset: {
       width: 0,
@@ -845,7 +846,6 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     gap: 10,
-    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',

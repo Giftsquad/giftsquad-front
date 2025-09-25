@@ -17,17 +17,16 @@ const Invitations = () => {
   const [invitations, setInvitations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, refreshEvents } = useContext(AuthContext);
-  console.log(invitations);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         const allInvitations = await getInvitations(); //récupération des toutes les invitations du user
-        console.log('Récupération de toutes les invitations');
+        // console.log('Récupération de toutes les invitations');
         setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       } catch (error) {
-        console.log('Erreur de récupération des invitations', error);
+        // console.log('Erreur de récupération des invitations', error);
       } finally {
         setIsLoading(false);
       }
@@ -42,10 +41,9 @@ const Invitations = () => {
   }, [user]);
 
   const handleDeclineButton = async id => {
-    console.log(id);
     try {
       const response = await actionInvitations(id, 'decline', user.email);
-      console.log('Invitation déclinée :', response);
+      // console.log('Invitation déclinée :', response);
       if (response) {
         setIsLoading(true);
 
@@ -53,13 +51,13 @@ const Invitations = () => {
         await refreshEvents();
 
         const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
-        console.log(
-          "Récupération de toutes les invitations sans l'événement qui a été décliné"
-        );
+        // console.log(
+        //   "Récupération de toutes les invitations sans l'événement qui a été décliné"
+        // );
         setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       }
     } catch (error) {
-      console.log("Impossible de décliner l'invitation :", error.response);
+      // console.log("Impossible de décliner l'invitation :", error.response);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +67,7 @@ const Invitations = () => {
     //lorsque j'accepte l'invitation je veux que l'événement apparaisse sur ma page mes events et disparaisse de ma page invitation
     try {
       const response = await actionInvitations(id, 'accept', user.email);
-      console.log('Invitation acceptée :', response);
+      // console.log('Invitation acceptée :', response);
       if (response) {
         setIsLoading(true);
 
@@ -77,13 +75,13 @@ const Invitations = () => {
         await refreshEvents();
 
         const allInvitations = await getInvitations(); //récupération de toutes les invitations mise à jour du user
-        console.log(
-          "Récupération de toutes les invitations sans l'événement qui a été accepté"
-        );
+        // console.log(
+        //   "Récupération de toutes les invitations sans l'événement qui a été accepté"
+        // );
         setInvitations(allInvitations); //mise à jour du state avec les invitations d'event récupérées de l'utilisateur
       }
     } catch (error) {
-      console.log("Impossible d'accepter l'invitation :", error.response);
+      // console.log("Impossible d'accepter l'invitation :", error.response);
     } finally {
       setIsLoading(false);
     }
@@ -114,21 +112,22 @@ const Invitations = () => {
                 <View
                   style={{ justifyContent: 'center', alignItems: 'center' }}
                 >
-                  {item.event_type === 'Secret Santa' && (
+                  {item.event_type === 'secret_santa' && (
                     <FontAwesome6 name='gift' size={30} color='#FF6B35' />
                   )}
-                  {item.event_type === 'Birthday' && (
+                  {item.event_type === 'birthday' && (
                     <FontAwesome6
                       name='cake-candles'
                       size={30}
                       color='#2196F3'
                     />
                   )}
-                  {item.event_type === 'Christmas List' && (
+                  {item.event_type === 'christmas_list' && (
                     <FontAwesome name='tree' size={30} color='#4CAF50' />
                   )}
                 </View>
-                <View>
+
+                <View >
                   <Text
                     style={styles.eventName}
                     numberOfLines={1}
@@ -140,18 +139,25 @@ const Invitations = () => {
                     <View
                       style={[
                         styles.eventTypeBadge,
-                        item.event_type === 'Secret Santa' &&
+                        item.event_type === 'secret_santa' &&
                           styles.secretSantaBadge,
-                        item.event_type === 'Birthday' && styles.birthdayBadge,
-                        item.event_type === 'Christmas List' &&
+                        item.event_type === 'birthday' && styles.birthdayBadge,
+                        item.event_type === 'christmas_list' &&
                           styles.christmasListBadge,
                       ]}
                     >
                       <Text style={styles.eventTypeText}>
-                        {item.event_type}
+                        {item.event_type === 'secret_santa'
+                          ? 'Secret Santa'
+                          : item.event_type === 'birthday'
+                          ? 'Birthday'
+                          : item.event_type === 'christmas_list'
+                          ? 'Christmas List'
+                          : item.event_type}
                       </Text>
                     </View>
                   </View>
+
                   {/*  la fonction .map() ne retourne pas toujours un élément (quand participant.role !== 'organizer'), ce qui peut causer des problèmes de key */}
                   {item.event_participants
                     .filter(participant => participant.role === 'organizer')
@@ -175,20 +181,28 @@ const Invitations = () => {
                   gap: 10,
                 }}
               >
-                <Pressable
-                  style={styles.declineButton}
-                  onPress={() => handleDeclineButton(item._id)}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 5,
+                    justifyContent: 'center',
+                  }}
                 >
-                  <Entypo name='cross' size={18} color='white' />
-                  <Text style={styles.text}>Refuser</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.acceptButton}
-                  onPress={() => handleAcceptButton(item._id)}
-                >
-                  <Entypo name='check' size={18} color='white' />
-                  <Text style={styles.text}>Accepter</Text>
-                </Pressable>
+                  <Pressable
+                    style={styles.declineButton}
+                    onPress={() => handleDeclineButton(item._id)}
+                  >
+                    <Entypo name='cross' size={18} color='white' />
+                    <Text style={styles.text}>Refuser</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.acceptButton}
+                    onPress={() => handleAcceptButton(item._id)}
+                  >
+                    <Entypo name='check' size={18} color='white' />
+                    <Text style={styles.text}>Accepter</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
           );
@@ -237,7 +251,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 135,
+    width: 120,
     height: 40,
     borderRadius: 5,
     backgroundColor: theme.colors.accent,
@@ -246,7 +260,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 135,
+    width: 120,
     height: 40,
     borderRadius: 5,
     backgroundColor: theme.colors.primary,

@@ -229,6 +229,7 @@ export default function GiftListScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
+      <Header arrowShow={true} title='Liste de cadeaux' />
       {/* Somme collectée - Anniversaire seulement */}
       <View style={[styles.infoCard, styles.collectedCard]}>
         <View style={styles.collectedInfo}>
@@ -244,7 +245,7 @@ export default function GiftListScreen({ navigation }) {
         data={allGifts}
         keyExtractor={(item, index) => item._id || index.toString()}
         renderItem={({ item }) => {
-          console.log('Item complet:', item);
+          // console.log('Item complet:', item);
           return (
             <TouchableOpacity
               style={{
@@ -374,7 +375,7 @@ export default function GiftListScreen({ navigation }) {
                 >
                   {item.purchasedBy
                     ? (() => {
-                        console.log('purchasedBy data:', item.purchasedBy);
+                        // console.log('purchasedBy data:', item.purchasedBy);
                         // Si purchasedBy est un objet avec les données utilisateur
                         const name =
                           item.purchasedBy.firstname ||
