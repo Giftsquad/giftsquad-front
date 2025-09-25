@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import {
   Dimensions,
   Modal,
@@ -8,9 +8,12 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import AuthContext from '../contexts/AuthContext';
 import { theme } from '../styles/theme';
+
+import InvitationsBadge from '../components/InvitationsBadge';
 
 const { width } = Dimensions.get('window');
 
@@ -82,11 +85,21 @@ export default function HamburgerMenu({ visible, onClose }) {
                 style={styles.menuItem}
                 onPress={item.onPress}
               >
-                <Ionicons
-                  name={item.icon}
-                  size={24}
-                  color={theme.colors.text.primary}
-                />
+                <View style={{ position: 'relative' }}>
+                  {item.customIcon ? (
+                    item.customIcon
+                  ) : (
+                    <Ionicons
+                      name={item.icon}
+                      size={24}
+                      color={theme.colors.text.primary}
+                    />
+                  )}
+
+                  {/* On affiche le badge si Invitations ets le titre*/}
+                  {item.title === 'Invitations' && <InvitationsBadge />}
+                </View>
+
                 <Text style={styles.menuItemText}>{item.title}</Text>
               </TouchableOpacity>
             ))}
