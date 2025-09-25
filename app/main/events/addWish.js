@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
+import { handleApiError } from '../../../services/errorService';
 
 const IMAGES_LIMIT = 5;
 
@@ -105,8 +106,8 @@ export default function AddWishScreen({ route, navigation }) {
       // Création d'un FormData (format nécessaire pour envoyer fichiers + données)
       let formData = new FormData();
       formData.append('name', name);
-      formData.append('price', Number(price) || 0);
-      formData.append('description', description); // transforme le string en nombre
+      formData.append('price', parseFloat(price)); // transforme le string en nombre
+      formData.append('description', description);
 
       // Ajouter les images seulement si elles sont sélectionnées
       if (images && images.length > 0) {
@@ -248,7 +249,7 @@ export default function AddWishScreen({ route, navigation }) {
                   textAlign: 'center',
                 }}
               >
-                Accéder à l'appareil photo ({images.length}/5)
+                Accéder à l'appareil photo ({images.length}/{IMAGES_LIMIT})
               </Text>
             </TouchableOpacity>
 
@@ -277,7 +278,7 @@ export default function AddWishScreen({ route, navigation }) {
                   textAlign: 'center',
                 }}
               >
-                Choisir des images ({images.length}/5)
+                Choisir des images ({images.length}/{IMAGES_LIMIT})
               </Text>
             </TouchableOpacity>
           </View>
