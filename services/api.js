@@ -14,7 +14,7 @@ const API_BASE_URL = Constants.expoConfig?.extra?.API_URL;
 // Créer une instance axios
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 10_000,
 });
 
 // Interceptor pour ajouter automatiquement le token
