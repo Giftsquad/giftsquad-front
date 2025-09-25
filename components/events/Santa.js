@@ -402,11 +402,7 @@ export default function Santa({ event, setEvent }) {
                     showDraw &&
                     findAssigned(
                       event,
-                      event.event_participants.find(
-                        participant =>
-                          participant.user?._id ===
-                          currentParticipant?.assignedTo
-                      ),
+                      currentParticipant,
                       'assignedTo'
                     )?.toUpperCase()
                   }`}
