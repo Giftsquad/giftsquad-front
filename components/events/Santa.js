@@ -402,6 +402,7 @@ export default function Santa({ event, setEvent }) {
                     showDraw &&
                     findAssigned(
                       event,
+
                       currentParticipant,
                       'assignedTo'
                     )?.toUpperCase()
