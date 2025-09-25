@@ -3,6 +3,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useContext, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Text,
@@ -15,6 +16,9 @@ import * as ImagePicker from 'expo-image-picker'; // libriaire Expo pour accéde
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
 import Header from '../../../components/Header';
+import { handleApiError } from '../../../services/errorService';
+
+const IMAGES_LIMIT = 5;
 
 export default function AddGiftScreen({ route, navigation }) {
   // Récupère l'événement complet transmis depuis la navigation
@@ -30,35 +34,46 @@ export default function AddGiftScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false); // état du chargement (évite plusieurs clics)
 
   // Fonction qui ouvre la galerie du téléphone pour sélectionner plusieurs images
-  const pickImages = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  const canPickImage = () => images.length < IMAGES_LIMIT;
+
+  // Fonction qui ouvre la galerie du téléphone ou l'appareil photo pour sélectionner plusieurs images
+  const pickImages = async type => {
+    const { status } =
+      'gallery' === type
+        ? await ImagePicker.requestMediaLibraryPermissionsAsync()
+        : await ImagePicker.requestCameraPermissionsAsync();
+
+    if ('granted' !== status) {
+      Alert.alert(
+        `Vous devez autoriser l\'application à accéder à la ${
+          'gallery' === type ? 'la galerie' : "l'appareil"
+        } photo`
+      );
+
+      return;
+    }
+
+    const options = {
       mediaTypes: 'images', // uniquement images
       allowsMultipleSelection: true, // permet la sélection multiple
-      selectionLimit: 5, // limite à 5 images maximum
-    });
+      selectionLimit: IMAGES_LIMIT, // limite à 5 images maximum
+    };
+
+    const result =
+      'gallery' === type
+        ? await ImagePicker.launchImageLibraryAsync(options)
+        : await ImagePicker.launchCameraAsync(options);
 
     if (!result.canceled) {
+      if (IMAGES_LIMIT < images.length + result.assets.length) {
+        Alert.alert(
+          'Erreur',
+          `Veuillez choisir ${IMAGES_LIMIT} images maximum.`
+        );
+        return;
+      }
       // on vérifie que l'utilisateur n'a pas annulé son choix d'images
       setImages(prevImages => [...prevImages, ...result.assets]); // ajouter les nouvelles images aux existantes
-    }
-  };
-
-  // Fonction pour la permission d'ouvrir la caméra
-  const takeAPhoto = async () => {
-    //Demander le droit d'accéder à l'appareil photo
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status === 'granted') {
-      //Ouvrir l'appareil photo
-      const result = await ImagePicker.launchCameraAsync();
-
-      if (result.canceled === true) {
-        alert('Pas de photo sélectionnée');
-      } else {
-        // Ajouter directement l'image à ton tableau images
-        setImages(prevImages => [...prevImages, result.assets[0]]);
-      }
-    } else {
-      alert('Permission refusée');
     }
   };
 
@@ -69,15 +84,20 @@ export default function AddGiftScreen({ route, navigation }) {
 
   // Fonction qui envoie le formulaire au back
   const handleSubmit = async () => {
+    setErrors({}); // on remet les erreurs à zéro
+
     // Vérifie que les champs obligatoires sont remplis
     if (!name || !price) {
-      Alert.alert('Erreur', 'Nom et prix sont obligatoires.');
+      setErrors({
+        name: 'Le nom est obligatoire',
+        price: 'Le prix est obligatoire',
+      });
       return;
     }
 
     // Vérifier que l'événement est valide
     if (!event || !event._id) {
-      Alert.alert('Erreur', 'Événement invalide.');
+      setErrors({ general: 'Événement invalide.' });
       return;
     }
 
@@ -95,7 +115,7 @@ export default function AddGiftScreen({ route, navigation }) {
           formData.append('images', {
             uri: image.uri, // chemin local de l'image
             name: `gift_${index}.jpg`, // nom arbitraire avec index
-            type: 'image/jpeg', // type MIME
+            type: image.mimeType, // type MIME
           });
         });
       }
@@ -112,6 +132,7 @@ export default function AddGiftScreen({ route, navigation }) {
 
       // Appel API via le contexte
       await handleAddGift(event._id, formData, false); // isWish = false pour giftList
+      setErrors({});
 
       // Succès → affiche une alerte et revient à la liste
       Alert.alert('Succès', 'Cadeau ajouté avec succès !');
@@ -120,6 +141,8 @@ export default function AddGiftScreen({ route, navigation }) {
       // En cas d'erreur → affiche dans la console et une alerte utilisateur
       console.error('Erreur API:', error.response?.data || error.message);
       Alert.alert('Erreur', error.response?.data?.message || error.message);
+      const errors = handleApiError(error);
+      setErrors(errors);
     } finally {
       setLoading(false); // stoppe le loader dans tous les cas
     }
@@ -164,6 +187,7 @@ export default function AddGiftScreen({ route, navigation }) {
               value={name}
               onChangeText={setName}
             />
+            {errors.name && <Text style={theme.errorText}>{errors.name}</Text>}
           </View>
 
           {/* Prix du cadeau */}
@@ -185,6 +209,9 @@ export default function AddGiftScreen({ route, navigation }) {
               onChangeText={setPrice}
               keyboardType='numeric'
             />
+            {errors.price && (
+              <Text style={theme.errorText}>{errors.price}</Text>
+            )}
           </View>
 
           {/* Choisir des images */}
@@ -209,10 +236,12 @@ export default function AddGiftScreen({ route, navigation }) {
                   gap: 10,
                   justifyContent: 'center',
                   marginBottom: 20,
+                  opacity: canPickImage() ? 1 : 0.5,
                 },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
-              onPress={takeAPhoto}
+              onPress={() => pickImages('camera')}
+              disabled={!canPickImage()}
             >
               <FontAwesome name='camera' size={24} color='black' />
               <Text
@@ -223,7 +252,7 @@ export default function AddGiftScreen({ route, navigation }) {
                   textAlign: 'center',
                 }}
               >
-                Accéder à l'appareil photo ({images.length}/5)
+                Accéder à l'appareil photo ({images.length}/{IMAGES_LIMIT})
               </Text>
             </TouchableOpacity>
 
@@ -231,10 +260,16 @@ export default function AddGiftScreen({ route, navigation }) {
             <TouchableOpacity
               style={[
                 theme.components.input.container,
-                { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+                {
+                  flexDirection: 'row',
+                  gap: 10,
+                  justifyContent: 'center',
+                  opacity: canPickImage() ? 1 : 0.5,
+                },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
-              onPress={pickImages}
+              onPress={() => pickImages('gallery')}
+              disabled={!canPickImage()}
             >
               <AntDesign name='picture' size={24} color='black' />
               <Text
@@ -245,7 +280,7 @@ export default function AddGiftScreen({ route, navigation }) {
                   textAlign: 'center',
                 }}
               >
-                Choisir des images ({images.length}/5)
+                Choisir des images ({images.length}/{IMAGES_LIMIT})
               </Text>
             </TouchableOpacity>
           </View>
@@ -302,6 +337,9 @@ export default function AddGiftScreen({ route, navigation }) {
               </View>
             </View>
           )}
+          {errors.images && (
+            <Text style={theme.errorText}>{errors.images}</Text>
+          )}
 
           {/* Lien du cadeau (optionnel) */}
           <View style={{ marginBottom: 20 }}>
@@ -321,25 +359,37 @@ export default function AddGiftScreen({ route, navigation }) {
               value={url}
               onChangeText={setUrl}
             />
+            {errors.url && <Text style={theme.errorText}>{errors.url}</Text>}
           </View>
+
+          {/* Erreur générale */}
+          {errors.general && (
+            <Text style={theme.errorText}>{errors.general}</Text>
+          )}
 
           {/* Bouton Ajouter le cadeau */}
           <TouchableOpacity
             style={[
               theme.components.button.primary,
-              { justifyContent: 'center', marginTop: 20 },
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: 20,
+              },
               errors.date && { borderColor: theme.colors.text.error },
             ]}
             onPress={handleSubmit}
             disabled={loading}
           >
+            {loading && <ActivityIndicator color={theme.colors.text.white} />}
             <Text
               style={[
                 theme.components.button.text.primary,
                 { textAlign: 'center' },
               ]}
             >
-              {loading ? 'Ajout en cours...' : 'Ajouter le cadeau'}
+              {loading ? ' Ajout en cours...' : 'Ajouter le cadeau'}
             </Text>
           </TouchableOpacity>
         </View>
