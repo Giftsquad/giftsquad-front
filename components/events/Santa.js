@@ -186,7 +186,7 @@ export default function Santa({ event, setEvent }) {
           </View>
         )}
         {/* Résultat du tirage au sort*/}
-        {event.event_participants[0].assignedBy && (
+        {event.event_participants[0].assignedTo && (
           <View style={styles.drawButton}>
             <Text style={styles.drawButtonText}>
               VOUS AVEZ TIRÉ{' '}
@@ -194,7 +194,7 @@ export default function Santa({ event, setEvent }) {
                 {findAssigned(
                   event,
                   findOwner(event),
-                  'assignedBy'
+                  'assignedTo'
                 )?.toUpperCase()}
               </Text>
             </Text>
