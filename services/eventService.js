@@ -214,10 +214,8 @@ export const handlePurchaseWishGift = async (
   setEvents
 ) => {
   try {
-
-    const response = await purchaseWishGift(eventId, giftId);
+    const response = await purchaseWishGift(eventId, participantUserId, giftId);
     // console.log("Réponse d'option:", response);
-
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
