@@ -31,4 +31,26 @@ export default {
       API_URL: process.env.API_URL,
     },
   },
+  cli: {
+    version: '>= 16.19.3',
+    appVersionSource: 'remote',
+  },
+  build: {
+    development: {
+      developmentClient: true,
+      distribution: 'internal',
+    },
+    preview: {
+      distribution: 'internal',
+      android: {
+        buildType: 'apk',
+      },
+    },
+    production: {
+      autoIncrement: true,
+    },
+  },
+  submit: {
+    production: {},
+  },
 };
