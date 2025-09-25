@@ -84,7 +84,6 @@ export default function EventLayout() {
         component={AddGiftScreen}
         options={{
           title: 'Ajouter un cadeau',
-          headerShown: true,
         }}
       />
       <Stack.Screen

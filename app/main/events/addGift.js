@@ -14,6 +14,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import * as ImagePicker from 'expo-image-picker'; // libriaire Expo pour accéder à la galerie/photos
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
+import Header from '../../../components/Header';
 
 export default function AddGiftScreen({ route, navigation }) {
   // Récupère l'événement complet transmis depuis la navigation
@@ -131,6 +132,7 @@ export default function AddGiftScreen({ route, navigation }) {
         { backgroundColor: theme.colors.background.primary },
       ]}
     >
+      <Header title='Ajouter un cadeau' arrowShow={true} />
       {/* Form */}
       <KeyboardAwareScrollView
         style={{ flex: 1 }}

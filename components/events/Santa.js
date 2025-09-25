@@ -140,10 +140,8 @@ export default function Santa({ event, setEvent }) {
       const assignedBy = event.event_participants.find(
         participant => participant.user?._id === owner.assignedBy
       );
-
       // on garde prenom + nom (il peut y avoir plusieurs participant avec le meme prenom)
       return `${assignedBy?.user.firstname} ${assignedBy?.user.lastname}`;
-
     } else if (type === 'assignedTo') {
       // fonction pour révéler le prénom de la personne qu'un autre participant a tiré au sort
       const assignedTo = event.event_participants.find(
@@ -326,7 +324,11 @@ export default function Santa({ event, setEvent }) {
                       setModal2Visible(true);
                     }}
                   >
-                    <Ionicons name='eye-outline' size={24} color='green' />
+                    <Ionicons
+                      name='eye-outline'
+                      size={24}
+                      color={theme.colors.primary}
+                    />
                   </TouchableOpacity>
                 )}
               </View>
@@ -338,7 +340,7 @@ export default function Santa({ event, setEvent }) {
         {/* Modal 2 pour révéler le tirage au sort de chacun  */}
         <Modal visible={modal2Visible} transparent={true}>
           <View style={styles.modalOverlay}>
-            <View style={styles.modal}>
+            <View style={styles.modal2}>
               <View
                 style={{
                   width: '100%',
@@ -570,7 +572,7 @@ export default function Santa({ event, setEvent }) {
         </View>
       </Modal>
 
-      {/* Bouton de suppression d'événement - Seulement pour les administrateurs */}
+      {/* Bouton de suppression d'événement - Seulement pour les administrateurs ou de quitter l'événement pour les participants */}
       {isOrganizer && (
         <TouchableOpacity style={styles.deleteButton} onPress={deleteEvent}>
           <FontAwesome5
@@ -825,6 +827,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modal2: {
+    margin: 'auto',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: '95%',
+    height: 200,
+    padding: 22,
+    alignItems: 'flex-start',
+    gap: 20,
+    shadowColor: '#020202ff',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   modal: {
     margin: 'auto',
