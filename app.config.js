@@ -17,6 +17,7 @@ export default {
       supportsTablet: true,
     },
     android: {
+      package: 'com.giftsquad.app',
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
