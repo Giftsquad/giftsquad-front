@@ -1,6 +1,8 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useContext, useState } from 'react';
+import Constants from 'expo-constants';
+
 import {
   Dimensions,
   Modal,
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
   },
   menuHeader: {
     backgroundColor: theme.colors.primary,
-    paddingTop: 10,
+    paddingTop: Constants.statusBarHeight + 10,
     paddingBottom: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
