@@ -3,6 +3,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { useContext, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   StyleSheet,
@@ -34,8 +35,25 @@ export default function AddWishScreen({ route, navigation }) {
   const [images, setImages] = useState([]); // images sélectionnées dans la galerie (optionnel)
   const [loading, setLoading] = useState(false); // état du chargement (évite plusieurs clics)
 
+  const canPickImage = () => images.length < IMAGES_LIMIT;
+
   // Fonction qui ouvre la galerie du téléphone ou l'appareil photo pour sélectionner plusieurs images
   const pickImages = async type => {
+    const { status } =
+      'gallery' === type
+        ? await ImagePicker.requestMediaLibraryPermissionsAsync()
+        : await ImagePicker.requestCameraPermissionsAsync();
+
+    if ('granted' !== status) {
+      Alert.alert(
+        `Vous devez autoriser l\'application à accéder à la ${
+          'gallery' === type ? 'la galerie' : "l'appareil"
+        } photo`
+      );
+
+      return;
+    }
+
     const options = {
       mediaTypes: 'images', // uniquement images
       allowsMultipleSelection: true, // permet la sélection multiple
@@ -60,25 +78,6 @@ export default function AddWishScreen({ route, navigation }) {
     }
   };
 
-  // Fonction pour la permission d'ouvrir la caméra
-  const takeAPhoto = async () => {
-    //Demander le droit d'accéder à l'appareil photo
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status === 'granted') {
-      //Ouvrir l'appareil photo
-      const result = await ImagePicker.launchCameraAsync();
-
-      if (result.canceled === true) {
-        alert('Pas de photo sélectionnée');
-      } else {
-        // Ajouter directement l'image à ton tableau images
-        setImages(prevImages => [...prevImages, result.assets[0]]);
-      }
-    } else {
-      alert('Permission refusée');
-    }
-  };
-
   // Fonction pour supprimer une image
   const removeImage = index => {
     setImages(prevImages => prevImages.filter((_, i) => i !== index));
@@ -90,7 +89,7 @@ export default function AddWishScreen({ route, navigation }) {
 
     // Vérifie que les champs obligatoires sont remplis
     if (!name) {
-      setErrors({ general: 'Le nom est obligatoire' });
+      setErrors({ name: 'Le nom est obligatoire' });
       return;
     }
 
@@ -184,6 +183,7 @@ export default function AddWishScreen({ route, navigation }) {
               value={name}
               onChangeText={setName}
             />
+            {errors.name && <Text style={theme.errorText}>{errors.name}</Text>}
           </View>
 
           {/* Prix du cadeau */}
@@ -205,6 +205,9 @@ export default function AddWishScreen({ route, navigation }) {
               onChangeText={setPrice}
               keyboardType='numeric'
             />
+            {errors.price && (
+              <Text style={theme.errorText}>{errors.price}</Text>
+            )}
           </View>
 
           {/* Choisir des images */}
@@ -229,10 +232,12 @@ export default function AddWishScreen({ route, navigation }) {
                   gap: 10,
                   justifyContent: 'center',
                   marginBottom: 20,
+                  opacity: canPickImage() ? 1 : 0.5,
                 },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
-              onPress={takeAPhoto}
+              onPress={() => pickImages('camera')}
+              disabled={!canPickImage()}
             >
               <FontAwesome name='camera' size={24} color='black' />
               <Text
@@ -247,14 +252,20 @@ export default function AddWishScreen({ route, navigation }) {
               </Text>
             </TouchableOpacity>
 
-            {/* Accès à la gallerie photo */}
+            {/* Accès à la galerie photo */}
             <TouchableOpacity
               style={[
                 theme.components.input.container,
-                { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+                {
+                  flexDirection: 'row',
+                  gap: 10,
+                  justifyContent: 'center',
+                  opacity: canPickImage() ? 1 : 0.5,
+                },
                 errors.date && { borderColor: theme.colors.text.error },
               ]}
               onPress={() => pickImages('gallery')}
+              disabled={!canPickImage()}
             >
               <AntDesign name='picture' size={24} color='black' />
               <Text
@@ -323,6 +334,9 @@ export default function AddWishScreen({ route, navigation }) {
               </View>
             </View>
           )}
+          {errors.images && (
+            <Text style={theme.errorText}>{errors.images}</Text>
+          )}
 
           {/* Lien du cadeau (optionnel) */}
           <View style={{ marginBottom: 20 }}>
@@ -342,25 +356,64 @@ export default function AddWishScreen({ route, navigation }) {
               value={url}
               onChangeText={setUrl}
             />
+            {errors.url && <Text style={theme.errorText}>{errors.url}</Text>}
           </View>
+
+          {/* Description du cadeau */}
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                marginBottom: 8,
+              }}
+            >
+              Description
+            </Text>
+            <TextInput
+              style={theme.components.input.container}
+              placeholder='Description du souhait'
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+              numberOfLines={4}
+            />
+            {errors.description && (
+              <Text style={theme.errorText}>{errors.description}</Text>
+            )}
+          </View>
+
+          {/* Erreur générale */}
+          {errors.general && (
+            <Text style={theme.errorText}>{errors.general}</Text>
+          )}
 
           {/* Bouton Ajouter le souhait */}
           <TouchableOpacity
             style={[
               theme.components.button.primary,
-              { justifyContent: 'center', marginVertical: 20 },
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginVertical: 20,
+              },
               errors.date && { borderColor: theme.colors.text.error },
             ]}
             onPress={handleSubmit}
             disabled={loading}
           >
+            {loading && <ActivityIndicator color={theme.colors.text.white} />}
             <Text
               style={[
                 theme.components.button.text.primary,
                 { textAlign: 'center' },
               ]}
             >
-              {loading ? 'Ajout en cours...' : 'Ajouter à ma liste de souhaits'}
+              {loading
+                ? ' Ajout en cours...'
+                : 'Ajouter à ma liste de souhaits'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -382,55 +435,5 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text.primary,
     marginBottom: 8,
-  },
-  imageButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  imageButton: {
-    ...theme.components.button.primary,
-  },
-  imagesText: {
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  imagesPreviewLabel: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.text.secondary,
-    marginBottom: 10,
-  },
-  imagesPreviewContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  imagePreviewContainer: { position: 'relative' },
-  imagePreview: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-  },
-  imagePreviewRemoveButton: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: theme.colors.text.error,
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imagePreviewRemoveButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  submitButton: {
-    ...theme.components.button.primary,
-    marginVertical: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    ...theme.components.button.text.primary,
-    marginLeft: 10,
   },
 });

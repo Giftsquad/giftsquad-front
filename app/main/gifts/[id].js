@@ -25,6 +25,9 @@ export default function GiftDetailScreen() {
   // Utiliser l'événement passé en paramètres ou le chercher dans le contexte
   const currentEvent = event || events.find(e => e._id === gift?.eventId);
 
+  // Vérifier si l'utilisateur est l'auteur du cadeau
+  const isAuthor = gift.addedBy?._id === user._id;
+
   // Vérifier si l'utilisateur peut supprimer le cadeau
   const canDeleteGift = () => {
     if (!user || !currentEvent || !gift || !gift._id) return false;
@@ -34,9 +37,6 @@ export default function GiftDetailScreen() {
       participant =>
         participant.user?._id === user._id && participant.role === 'organizer'
     );
-
-    // Vérifier si l'utilisateur est l'auteur du cadeau
-    const isAuthor = gift.addedBy?._id === user._id;
 
     return isOrganizer || isAuthor;
   };
@@ -111,7 +111,9 @@ export default function GiftDetailScreen() {
           participant.wishList.some(g => g._id === gift._id)
         ) {
           giftSource = 'wishList';
-          participantName = participant.user?.firstname || participant.email;
+          participantName = participant.user
+            ? `${participant.user.firstname} ${participant.user.lastname}`
+            : participant.email;
           break;
         }
       }
@@ -157,9 +159,10 @@ export default function GiftDetailScreen() {
       ]}
     >
       <Header title='Détail du cadeau' arrowShow={true} />
+
       {/* Images du cadeau */}
       {gift.images && gift.images.length > 0 && (
-        <View style={{ marginBottom: 20, alignItems: 'center' }}>
+        <View style={{ marginVertical: 20, alignItems: 'center' }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {gift.images.map((image, index) => (
               <Image
@@ -215,16 +218,27 @@ export default function GiftDetailScreen() {
         )}
 
         {gift.price && (
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.primary.main,
-              marginBottom: 15,
-            }}
-          >
-            {gift.price} €
-          </Text>
+          <View style={{ marginBottom: 15 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary,
+                marginBottom: 5,
+              }}
+            >
+              Prix :
+            </Text>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.lg,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.primary.main,
+                marginBottom: 15,
+              }}
+            >
+              {gift.price} €
+            </Text>
+          </View>
         )}
 
         {/* Date de création et créateur */}
@@ -237,41 +251,26 @@ export default function GiftDetailScreen() {
                 marginBottom: 5,
               }}
             >
-              Ajouté le {new Date(gift.createdAt).toLocaleDateString('fr-FR')}{' '}
-              par :
+              Ajouté le {new Date(gift.createdAt).toLocaleDateString('fr-FR')}
+              {'giftList' === giftSource && <> par :</>}
             </Text>
-            <Text
-              style={{
-                fontSize: theme.typography.fontSize.md,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-              }}
-            >
-              {gift.addedBy?.firstname && gift.addedBy?.lastname
-                ? `${gift.addedBy.firstname} ${gift.addedBy.lastname}`
-                : gift.addedBy?.firstname ||
-                  gift.addedBy?.nickname ||
-                  'Utilisateur inconnu'}
-            </Text>
+            {'giftList' === giftSource && (
+              <Text
+                style={{
+                  fontSize: theme.typography.fontSize.md,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                }}
+              >
+                {gift.addedBy?.firstname && gift.addedBy?.lastname
+                  ? `${gift.addedBy.firstname} ${gift.addedBy.lastname}`
+                  : gift.addedBy?.firstname ||
+                    gift.addedBy?.nickname ||
+                    'Utilisateur inconnu'}
+              </Text>
+            )}
           </View>
         )}
-
-        {/* Qui s'occupe du cadeau */}
-        <View style={{ marginBottom: 15 }}>
-          <Text
-            style={{
-              fontSize: theme.typography.fontSize.md,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-            }}
-          >
-            {gift.purchasedBy
-              ? `${gift.purchasedBy.firstname || ''} ${
-                  gift.purchasedBy.lastname || ''
-                }`.trim() || "Quelqu'un s'en occupe"
-              : "Personne ne s'en occupe"}
-          </Text>
-        </View>
 
         {/* Nom du participant si c'est un souhait */}
         {participantName && (
@@ -297,11 +296,38 @@ export default function GiftDetailScreen() {
           </View>
         )}
 
+        {/* Qui s'occupe du cadeau */}
+        {(!isAuthor || 'giftList' === giftSource) && (
+          <View style={{ marginBottom: 15 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary,
+                marginBottom: 5,
+              }}
+            >
+              Réservé par :
+            </Text>
+            <Text
+              style={{
+                fontSize: theme.typography.fontSize.md,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+              }}
+            >
+              {gift.purchasedBy
+                ? `${gift.purchasedBy.firstname} ${gift.purchasedBy.lastname}` ||
+                  "Quelqu'un"
+                : "Personne ne s'en occupe"}
+            </Text>
+          </View>
+        )}
+
         {/* Lien vers le produit */}
         {gift.url && (
           <TouchableOpacity
             style={{
-              backgroundColor: theme.colors.primary.main,
+              backgroundColor: theme.colors.primary,
               paddingVertical: 12,
               paddingHorizontal: 20,
               borderRadius: 8,
