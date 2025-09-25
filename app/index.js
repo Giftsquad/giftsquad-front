@@ -7,7 +7,7 @@ import { theme } from '../styles/theme';
 export default function Index() {
   const { user, isInit } = useContext(AuthContext);
 
-  console.log('Index - État de connexion:', { user, isInit });
+  // console.log('Index - État de connexion:', { user, isInit });
 
   // Si l'app n'est pas encore initialisée, afficher un loader
   if (!isInit) {

@@ -50,6 +50,7 @@ export default function EventsScreen() {
         showHamburger={true}
         onHamburgerPress={() => setMenuVisible(true)}
         arrowShow={false}
+        showInvitations={true}
       />
 
       {/* Zone principale */}
@@ -60,13 +61,11 @@ export default function EventsScreen() {
         ) : (
           <>
             {/* Liste des évènements */}
-            
+
             <FlatList
               style={{ flex: 1, padding: 20 }}
               data={events}
-
               keyExtractor={item => String(item._id)}
-
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[theme.components.card.container, styles.eventCard]}
@@ -149,7 +148,10 @@ export default function EventsScreen() {
 
             {/* Bouton "Ajouter un évènement", toujours visible */}
             <TouchableOpacity
-              style={[theme.components.button.primary, { marginVertical: 30, width: "90%", alignSelf: "center" }]}
+              style={[
+                theme.components.button.primary,
+                { marginVertical: 30, width: '90%', alignSelf: 'center' },
+              ]}
               disabled={loading}
               onPress={() => router.push('/main/createEvent')}
             >
@@ -169,7 +171,6 @@ export default function EventsScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
-            
           </>
         )}
       </View>

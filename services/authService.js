@@ -60,7 +60,7 @@ export const handleLogin = async (userData, setUser) => {
 
 export const handleLogout = async setUser => {
   try {
-    console.log('Déconnexion en cours...');
+    // console.log('Déconnexion en cours...');
     setUser(null);
   } catch (error) {
     console.error('Erreur lors de la déconnexion :', error);

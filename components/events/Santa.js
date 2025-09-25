@@ -129,24 +129,25 @@ export default function Santa({ event, setEvent }) {
   //fonction pour comparer l'id du user connecté et de son id participant
   const findOwner = event => {
     const owner = event.event_participants.find(
-      participant => participant.user._id === user._id
+      participant => participant.user?._id === user._id
     );
-    console.log(owner);
+    // console.log(owner);
     return owner;
   };
   // fonction pour afficher la personne qu'il a tiré au sort
   const findAssigned = (event, owner, type) => {
     if (type === 'assignedBy') {
       const assignedBy = event.event_participants.find(
-        participant => participant.user._id === owner.assignedBy
+        participant => participant.user?._id === owner.assignedBy
       );
-      return assignedBy.user.firstname;
+      // on garde prenom + nom (il peut y avoir plusieurs participant avec le meme prenom)
+      return `${assignedBy?.user.firstname} ${assignedBy?.user.lastname}`;
     } else if (type === 'assignedTo') {
       // fonction pour révéler le prénom de la personne qu'un autre participant a tiré au sort
       const assignedTo = event.event_participants.find(
-        participant => participant.user._id === owner.assignedTo
+        participant => participant.user?._id === owner.assignedTo
       );
-      return assignedTo.user.firstname;
+      return `${assignedTo?.user.firstname} ${assignedTo?.user.lastname}`;
     }
   };
 
@@ -194,7 +195,7 @@ export default function Santa({ event, setEvent }) {
                   event,
                   findOwner(event),
                   'assignedBy'
-                ).toUpperCase()}
+                )?.toUpperCase()}
               </Text>
             </Text>
           </View>
@@ -347,7 +348,9 @@ export default function Santa({ event, setEvent }) {
                   justifyContent: 'space-between',
                 }}
               >
-                <Text>{`TIRAGE DE ${currentParticipant?.user.firstname.toUpperCase()}`}</Text>
+                <Text
+                  style={{ textTransform: 'uppercase' }}
+                >{`TIRAGE DE ${currentParticipant?.user.firstname} ${currentParticipant?.user.lastname}`}</Text>
                 <Pressable
                   onPress={() => {
                     setModal2Visible(!modal2Visible), setShowdraw(false);
@@ -392,18 +395,20 @@ export default function Santa({ event, setEvent }) {
                 </View>
               ) : (
                 <Text>
-                  {`${currentParticipant?.user.firstname} a tiré ${
+                  {`${currentParticipant?.user.firstname} ${
+                    currentParticipant?.user.lastname
+                  } a tiré ${
                     currentParticipant &&
                     showDraw &&
                     findAssigned(
                       event,
                       event.event_participants.find(
                         participant =>
-                          participant.user._id ===
+                          participant.user?._id ===
                           currentParticipant?.assignedTo
                       ),
                       'assignedTo'
-                    ).toUpperCase()
+                    )?.toUpperCase()
                   }`}
                 </Text>
               )}
@@ -470,28 +475,30 @@ export default function Santa({ event, setEvent }) {
           <Text style={styles.drawButtonText}>Effectuer le tirage au sort</Text>
         </TouchableOpacity>
       ) : (
-        <View
-          style={{
-            backgroundColor: theme.components.tabBar.inactiveTintColor,
-            paddingVertical: 15,
-            paddingHorizontal: 20,
-            borderRadius: 8,
-            alignItems: 'center',
-            marginTop: 20,
-            flexDirection: 'row',
-            justifyContent: 'center',
-          }}
-        >
-          <Text
+        isOrganizer && (
+          <View
             style={{
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: theme.typography.fontSize.md,
+              backgroundColor: theme.components.tabBar.inactiveTintColor,
+              paddingVertical: 15,
+              paddingHorizontal: 20,
+              borderRadius: 8,
+              alignItems: 'center',
+              marginTop: 20,
+              flexDirection: 'row',
+              justifyContent: 'center',
             }}
           >
-            Tirage au sort effectué
-          </Text>
-        </View>
+            <Text
+              style={{
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: theme.typography.fontSize.md,
+              }}
+            >
+              Tirage au sort effectué
+            </Text>
+          </View>
+        )
       )}
       {/*  Modal pour faire le tirage au sort */}
       <Modal visible={modalVisible} transparent={true}>
@@ -542,7 +549,6 @@ export default function Santa({ event, setEvent }) {
               <TouchableOpacity
                 style={{
                   width: '50%',
-                  height: 40,
                   backgroundColor: theme.colors.primary,
                   alignItems: 'center',
                   flexDirection: 'row',
@@ -848,7 +854,7 @@ const styles = StyleSheet.create({
     height: 380,
     padding: 22,
     alignItems: 'flex-start',
-    gap: 20,
+    gap: 15,
     shadowColor: '#020202ff',
     shadowOffset: {
       width: 0,
@@ -860,7 +866,6 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     gap: 10,
-    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',

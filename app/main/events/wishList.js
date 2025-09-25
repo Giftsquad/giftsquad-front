@@ -5,6 +5,7 @@ import {
   FlatList,
   Image,
   Linking,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,6 +14,7 @@ import {
 import Header from '../../../components/Header';
 import AuthContext from '../../../contexts/AuthContext';
 import { theme } from '../../../styles/theme';
+import { Entypo } from '@expo/vector-icons';
 
 export default function WishListScreen({ navigation }) {
   const route = useRoute();
@@ -28,6 +30,8 @@ export default function WishListScreen({ navigation }) {
   const [wishListGifts, setWishListGifts] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [currentParticipant, setCurrentParticipant] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // Utiliser useEffect pour charger les cadeaux de la wishList du participant spécifique
   // et se mettre à jour quand le contexte global change
@@ -114,9 +118,9 @@ export default function WishListScreen({ navigation }) {
   };
 
   // Fonction pour mettre une option sur un cadeau
-  const handlePurchaseWish = async giftId => {
+  const handlePurchaseWish = async (participantUserId, giftId) => {
     try {
-      await handlePurchaseWishGift(currentEvent._id, giftId, true);
+      await handlePurchaseWishGift(currentEvent._id, participantUserId, giftId);
     } catch (error) {
       console.error("Erreur lors de l'option sur le cadeau:", error);
     }
@@ -378,7 +382,10 @@ export default function WishListScreen({ navigation }) {
                 </View>
                 {!isCurrentUser && !item.purchasedBy && (
                   <TouchableOpacity
-                    onPress={() => handlePurchaseWish(item._id)}
+                    onPress={() => {
+                      setSelectedItem(item);
+                      setModalVisible(true);
+                    }}
                   >
                     <Text
                       style={{
@@ -421,7 +428,7 @@ export default function WishListScreen({ navigation }) {
                         ? `${
                             item.purchasedBy.firstname ||
                             item.purchasedBy.nickname
-                          } s'en occupe`
+                          } s'en occupddde`
                         : "Quelqu'un s'occupe de ce cadeau"}
                     </Text>
                   )}
@@ -430,6 +437,66 @@ export default function WishListScreen({ navigation }) {
           </TouchableOpacity>
         )}
       />
+      <Modal
+        animationType='slide'
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modal}>
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={styles.modalTitle}>Réserver un cadeau</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Entypo name='cross' size={24} color='grey' />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalText}>
+              Voulez-vous vous occuper de ce cadeau ?
+              <Text style={{ fontWeight: 'bold' }}>
+                {selectedItem && selectedItem.name}
+              </Text>
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedItem(null);
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Non</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={() => {
+                  handlePurchaseWish(participant.user._id, selectedItem._id);
+                  setModalVisible(false);
+                  setSelectedItem(null);
+                }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size='small' color='white' />
+                ) : (
+                  <Text style={styles.confirmButtonText}>OK</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Bouton d'ajout - seulement si c'est l'utilisateur connecté */}
       {isCurrentUser && (
@@ -472,6 +539,70 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: 'white',
     fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modal: {
+    margin: 'auto',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    width: '90%',
+    padding: 22,
+    alignItems: 'flex-start',
+    gap: 20,
+    shadowColor: '#020202ff',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+  },
+  modalText: {
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    width: '100%',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    height: 40,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: theme.colors.accent,
+  },
+  confirmButton: {
+    backgroundColor: theme.colors.primary,
+  },
+  cancelButtonText: {
+    color: theme.colors.text.white,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+  confirmButtonText: {
+    color: theme.colors.text.white,
+    fontSize: theme.typography.fontSize.md,
     fontWeight: theme.typography.fontWeight.bold,
   },
 });

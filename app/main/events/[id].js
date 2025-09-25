@@ -36,11 +36,11 @@ export default function EventDetailsScreen() {
 
         // Récupérer l'événement complet avec ses cadeaux depuis l'API
         const response = await fetchEventWithGifts(id);
-        console.log('Données reçues de fetchEventWithGifts:', response);
+        // console.log('Données reçues de fetchEventWithGifts:', response);
 
         // L'API retourne { event: {...}, gifts: [...] }
         const eventData = response.event || response;
-        console.log("Données de l'événement:", eventData);
+        // console.log("Données de l'événement:", eventData);
 
         setEvent(eventData);
       } catch (error) {

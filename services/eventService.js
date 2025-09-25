@@ -158,7 +158,7 @@ export const handleDeleteGift = async (
 ) => {
   try {
     const response = await deleteGift(eventId, giftId, isWish);
-    console.log('Réponse de suppression:', response);
+    // console.log('Réponse de suppression:', response);
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
@@ -179,10 +179,10 @@ export const handleDeleteGift = async (
 };
 
 // Fonction pour mettre une option sur un cadeau
-export const purchaseWishGift = async (eventId, giftId) => {
+export const purchaseWishGift = async (eventId, participantUserId, giftId) => {
   try {
     const response = await api.put(
-      `/gifts/${eventId}/wish-list/${giftId}/purchase`
+      `/gifts/${eventId}/wish-list/${participantUserId}/${giftId}/purchase`
     );
 
     return response.data;
@@ -207,10 +207,17 @@ export const purchaseGiftListGift = async (eventId, giftId) => {
 };
 
 // Fonction pour mettre une option sur un cadeau avec mise à jour du contexte
-export const handlePurchaseWishGift = async (eventId, giftId, setEvents) => {
+export const handlePurchaseWishGift = async (
+  eventId,
+  participantUserId,
+  giftId,
+  setEvents
+) => {
   try {
+
     const response = await purchaseWishGift(eventId, giftId);
-    console.log("Réponse d'option:", response);
+    // console.log("Réponse d'option:", response);
+
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
@@ -238,7 +245,7 @@ export const handlePurchaseGiftListGift = async (
 ) => {
   try {
     const response = await purchaseGiftListGift(eventId, giftId);
-    console.log("Réponse d'option giftList:", response);
+    // console.log("Réponse d'option giftList:", response);
 
     // Vérifier si la réponse contient l'événement mis à jour
     const updatedEvent = response?.event || response;
