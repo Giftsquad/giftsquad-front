@@ -35,6 +35,12 @@ export default {
       },
     },
   },
+  updates: {
+    url: 'https://u.expo.dev/2f0473dd-d49f-4fe8-8644-8ae4516c7d09',
+  },
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
   cli: {
     version: '>= 16.19.3',
     appVersionSource: 'remote',
