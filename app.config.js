@@ -35,6 +35,7 @@ export default {
       },
     },
   },
+  // EAS Update configuration
   updates: {
     url: 'https://u.expo.dev/2f0473dd-d49f-4fe8-8644-8ae4516c7d09',
   },
