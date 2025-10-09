@@ -18,6 +18,7 @@ export default {
     },
     android: {
       package: 'com.giftsquad.app',
+      versionCode: 4, 
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff',
