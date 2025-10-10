@@ -20,7 +20,7 @@ export default {
       package: 'com.giftsquad.app',
       versionCode: 4, 
       adaptiveIcon: {
-        foregroundImage: './assets/adaptive-icon.png',
+        foregroundImage: './assets/favicon.png',
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,

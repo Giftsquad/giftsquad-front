@@ -17,6 +17,9 @@ const api = axios.create({
   timeout: 10_000,
 });
 
+console.log("API_BASE_URL =", API_BASE_URL);
+
+
 // Interceptor pour ajouter automatiquement le token
 api.interceptors.request.use(
   async config => {
