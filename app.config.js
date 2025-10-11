@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 export default {
   expo: {
     name: 'giftsquad',
@@ -18,7 +20,7 @@ export default {
     },
     android: {
       package: 'com.giftsquad.app',
-      versionCode: 4, 
+      versionCode: 4,
       adaptiveIcon: {
         foregroundImage: './assets/favicon.png',
         backgroundColor: '#ffffff',
@@ -30,7 +32,7 @@ export default {
     },
     plugins: ['expo-router'],
     extra: {
-      API_URL: process.env.API_URL,
+      API_URL: process.env.EXPO_PUBLIC_API_URL,
       eas: {
         projectId: '2f0473dd-d49f-4fe8-8644-8ae4516c7d09',
       },

@@ -2,6 +2,8 @@
  * Service de gestion centralisée des erreurs
  */
 export const handleApiError = (error) => {
+  console.log("❌ Axios full error dump:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
   // Cas 1 : le backend a renvoyé une réponse avec un status d'erreur
   if (error.response) {
     console.error("Erreur API:", error.response.data);

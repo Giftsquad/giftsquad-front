@@ -12,6 +12,9 @@
     "preview": {
       "distribution": "internal",
       "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "site--giftsquad--x4rr22xyqwj8.code.run"
+      },
       "android": {
         "buildType": "apk"
       }
@@ -19,6 +22,9 @@
     "production": {
       "autoIncrement": true,
       "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "site--giftsquad--x4rr22xyqwj8.code.run"
+      },
       "android": {
       "buildType": "app-bundle"
       }
