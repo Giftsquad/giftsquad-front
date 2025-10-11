@@ -13,7 +13,7 @@
       "distribution": "internal",
       "channel": "preview",
       "env": {
-        "EXPO_PUBLIC_API_URL": "site--giftsquad--x4rr22xyqwj8.code.run"
+        "EXPO_PUBLIC_API_URL": "https://site--giftsquad--x4rr22xyqwj8.code.run"
       },
       "android": {
         "buildType": "apk"
@@ -23,7 +23,7 @@
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "site--giftsquad--x4rr22xyqwj8.code.run"
+        "EXPO_PUBLIC_API_URL": "https://site--giftsquad--x4rr22xyqwj8.code.run"
       },
       "android": {
       "buildType": "app-bundle"
