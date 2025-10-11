@@ -7,14 +7,25 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
-// Récupération de l'URL de l'API depuis la configuration Expo
+// Récupération de l'URL de l'API depuis les variables publiques Expo et extras
+// Priorité: EXPO_PUBLIC_API_URL (inlinée au build) -> extra d'Expo (expo/dev) -> extra d'Expo Go
 // http://10.0.2.2:3000 (émulateur Android)
-const API_BASE_URL = Constants.expoConfig?.extra?.API_URL;
+const ENV_API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_BASE_URL =
+  ENV_API_URL ||
+  Constants.expoConfig?.extra?.API_URL ||
+  Constants.expoGoConfig?.extra?.API_URL;
+
+if (!API_BASE_URL) {
+  // Aide au debug: éviter les appels relatifs qui échouent en production Android
+  console.warn('[API] Aucune API_BASE_URL définie. Vérifiez EXPO_PUBLIC_API_URL ou extra.API_URL');
+}
 
 // Créer une instance axios
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10_000,
+  // Render/Northflank peuvent avoir un cold start: on laisse plus de marge
+  timeout: 30_000,
 });
 
 // Interceptor pour ajouter automatiquement le token

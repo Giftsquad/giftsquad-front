@@ -30,7 +30,8 @@ export default {
     },
     plugins: ['expo-router'],
     extra: {
-      API_URL: process.env.API_URL,
+      // Utilise la variable publique Expo pour l'API, compatible build EAS
+      API_URL: process.env.EXPO_PUBLIC_API_URL,
       eas: {
         projectId: '2f0473dd-d49f-4fe8-8644-8ae4516c7d09',
       },
