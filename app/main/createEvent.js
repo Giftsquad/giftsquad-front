@@ -50,6 +50,8 @@ export default function CreateEventScreen() {
     if (dateString.includes('/')) {
       const [day, month, year] = dateString.split('/');
       const date = new Date(year, month - 1, day);
+      // Fixer à minuit heure locale avant conversion
+      date.setHours(0, 0, 0, 0);
       // Retourner au format ISO (YYYY-MM-DD) que .isDate() peut valider
       return date.toISOString().split('T')[0];
     }

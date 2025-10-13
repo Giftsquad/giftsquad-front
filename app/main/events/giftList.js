@@ -390,8 +390,14 @@ export default function GiftListScreen({ navigation }) {
                   <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
                     <Text
                       style={{
-                        color: theme.colors.primary.main,
-                        textDecorationLine: 'underline',
+                        // color: theme.colors.primary.main,
+                        // textDecorationLine: 'underline',
+                        backgroundColor: theme.colors.primary.main,
+                        paddingVertical: 8,
+                        paddingHorizontal: 16,
+                        borderRadius: 6,
+                        marginTop: 10,
+                        alignSelf: 'flex-start',
                       }}
                     >
                       Voir le produit

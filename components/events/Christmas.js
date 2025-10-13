@@ -119,7 +119,11 @@ export default function Christmas({ event, user, setEvent }) {
   };
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Informations principales - Date */}
       <View style={styles.infoContainer}>
         <View style={styles.infoCard}>
