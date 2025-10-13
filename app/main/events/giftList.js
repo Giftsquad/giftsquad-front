@@ -392,7 +392,7 @@ export default function GiftListScreen({ navigation }) {
                       style={{
                         // color: theme.colors.primary.main,
                         // textDecorationLine: 'underline',
-                        backgroundColor: theme.colors.primary.main,
+                        backgroundColor: theme.colors.primary,
                         paddingVertical: 8,
                         paddingHorizontal: 16,
                         borderRadius: 6,

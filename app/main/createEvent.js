@@ -49,9 +49,7 @@ export default function CreateEventScreen() {
     // Convertir le format jj/mm/aaaa vers ISO pour le backend
     if (dateString.includes('/')) {
       const [day, month, year] = dateString.split('/');
-      const date = new Date(year, month - 1, day);
-      // Fixer à minuit heure locale avant conversion
-      date.setHours(0, 0, 0, 0);
+      const date = new Date(Date.UTC(year, month - 1, day));
       // Retourner au format ISO (YYYY-MM-DD) que .isDate() peut valider
       return date.toISOString().split('T')[0];
     }

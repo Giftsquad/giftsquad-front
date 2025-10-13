@@ -199,7 +199,11 @@ export default function Birthday({ event, user, setEvent }) {
       enableOnAndroid={true}
       extraScrollHeight={20}
     >
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
+      <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
+          >
         {/* Informations principales - Date */}
         <View style={styles.infoContainer}>
           <View style={styles.infoCard}>
